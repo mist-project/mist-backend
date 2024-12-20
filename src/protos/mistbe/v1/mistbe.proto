@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package mistbe.v1;
+option go_package = "/mistbe";
+
+// The greeting service definition.
+service MistBEService {
+  // Sends a greeting
+  rpc CreateAppserver(CreateAppserverRequest)
+      returns (CreateAppserverResponse) {}
+
+  rpc GetByIdAppserver(GetByIdAppserverRequest)
+      returns (GetByIdAppserverResponse) {}
+
+  rpc ListAppservers(ListAppserversRequest) returns (ListAppserversResponse) {}
+
+  rpc DeleteAppserver(DeleteAppserverRequest)
+      returns (DeleteAppserverResponse) {}
+}
+
+// ----- SERVER -----
+message Appserver {
+  string id = 1;
+  string name = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message CreateAppserverRequest { string name = 1; }
+message GetByIdAppserverRequest { string id = 1; }
+message ListAppserversRequest { google.protobuf.StringValue name = 1; }
+message DeleteAppserverRequest { string id = 1; }
+
+message CreateAppserverResponse { Appserver appserver = 1; }
+message GetByIdAppserverResponse { Appserver appserver = 1; }
+message ListAppserversResponse { repeated Appserver appservers = 1; }
+message DeleteAppserverResponse {}

@@ -1,0 +1,15 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "src/psql_db/queries.sql"
+    schema: "src/psql_db/schema.sql"
+    gen:
+      go:
+        package: "qx"
+        out: "src/psql_db/qx"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"

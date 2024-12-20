@@ -1,0 +1,38 @@
+# General
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.pid
+*.rej
+.env*
+
+# Go
+bin/
+*.exe
+*.test
+*.out
+vendor/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+.nfs*
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+
+# Other IDEs or environments
+.vscode/
+.idea/
+.vim/

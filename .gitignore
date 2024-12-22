@@ -8,6 +8,8 @@
 *.rej
 .env*
 
+coverage/*
+
 # Go
 bin/
 *.exe

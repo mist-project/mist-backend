@@ -1,3 +1,17 @@
+v := false
+html := false
+go_test_flags := -tags no_test_coverage
+go_test_coverage_flags := -func=coverage/rpcs_coverage.out
+
+# Add verbose flag if v=true
+ifeq ($(v),true)
+    go_test_flags += -v
+endif
+
+# Add 
+ifeq ($(html),true)
+    go_test_coverage_flags = -html=coverage/rpcs_coverage.out
+endif
 
 .PHONY: \
   run \
@@ -58,6 +72,15 @@ dump-schema:
 	pg_dump ${DATABASE_NAME} --schema-only | grep -v -e '^--' -e '^COMMENT ON' -e '^REVOKE' -e \
 		'^GRANT' -e '^SET' -e 'ALTER DEFAULT PRIVILEGES' -e 'OWNER TO' | cat -s > \
 		${DB_SOURCE_DIR}/schema.sql
+
+
+# ----- TESTS -----
+tests: test-service
+
+test-service:
+
+	go test mist/src/rpcs -coverprofile=coverage/rpcs_coverage.out  $(go_test_flags)
+	go tool cover $(go_test_coverage_flags)
 
 # ----- FORMAT -----
 lint:

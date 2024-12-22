@@ -18,12 +18,12 @@ import (
 )
 
 type AppserverService struct {
-	dbc_pool *pgxpool.Pool
-	ctx      context.Context
+	dbcPool *pgxpool.Pool
+	ctx     context.Context
 }
 
-func NewAppserverService(dbc_pool *pgxpool.Pool, ctx context.Context) *AppserverService {
-	return &AppserverService{dbc_pool: dbc_pool, ctx: ctx}
+func NewAppserverService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverService {
+	return &AppserverService{dbcPool: dbcPool, ctx: ctx}
 }
 
 func (service *AppserverService) PgTypeToPb(appserver *qx.Appserver) *pb_mistbe.Appserver {
@@ -35,25 +35,41 @@ func (service *AppserverService) PgTypeToPb(appserver *qx.Appserver) *pb_mistbe.
 }
 
 func (service *AppserverService) Create(name string) (*qx.Appserver, error) {
-	validation_errors := []string{}
+	// Keeping the validationErrors variable as a way to show the pattern I'd like to follow (using a list of
+	// validation errors to then send them)
+	// Note: might change the pattern to use some sort of validation package. This might be duable by changing the
+	// parameter in this method for example, to a struct type that can be validated. (Similar concept of python's
+	// Pydantic object validation)
+	validationErrors := []string{}
 	if name == "" {
-		validation_errors = append(validation_errors, fmt.Sprintf("(%d): missing name attribute", ValidationError))
+		validationErrors = append(validationErrors, fmt.Sprintf("(%d): missing name attribute", ValidationError))
 	}
 
-	if len(validation_errors) > 0 {
-		return nil, errors.New(strings.Join(validation_errors, "\n"))
+	if len(validationErrors) > 0 {
+		return nil, errors.New(fmt.Sprintf("(%d): missing name attribute", ValidationError))
 	}
 
-	appserver, err := qx.New(service.dbc_pool).CreateAppserver(service.ctx, name)
+	appserver, err := qx.New(service.dbcPool).CreateAppserver(service.ctx, name)
 	return &appserver, err
 }
 
-func (service *AppserverService) GetById(id string) (qx.Appserver, error) {
-	parsed_uuid, err := uuid.Parse(id)
+func (service *AppserverService) GetById(id string) (*qx.Appserver, error) {
+	parsedUuid, err := uuid.Parse(id)
 	if err != nil {
 		log.Fatalf("Invalid UUID string: %v", err)
 	}
-	return qx.New(service.dbc_pool).GetAppserver(service.ctx, parsed_uuid)
+
+	appserver, err := qx.New(service.dbcPool).GetAppserver(service.ctx, parsedUuid)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, errors.New(fmt.Sprintf("(%d): resource not found", NotFoundError))
+		}
+
+		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+	}
+
+	return &appserver, nil
 }
 
 func (service *AppserverService) List(name *wrappers.StringValue) ([]qx.Appserver, error) {
@@ -63,17 +79,23 @@ func (service *AppserverService) List(name *wrappers.StringValue) ([]qx.Appserve
 		formatName.Valid = true
 		formatName.String = name.Value
 	}
-	return qx.New(service.dbc_pool).ListAppservers(service.ctx, formatName)
+	appservers, err := qx.New(service.dbcPool).ListAppservers(service.ctx, formatName)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+	}
+
+	return appservers, nil
 }
 
 func (service *AppserverService) Delete(id string) error {
-	parsed_uuid, err := uuid.Parse(id)
+	parsedUuid, err := uuid.Parse(id)
 
-	deleted_rows, err := qx.New(service.dbc_pool).DeleteAppserver(service.ctx, parsed_uuid)
+	deletedRows, err := qx.New(service.dbcPool).DeleteAppserver(service.ctx, parsedUuid)
 	if err != nil {
-		log.Fatalf("error deleting: %v", err)
-	} else if deleted_rows == 0 {
-		log.Printf("No rows were deleted.")
+		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+	} else if deletedRows == 0 {
+		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
 	return err
 }

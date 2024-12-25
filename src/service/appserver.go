@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"mist/src/psql_db/qx"
 	"strings"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -15,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_mistbe "mist/src/protos/mistbe/v1"
+	"mist/src/psql_db/qx"
 )
 
 type AppserverService struct {
@@ -55,8 +54,9 @@ func (service *AppserverService) Create(name string) (*qx.Appserver, error) {
 
 func (service *AppserverService) GetById(id string) (*qx.Appserver, error) {
 	parsedUuid, err := uuid.Parse(id)
+
 	if err != nil {
-		log.Fatalf("Invalid UUID string: %v", err)
+		return nil, err
 	}
 
 	appserver, err := qx.New(service.dbcPool).GetAppserver(service.ctx, parsedUuid)
@@ -90,7 +90,9 @@ func (service *AppserverService) List(name *wrappers.StringValue) ([]qx.Appserve
 
 func (service *AppserverService) Delete(id string) error {
 	parsedUuid, err := uuid.Parse(id)
-
+	if err != nil {
+		return err
+	}
 	deletedRows, err := qx.New(service.dbcPool).DeleteAppserver(service.ctx, parsedUuid)
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))

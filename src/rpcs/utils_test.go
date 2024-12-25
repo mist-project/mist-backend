@@ -10,6 +10,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/go-faker/faker/v4"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
@@ -119,7 +121,7 @@ func setup(t *testing.T, ctx context.Context, cleanup func()) {
 
 func teardown(ctx context.Context) {
 	// Cleans all the table's data after each test (used in setup) function
-	tables := []string{"appserver"}
+	tables := []string{"appserver", "channel"}
 	for _, table := range tables {
 		query := fmt.Sprintf(`TRUNCATE TABLE %s RESTART IDENTITY CASCADE;`, table)
 		_, err := dbcPool.Exec(ctx, query)
@@ -131,7 +133,7 @@ func teardown(ctx context.Context) {
 }
 
 // ----- HELPER FUNCTIONS -----
-func test_appserver(t *testing.T, appserver *qx.Appserver) qx.Appserver {
+func test_appserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
 	// Define attributes
 	var name string
 
@@ -140,12 +142,36 @@ func test_appserver(t *testing.T, appserver *qx.Appserver) qx.Appserver {
 		name = appserver.Name
 	} else {
 		// Default values
-		name = "test server"
+		name = fmt.Sprintf("%s - %s", faker.Word(), uuid.NewString())
 	}
 
 	as, err := qx.New(dbcPool).CreateAppserver(context.Background(), name)
 	if err != nil {
 		t.Fatalf("Unable to create appserver. Error: %v", err)
 	}
-	return as
+	return &as
+}
+
+func test_channel(t *testing.T, channel *qx.Channel) *qx.Channel {
+	// Define attributes
+	var appserverId uuid.UUID
+	var name string
+
+	if channel != nil {
+		// Custom values
+		name = channel.Name
+		appserverId = channel.ID
+	} else {
+		// Default values
+		name = fmt.Sprintf("%s - %s", faker.Word(), uuid.NewString())
+		appserverId = test_appserver(t, nil).ID
+
+	}
+
+	c, err := qx.New(dbcPool).CreateChannel(
+		context.Background(), qx.CreateChannelParams{Name: name, AppserverID: appserverId})
+	if err != nil {
+		t.Fatalf("Unable to create appserver. Error: %v", err)
+	}
+	return &c
 }

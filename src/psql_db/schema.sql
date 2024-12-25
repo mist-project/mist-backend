@@ -6,7 +6,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 CREATE TABLE public.appserver (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     name character varying(255) NOT NULL,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
+);
+
+CREATE TABLE public.channel (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    name character varying(255) NOT NULL,
+    appserver_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
 );
 
 CREATE TABLE public.goose_db_version (
@@ -33,9 +42,15 @@ CREATE TABLE public.schema_migrations (
 ALTER TABLE ONLY public.appserver
     ADD CONSTRAINT appserver_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.channel
+    ADD CONSTRAINT channel_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY public.goose_db_version
     ADD CONSTRAINT goose_db_version_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+ALTER TABLE ONLY public.channel
+    ADD CONSTRAINT channel_appserver_id_fkey FOREIGN KEY (appserver_id) REFERENCES public.appserver(id) ON DELETE CASCADE;
 

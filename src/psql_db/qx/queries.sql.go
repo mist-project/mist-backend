@@ -18,13 +18,47 @@ INSERT INTO appserver (
 ) values (
   $1
 )
-RETURNING id, name, created_at
+RETURNING id, name, created_at, updated_at
 `
 
 func (q *Queries) CreateAppserver(ctx context.Context, name string) (Appserver, error) {
 	row := q.db.QueryRow(ctx, createAppserver, name)
 	var i Appserver
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createChannel = `-- name: CreateChannel :one
+INSERT INTO channel (
+  name,
+  appserver_id
+) values (
+  $1,
+  $2
+)
+RETURNING id, name, appserver_id, created_at, updated_at
+`
+
+type CreateChannelParams struct {
+	Name        string
+	AppserverID uuid.UUID
+}
+
+func (q *Queries) CreateChannel(ctx context.Context, arg CreateChannelParams) (Channel, error) {
+	row := q.db.QueryRow(ctx, createChannel, arg.Name, arg.AppserverID)
+	var i Channel
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.AppserverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 
@@ -41,25 +75,65 @@ func (q *Queries) DeleteAppserver(ctx context.Context, id uuid.UUID) (int64, err
 	return result.RowsAffected(), nil
 }
 
+const deleteChannel = `-- name: DeleteChannel :execrows
+DELETE FROM channel
+WHERE id = $1
+`
+
+func (q *Queries) DeleteChannel(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteChannel, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getAppserver = `-- name: GetAppserver :one
-SELECT id, name, created_at
+SELECT id, name, created_at, updated_at
 FROM appserver
 WHERE id=$1
 LIMIT 1
 `
 
+// --- APP SERVER QUERIES -----
 func (q *Queries) GetAppserver(ctx context.Context, id uuid.UUID) (Appserver, error) {
 	row := q.db.QueryRow(ctx, getAppserver, id)
 	var i Appserver
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getChannel = `-- name: GetChannel :one
+SELECT id, name, appserver_id, created_at, updated_at
+FROM channel
+WHERE id=$1
+LIMIT 1
+`
+
+// --- CHANNEL QUERIES -----
+func (q *Queries) GetChannel(ctx context.Context, id uuid.UUID) (Channel, error) {
+	row := q.db.QueryRow(ctx, getChannel, id)
+	var i Channel
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.AppserverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 
 const listAppservers = `-- name: ListAppservers :many
-SELECT id, name, created_at
+SELECT id, name, created_at, updated_at
 FROM appserver
 WHERE
-  (name = $1 OR $1 IS NULL)
+  name = COALESCE($1, name)
 `
 
 func (q *Queries) ListAppservers(ctx context.Context, name pgtype.Text) ([]Appserver, error) {
@@ -71,7 +145,52 @@ func (q *Queries) ListAppservers(ctx context.Context, name pgtype.Text) ([]Appse
 	var items []Appserver
 	for rows.Next() {
 		var i Appserver
-		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listChannels = `-- name: ListChannels :many
+SELECT id, name, appserver_id, created_at, updated_at
+FROM channel
+WHERE
+  name = COALESCE($1, name)
+  AND
+  appserver_id = COALESCE($2, appserver_id)
+`
+
+type ListChannelsParams struct {
+	Name        pgtype.Text
+	AppserverID pgtype.UUID
+}
+
+func (q *Queries) ListChannels(ctx context.Context, arg ListChannelsParams) ([]Channel, error) {
+	rows, err := q.db.Query(ctx, listChannels, arg.Name, arg.AppserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Channel
+	for rows.Next() {
+		var i Channel
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.AppserverID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

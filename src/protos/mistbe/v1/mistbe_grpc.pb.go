@@ -23,6 +23,10 @@ const (
 	MistBEService_GetByIdAppserver_FullMethodName = "/mistbe.v1.MistBEService/GetByIdAppserver"
 	MistBEService_ListAppservers_FullMethodName   = "/mistbe.v1.MistBEService/ListAppservers"
 	MistBEService_DeleteAppserver_FullMethodName  = "/mistbe.v1.MistBEService/DeleteAppserver"
+	MistBEService_CreateChannel_FullMethodName    = "/mistbe.v1.MistBEService/CreateChannel"
+	MistBEService_GetByIdChannel_FullMethodName   = "/mistbe.v1.MistBEService/GetByIdChannel"
+	MistBEService_ListChannels_FullMethodName     = "/mistbe.v1.MistBEService/ListChannels"
+	MistBEService_DeleteChannel_FullMethodName    = "/mistbe.v1.MistBEService/DeleteChannel"
 )
 
 // MistBEServiceClient is the client API for MistBEService service.
@@ -31,11 +35,16 @@ const (
 //
 // The greeting service definition.
 type MistBEServiceClient interface {
-	// Sends a greeting
+	// ----- APPSERVER ----
 	CreateAppserver(ctx context.Context, in *CreateAppserverRequest, opts ...grpc.CallOption) (*CreateAppserverResponse, error)
 	GetByIdAppserver(ctx context.Context, in *GetByIdAppserverRequest, opts ...grpc.CallOption) (*GetByIdAppserverResponse, error)
 	ListAppservers(ctx context.Context, in *ListAppserversRequest, opts ...grpc.CallOption) (*ListAppserversResponse, error)
 	DeleteAppserver(ctx context.Context, in *DeleteAppserverRequest, opts ...grpc.CallOption) (*DeleteAppserverResponse, error)
+	// ----- CHANNEL ----
+	CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error)
+	GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error)
+	ListChannels(ctx context.Context, in *ListChannelsRequest, opts ...grpc.CallOption) (*ListChannelsResponse, error)
+	DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error)
 }
 
 type mistBEServiceClient struct {
@@ -86,17 +95,62 @@ func (c *mistBEServiceClient) DeleteAppserver(ctx context.Context, in *DeleteApp
 	return out, nil
 }
 
+func (c *mistBEServiceClient) CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateChannelResponse)
+	err := c.cc.Invoke(ctx, MistBEService_CreateChannel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetByIdChannelResponse)
+	err := c.cc.Invoke(ctx, MistBEService_GetByIdChannel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) ListChannels(ctx context.Context, in *ListChannelsRequest, opts ...grpc.CallOption) (*ListChannelsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListChannelsResponse)
+	err := c.cc.Invoke(ctx, MistBEService_ListChannels_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteChannelResponse)
+	err := c.cc.Invoke(ctx, MistBEService_DeleteChannel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MistBEServiceServer is the server API for MistBEService service.
 // All implementations must embed UnimplementedMistBEServiceServer
 // for forward compatibility.
 //
 // The greeting service definition.
 type MistBEServiceServer interface {
-	// Sends a greeting
+	// ----- APPSERVER ----
 	CreateAppserver(context.Context, *CreateAppserverRequest) (*CreateAppserverResponse, error)
 	GetByIdAppserver(context.Context, *GetByIdAppserverRequest) (*GetByIdAppserverResponse, error)
 	ListAppservers(context.Context, *ListAppserversRequest) (*ListAppserversResponse, error)
 	DeleteAppserver(context.Context, *DeleteAppserverRequest) (*DeleteAppserverResponse, error)
+	// ----- CHANNEL ----
+	CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error)
+	GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error)
+	ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error)
+	DeleteChannel(context.Context, *DeleteChannelRequest) (*DeleteChannelResponse, error)
 	mustEmbedUnimplementedMistBEServiceServer()
 }
 
@@ -118,6 +172,18 @@ func (UnimplementedMistBEServiceServer) ListAppservers(context.Context, *ListApp
 }
 func (UnimplementedMistBEServiceServer) DeleteAppserver(context.Context, *DeleteAppserverRequest) (*DeleteAppserverResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserver not implemented")
+}
+func (UnimplementedMistBEServiceServer) CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateChannel not implemented")
+}
+func (UnimplementedMistBEServiceServer) GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByIdChannel not implemented")
+}
+func (UnimplementedMistBEServiceServer) ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListChannels not implemented")
+}
+func (UnimplementedMistBEServiceServer) DeleteChannel(context.Context, *DeleteChannelRequest) (*DeleteChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteChannel not implemented")
 }
 func (UnimplementedMistBEServiceServer) mustEmbedUnimplementedMistBEServiceServer() {}
 func (UnimplementedMistBEServiceServer) testEmbeddedByValue()                       {}
@@ -212,6 +278,78 @@ func _MistBEService_DeleteAppserver_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MistBEService_CreateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).CreateChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_CreateChannel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).CreateChannel(ctx, req.(*CreateChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MistBEService_GetByIdChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByIdChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).GetByIdChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_GetByIdChannel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).GetByIdChannel(ctx, req.(*GetByIdChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MistBEService_ListChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListChannelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).ListChannels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_ListChannels_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).ListChannels(ctx, req.(*ListChannelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MistBEService_DeleteChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).DeleteChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_DeleteChannel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).DeleteChannel(ctx, req.(*DeleteChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MistBEService_ServiceDesc is the grpc.ServiceDesc for MistBEService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -234,6 +372,22 @@ var MistBEService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteAppserver",
 			Handler:    _MistBEService_DeleteAppserver_Handler,
+		},
+		{
+			MethodName: "CreateChannel",
+			Handler:    _MistBEService_CreateChannel_Handler,
+		},
+		{
+			MethodName: "GetByIdChannel",
+			Handler:    _MistBEService_GetByIdChannel_Handler,
+		},
+		{
+			MethodName: "ListChannels",
+			Handler:    _MistBEService_ListChannels_Handler,
+		},
+		{
+			MethodName: "DeleteChannel",
+			Handler:    _MistBEService_DeleteChannel_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

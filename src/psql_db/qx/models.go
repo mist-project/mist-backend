@@ -13,6 +13,15 @@ type Appserver struct {
 	ID        uuid.UUID
 	Name      string
 	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type Channel struct {
+	ID          uuid.UUID
+	Name        string
+	AppserverID uuid.UUID
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 }
 
 type GooseDbVersion struct {

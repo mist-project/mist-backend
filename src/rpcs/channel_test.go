@@ -2,11 +2,11 @@ package rpcs
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	pb_mistbe "mist/src/protos/mistbe/v1"
-	"mist/src/psql_db/qx"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -15,8 +15,8 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-// ----- RPC Appservers -----
-func TestAppserversReturnsNothingSuccessfully(t *testing.T) {
+// ----- RPC Channels -----
+func TestChannelsReturnsNothingSuccessfully(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
@@ -24,69 +24,70 @@ func TestAppserversReturnsNothingSuccessfully(t *testing.T) {
 	})
 
 	// ACT
-	response, err := TestClient.ListAppservers(
-		ctx, &pb_mistbe.ListAppserversRequest{Name: wrapperspb.String("random")},
+	response, err := TestClient.ListChannels(
+		ctx, &pb_mistbe.ListChannelsRequest{Name: wrapperspb.String("random")},
 	)
 	if err != nil {
 		t.Fatalf("Error performing request %v", err)
 	}
 
 	// ASSERT
-	assert.Equal(t, 0, len(response.GetAppservers()))
+	assert.Equal(t, 0, len(response.GetChannels()))
 }
 
-func TestAppserversReturnsAllResourcesSuccessfully(t *testing.T) {
+func TestChannelsReturnsAllResourcesSuccessfully(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
 		cancel()
 	})
-	test_appserver(t, nil)
-	test_appserver(t, &qx.Appserver{Name: "another one"})
+	test_channel(t, nil)
+	test_channel(t, nil)
 
 	// ACT
-	response, err := TestClient.ListAppservers(ctx, &pb_mistbe.ListAppserversRequest{})
+	response, err := TestClient.ListChannels(ctx, &pb_mistbe.ListChannelsRequest{})
 	if err != nil {
 		t.Fatalf("Error performing request %v", err)
 	}
 
 	// ASSERT
-	assert.Equal(t, 2, len(response.GetAppservers()))
+	assert.Equal(t, 2, len(response.GetChannels()))
 }
 
-func TestAppserversCanFilterSuccessfully(t *testing.T) {
+func TestChannelsCanFilterSuccessfully(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
 		cancel()
 	})
-	test_appserver(t, nil)
-	test_appserver(t, &qx.Appserver{Name: "another one"})
+	test_channel(t, nil)
+	channelToFilterBy := test_channel(t, nil)
 
 	// ACT
-	response, err := TestClient.ListAppservers(
-		ctx, &pb_mistbe.ListAppserversRequest{Name: wrapperspb.String("another one")},
+	response, err := TestClient.ListChannels(
+		ctx, &pb_mistbe.ListChannelsRequest{Name: wrapperspb.String(channelToFilterBy.Name)},
 	)
 	if err != nil {
 		t.Fatalf("Error performing request %v", err)
 	}
 
 	// ASSERT
-	assert.Equal(t, 1, len(response.GetAppservers()))
+	fmt.Printf("\nresponse: %v", response.GetChannels())
+	assert.Equal(t, 1, len(response.GetChannels()))
 }
 
-// ----- RPC GetByIdAppserver -----
-func TestGetByIdAppserversReturnsSuccessfully(t *testing.T) {
+// ----- RPC GetByIdChannel -----
+func TestGetByIdChannelReturnsSuccessfully(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
 		cancel()
 	})
-	appserver := test_appserver(t, nil)
+	channel := test_channel(t, nil)
 
 	// ACT
-	response, err := TestClient.GetByIdAppserver(
-		ctx, &pb_mistbe.GetByIdAppserverRequest{Id: appserver.ID.String()},
+	response, err := TestClient.GetByIdChannel(
+		ctx, &pb_mistbe.GetByIdChannelRequest{Id: channel.ID.String()},
 	)
 
 	if err != nil {
@@ -94,10 +95,10 @@ func TestGetByIdAppserversReturnsSuccessfully(t *testing.T) {
 	}
 
 	// ASSERT
-	assert.Equal(t, appserver.ID.String(), response.GetAppserver().Id)
+	assert.Equal(t, channel.ID.String(), response.GetChannel().Id)
 }
 
-func TestGetByIdAppserversInvalidIdReturnsNotFoundError(t *testing.T) {
+func TestGetByIdChannelInvalidIdReturnsNotFoundError(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
@@ -105,8 +106,8 @@ func TestGetByIdAppserversInvalidIdReturnsNotFoundError(t *testing.T) {
 	})
 
 	// ACT
-	response, err := TestClient.GetByIdAppserver(
-		ctx, &pb_mistbe.GetByIdAppserverRequest{Id: uuid.NewString()},
+	response, err := TestClient.GetByIdChannel(
+		ctx, &pb_mistbe.GetByIdChannelRequest{Id: uuid.NewString()},
 	)
 	s, ok := status.FromError(err)
 
@@ -117,7 +118,7 @@ func TestGetByIdAppserversInvalidIdReturnsNotFoundError(t *testing.T) {
 	assert.Contains(t, s.Message(), "resource not found")
 }
 
-func TestGetByIdAppserversInvalidUuidReturnsParsingError(t *testing.T) {
+func TestGetByIdChannelInvalidUuidReturnsParsingError(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
@@ -125,8 +126,8 @@ func TestGetByIdAppserversInvalidUuidReturnsParsingError(t *testing.T) {
 	})
 
 	// ACT
-	response, err := TestClient.GetByIdAppserver(
-		ctx, &pb_mistbe.GetByIdAppserverRequest{Id: "foo"},
+	response, err := TestClient.GetByIdChannel(
+		ctx, &pb_mistbe.GetByIdChannelRequest{Id: "foo"},
 	)
 	s, ok := status.FromError(err)
 
@@ -137,25 +138,27 @@ func TestGetByIdAppserversInvalidUuidReturnsParsingError(t *testing.T) {
 	assert.Contains(t, s.Message(), "invalid UUID")
 }
 
-// ----- RPC CreateAppserver -----
-func TestCreateAppserverSuccessfully(t *testing.T) {
+// ----- RPC CreateChannel -----
+func TestCreateChannelSuccessfully(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
 		cancel()
 	})
+	appserver := test_appserver(t, nil)
 
 	// ACT
-	response, err := TestClient.CreateAppserver(ctx, &pb_mistbe.CreateAppserverRequest{Name: "someone"})
+	response, err := TestClient.CreateChannel(
+		ctx, &pb_mistbe.CreateChannelRequest{Name: "new channel", AppserverId: appserver.ID.String()})
 	if err != nil {
 		t.Fatalf("Error performing request %v", err)
 	}
 
 	// ASSERT
-	assert.NotNil(t, response.Appserver)
+	assert.NotNil(t, response.Channel)
 }
 
-func TestCreateAppserverInvalidArgsError(t *testing.T) {
+func TestCreateChannelInvalidArgsError(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
@@ -163,7 +166,7 @@ func TestCreateAppserverInvalidArgsError(t *testing.T) {
 	})
 
 	// ACT
-	response, err := TestClient.CreateAppserver(ctx, &pb_mistbe.CreateAppserverRequest{})
+	response, err := TestClient.CreateChannel(ctx, &pb_mistbe.CreateChannelRequest{})
 	s, ok := status.FromError(err)
 
 	// ASSERT
@@ -173,24 +176,24 @@ func TestCreateAppserverInvalidArgsError(t *testing.T) {
 	assert.Contains(t, s.Message(), "missing name attribute")
 }
 
-// ----- RPC Deleteappserver -----
-func TestDeleteAppserverSuccessfully(t *testing.T) {
+// ----- RPC DeleteChannel -----
+func TestDeleteChannelSuccessfully(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
 		cancel()
 	})
-	appserver := test_appserver(t, nil)
+	channel := test_channel(t, nil)
 
 	// ACT
-	response, err := TestClient.DeleteAppserver(ctx, &pb_mistbe.DeleteAppserverRequest{Id: appserver.ID.String()})
+	response, err := TestClient.DeleteChannel(ctx, &pb_mistbe.DeleteChannelRequest{Id: channel.ID.String()})
 
 	// ASSERT
 	assert.NotNil(t, response)
 	assert.Nil(t, err)
 }
 
-func TestDeleteAppserverInvalidIdNotFoundError(t *testing.T) {
+func TestDeleteChannelInvalidIdNotFoundError(t *testing.T) {
 	// ARRANGE
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	setup(t, ctx, func() {
@@ -198,7 +201,7 @@ func TestDeleteAppserverInvalidIdNotFoundError(t *testing.T) {
 	})
 
 	// ACT
-	response, err := TestClient.DeleteAppserver(ctx, &pb_mistbe.DeleteAppserverRequest{Id: uuid.NewString()})
+	response, err := TestClient.DeleteChannel(ctx, &pb_mistbe.DeleteChannelRequest{Id: uuid.NewString()})
 	s, ok := status.FromError(err)
 
 	// ASSERT

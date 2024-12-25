@@ -8,26 +8,39 @@ option go_package = "/mistbe";
 
 // The greeting service definition.
 service MistBEService {
-  // Sends a greeting
+  // ----- APPSERVER ----
   rpc CreateAppserver(CreateAppserverRequest)
       returns (CreateAppserverResponse) {}
-
   rpc GetByIdAppserver(GetByIdAppserverRequest)
       returns (GetByIdAppserverResponse) {}
-
   rpc ListAppservers(ListAppserversRequest) returns (ListAppserversResponse) {}
-
   rpc DeleteAppserver(DeleteAppserverRequest)
       returns (DeleteAppserverResponse) {}
+
+  // ----- CHANNEL ----
+  rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse);
+  rpc GetByIdChannel(GetByIdChannelRequest) returns (GetByIdChannelResponse);
+  rpc ListChannels(ListChannelsRequest) returns (ListChannelsResponse);
+  rpc DeleteChannel(DeleteChannelRequest) returns (DeleteChannelResponse);
 }
 
-// ----- SERVER -----
+// RESOURCES
 message Appserver {
   string id = 1;
   string name = 2;
   google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
 }
 
+message Channel {
+  string id = 1;
+  string name = 2;
+  string appserver_id = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+// ----- Appserver -----
 message CreateAppserverRequest { string name = 1; }
 message GetByIdAppserverRequest { string id = 1; }
 message ListAppserversRequest { google.protobuf.StringValue name = 1; }
@@ -37,3 +50,24 @@ message CreateAppserverResponse { Appserver appserver = 1; }
 message GetByIdAppserverResponse { Appserver appserver = 1; }
 message ListAppserversResponse { repeated Appserver appservers = 1; }
 message DeleteAppserverResponse {}
+
+// ----- Channel -----
+
+message CreateChannelRequest {
+  string name = 1;
+  string appserver_id = 2; // Assuming channels are associated with an appserver
+}
+
+message GetByIdChannelRequest { string id = 1; }
+message ListChannelsRequest {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue appserver_id = 2;
+}
+message DeleteChannelRequest { string id = 1; }
+
+message CreateChannelResponse { Channel channel = 1; }
+message GetByIdChannelResponse { Channel channel = 1; }
+message ListChannelsResponse { repeated Channel channels = 1; }
+message DeleteChannelResponse {}
+
+// Channel resource

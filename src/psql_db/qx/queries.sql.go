@@ -165,9 +165,9 @@ const listChannels = `-- name: ListChannels :many
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel
 WHERE
-  name = COALESCE($1, name)
+  (name = COALESCE($1, name))
   AND
-  appserver_id = COALESCE($2, appserver_id)
+  (appserver_id = COALESCE($2, appserver_id))
 `
 
 type ListChannelsParams struct {

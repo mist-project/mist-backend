@@ -7,19 +7,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// func logRequestBody(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-// 	// Log the metadata (headers) and the request body (payload)
-// 	// md, ok := metadata.FromIncomingContext(ctx)
-// 	// if ok {
-// 	// 	log.Printf("Metadata: %v", md)
-// 	// }
-
-// 	// // Log the request body. This assumes req implements proto.Message
-// 	// log.Printf("Request Body: %v", req)
-
-// 	// Proceed with the handler
-// 	return handler(ctx, req)
-// }
 
 func ErrorHandler(err error) error {
 	parsedError := service.ParseServiceError(err.Error())

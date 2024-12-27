@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 
+	"mist/src/middleware"
 	pb_mistbe "mist/src/protos/mistbe/v1"
 	"mist/src/rpcs"
 )
@@ -23,10 +24,7 @@ func InitializeServer() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
-	// TODO: Add AUTH middleware
-	// TODO: Add decent enough request logger
-	// s := grpc.NewServer(grpc.UnaryInterceptor(logRequestBody))
+	s := grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
 	pb_mistbe.RegisterMistBEServiceServer(s, &rpcs.Grpcserver{DbcPool: dbcPool})
 

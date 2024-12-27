@@ -30,8 +30,3 @@ type GooseDbVersion struct {
 	IsApplied bool
 	Tstamp    pgtype.Timestamp
 }
-
-type SchemaMigration struct {
-	Version int64
-	Dirty   bool
-}

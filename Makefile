@@ -1,7 +1,7 @@
 v := false
 html := false
 go_test_flags := -tags no_test_coverage
-go_test_coverage_flags := -func=coverage/rpcs_coverage.out
+go_test_coverage_flags := -func=coverage/coverage.out
 
 # Add verbose flag if v=true
 ifeq ($(v),true)
@@ -10,7 +10,7 @@ endif
 
 # Add 
 ifeq ($(html),true)
-    go_test_coverage_flags = -html=coverage/rpcs_coverage.out
+    go_test_coverage_flags = -html=coverage/coverage.out
 endif
 
 .PHONY: \
@@ -75,13 +75,16 @@ dump-schema:
 
 
 # ----- TESTS -----
-tests: test-service
+tests: test-service test-middleware
 
 test-service:
+	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
 
-	go test mist/src/rpcs -coverprofile=coverage/rpcs_coverage.out  $(go_test_flags)
-	go tool cover $(go_test_coverage_flags)
-
+test-middleware:
+	@echo -----------------------------------------
+	@go test mist/src/middleware -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
 # ----- FORMAT -----
 lint:
 	golangci-lint run --disable-all -E errcheck
@@ -92,4 +95,4 @@ lint-proto:
 # ----- SHORTCUTS -----
 psql:
 	# Make sure to have all roles for your user
-	@psql -U ${DATABASE_ROLE} mist
+	@psql -U ${DATABASE_ROLE}

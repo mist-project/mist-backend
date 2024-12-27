@@ -9,15 +9,19 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/go-faker/faker/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 
+	"mist/src/middleware"
 	pb_mistbe "mist/src/protos/mistbe/v1"
 	"mist/src/psql_db/qx"
 )
@@ -43,6 +47,8 @@ func TestMain(m *testing.M) {
 	rpcTestCleanup()
 	os.Exit(exitValue)
 }
+
+// ----- SETUP FUNCTION -----
 
 func runTestDbMigrations() {
 	// runs test migrations before starting the suite
@@ -79,7 +85,8 @@ func setupTestGrpcserverAndClient() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	testServer = grpc.NewServer()
+	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
+
 	pb_mistbe.RegisterMistBEServiceServer(testServer, &Grpcserver{DbcPool: dbcPool})
 
 	go func() {
@@ -111,12 +118,31 @@ func rpcTestCleanup() {
 	}
 }
 
-func setup(t *testing.T, ctx context.Context, cleanup func()) {
+func setup(t *testing.T, cleanup func()) context.Context {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
 	t.Cleanup(func() {
 		teardown(ctx)
 		cleanup()
+		cancel()
 	})
+	tokenStr := CreateJWTToken(
+		t,
+		&CreateTokenParams{
+			iss:       os.Getenv("MIST_API_JWT_ISSUER"),
+			aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
+			secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
+		},
+	)
+	fmt.Printf("token str %s", tokenStr)
 
+	grpcMetadata := metadata.Pairs(
+		"authorization", fmt.Sprintf("Bearer %s", tokenStr),
+	)
+
+	ctx = metadata.NewOutgoingContext(ctx, grpcMetadata)
+
+	return ctx
 }
 
 func teardown(ctx context.Context) {
@@ -133,6 +159,36 @@ func teardown(ctx context.Context) {
 }
 
 // ----- HELPER FUNCTIONS -----
+
+type CreateTokenParams struct {
+	iss       string
+	aud       []string
+	secretKey string
+}
+
+func CreateJWTToken(t *testing.T, params *CreateTokenParams) string {
+	// Define secret key for signing the token
+
+	// Define JWT claims
+	claims := &jwt.RegisteredClaims{
+		Issuer:   params.iss,
+		Audience: params.aud,
+
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+	}
+	// Create a new token with specified claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Sign the token using the secret key
+	tokenString, err := token.SignedString([]byte(params.secretKey))
+	if err != nil {
+		t.Fatalf("error signing the token %v", err)
+	}
+	return tokenString
+}
+
+// ----- DB HELPER FUNCTIONS -----
 func test_appserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
 	// Define attributes
 	var name string

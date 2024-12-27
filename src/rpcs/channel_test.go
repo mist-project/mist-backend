@@ -1,10 +1,8 @@
 package rpcs
 
 import (
-	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	pb_mistbe "mist/src/protos/mistbe/v1"
 
@@ -18,10 +16,7 @@ import (
 // ----- RPC Channels -----
 func TestChannelsReturnsNothingSuccessfully(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 
 	// ACT
 	response, err := TestClient.ListChannels(
@@ -37,10 +32,7 @@ func TestChannelsReturnsNothingSuccessfully(t *testing.T) {
 
 func TestChannelsReturnsAllResourcesSuccessfully(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 	test_channel(t, nil)
 	test_channel(t, nil)
 
@@ -56,10 +48,7 @@ func TestChannelsReturnsAllResourcesSuccessfully(t *testing.T) {
 
 func TestChannelsCanFilterSuccessfully(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 	test_channel(t, nil)
 	channelToFilterBy := test_channel(t, nil)
 
@@ -79,10 +68,7 @@ func TestChannelsCanFilterSuccessfully(t *testing.T) {
 // ----- RPC GetByIdChannel -----
 func TestGetByIdChannelReturnsSuccessfully(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 	channel := test_channel(t, nil)
 
 	// ACT
@@ -100,10 +86,7 @@ func TestGetByIdChannelReturnsSuccessfully(t *testing.T) {
 
 func TestGetByIdChannelInvalidIdReturnsNotFoundError(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 
 	// ACT
 	response, err := TestClient.GetByIdChannel(
@@ -120,10 +103,7 @@ func TestGetByIdChannelInvalidIdReturnsNotFoundError(t *testing.T) {
 
 func TestGetByIdChannelInvalidUuidReturnsParsingError(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 
 	// ACT
 	response, err := TestClient.GetByIdChannel(
@@ -141,10 +121,7 @@ func TestGetByIdChannelInvalidUuidReturnsParsingError(t *testing.T) {
 // ----- RPC CreateChannel -----
 func TestCreateChannelSuccessfully(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 	appserver := test_appserver(t, nil)
 
 	// ACT
@@ -160,10 +137,7 @@ func TestCreateChannelSuccessfully(t *testing.T) {
 
 func TestCreateChannelInvalidArgsError(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 
 	// ACT
 	response, err := TestClient.CreateChannel(ctx, &pb_mistbe.CreateChannelRequest{})
@@ -179,10 +153,7 @@ func TestCreateChannelInvalidArgsError(t *testing.T) {
 // ----- RPC DeleteChannel -----
 func TestDeleteChannelSuccessfully(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 	channel := test_channel(t, nil)
 
 	// ACT
@@ -195,10 +166,7 @@ func TestDeleteChannelSuccessfully(t *testing.T) {
 
 func TestDeleteChannelInvalidIdNotFoundError(t *testing.T) {
 	// ARRANGE
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	setup(t, ctx, func() {
-		cancel()
-	})
+	ctx := setup(t, func() {})
 
 	// ACT
 	response, err := TestClient.DeleteChannel(ctx, &pb_mistbe.DeleteChannelRequest{Id: uuid.NewString()})

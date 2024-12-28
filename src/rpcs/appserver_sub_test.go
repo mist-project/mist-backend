@@ -104,8 +104,8 @@ func TestCreateAppserverSub(t *testing.T) {
 	})
 }
 
-// ----- RPC DeleteAppserverSub -----
-func TestDeleteAppserverSub(t *testing.T) {
+// ----- RPC DeleteAllAppserverSubs -----
+func TestDeleteAppserverSubs(t *testing.T) {
 	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
@@ -120,7 +120,7 @@ func TestDeleteAppserverSub(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
+	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 

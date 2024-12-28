@@ -102,12 +102,18 @@ func (q *Queries) CreateChannel(ctx context.Context, arg CreateChannelParams) (C
 }
 
 const deleteAppserver = `-- name: DeleteAppserver :execrows
-DELETE FROM appserver
-WHERE id = $1
+DELETE
+FROM appserver
+WHERE id=$1 AND owner_id=$2
 `
 
-func (q *Queries) DeleteAppserver(ctx context.Context, id uuid.UUID) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteAppserver, id)
+type DeleteAppserverParams struct {
+	ID      uuid.UUID
+	OwnerID uuid.UUID
+}
+
+func (q *Queries) DeleteAppserver(ctx context.Context, arg DeleteAppserverParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAppserver, arg.ID, arg.OwnerID)
 	if err != nil {
 		return 0, err
 	}
@@ -115,8 +121,9 @@ func (q *Queries) DeleteAppserver(ctx context.Context, id uuid.UUID) (int64, err
 }
 
 const deleteAppserverSub = `-- name: DeleteAppserverSub :execrows
-DELETE FROM appserver_sub
-WHERE id = $1
+DELETE
+FROM appserver_sub
+WHERE id=$1
 `
 
 func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, error) {
@@ -128,8 +135,9 @@ func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, 
 }
 
 const deleteChannel = `-- name: DeleteChannel :execrows
-DELETE FROM channel
-WHERE id = $1
+DELETE
+FROM channel
+WHERE id=$1
 `
 
 func (q *Queries) DeleteChannel(ctx context.Context, id uuid.UUID) (int64, error) {
@@ -211,9 +219,9 @@ SELECT
   aps.created_at,
   aps.updated_at  
 FROM appserver_sub as apssub
-JOIN appserver as aps ON apssub.appserver_id = aps.id
+JOIN appserver as aps ON apssub.appserver_id=aps.id
 WHERE
-  apssub.owner_id = $1
+  apssub.owner_id=$1
 `
 
 type GetUserAppserverSubsRow struct {
@@ -254,7 +262,7 @@ const listAppservers = `-- name: ListAppservers :many
 SELECT id, name, owner_id, created_at, updated_at
 FROM appserver
 WHERE
-  name = COALESCE($1, name)
+  name=COALESCE($1, name)
   AND
   1=0
 `
@@ -289,9 +297,9 @@ const listChannels = `-- name: ListChannels :many
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel
 WHERE
-  (name = COALESCE($1, name))
+  (name=COALESCE($1, name))
   AND
-  (appserver_id = COALESCE($2, appserver_id))
+  (appserver_id=COALESCE($2, appserver_id))
 `
 
 type ListChannelsParams struct {

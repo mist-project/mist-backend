@@ -151,7 +151,7 @@ func setup(t *testing.T, cleanup func()) context.Context {
 
 func teardown(ctx context.Context) {
 	// Cleans all the table's data after each test (used in setup) function
-	tables := []string{"appserver", "channel"}
+	tables := []string{"appserver", "channel", "appserver_sub"}
 	for _, table := range tables {
 		query := fmt.Sprintf(`TRUNCATE TABLE %s RESTART IDENTITY CASCADE;`, table)
 		_, err := dbcPool.Exec(ctx, query)

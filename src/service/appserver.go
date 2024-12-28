@@ -100,12 +100,16 @@ func (service *AppserverService) List(name *wrappers.StringValue) ([]qx.Appserve
 	return appservers, nil
 }
 
-func (service *AppserverService) Delete(id string) error {
+func (service *AppserverService) Delete(id string, ownerId string) error {
 	parsedUuid, err := uuid.Parse(id)
 	if err != nil {
 		return err
 	}
-	deletedRows, err := qx.New(service.dbcPool).DeleteAppserver(service.ctx, parsedUuid)
+
+	parsedOwnerUuid, _ := uuid.Parse(ownerId)
+
+	deletedRows, err := qx.New(service.dbcPool).DeleteAppserver(
+		service.ctx, qx.DeleteAppserverParams{ID: parsedUuid, OwnerID: parsedOwnerUuid})
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	} else if deletedRows == 0 {

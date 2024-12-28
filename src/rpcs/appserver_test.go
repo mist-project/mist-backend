@@ -3,14 +3,15 @@ package rpcs
 import (
 	"testing"
 
-	pb_mistbe "mist/src/protos/mistbe/v1"
-	"mist/src/psql_db/qx"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+
+	pb_mistbe "mist/src/protos/mistbe/v1"
+	"mist/src/psql_db/qx"
+	"mist/src/service"
 )
 
 // ----- RPC Appservers -----
@@ -90,7 +91,7 @@ func TestGetByIdAppServer(t *testing.T) {
 		assert.Equal(t, appserver.ID.String(), response.GetAppserver().Id)
 	})
 
-	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
+	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -130,15 +131,19 @@ func TestCreateAppsever(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
+		userId := ctx.Value(ctxUserKey).(string)
 
 		// ACT
 		response, err := TestClient.CreateAppserver(ctx, &pb_mistbe.CreateAppserverRequest{Name: "someone"})
+
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
 
 		// ASSERT
+		serverSubs, _ := service.NewAppserverSubService(dbcPool, ctx).ListUserAppserverAndSub(userId)
 		assert.NotNil(t, response.Appserver)
+		assert.Equal(t, 1, len(serverSubs))
 	})
 
 	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
@@ -159,21 +164,30 @@ func TestCreateAppsever(t *testing.T) {
 
 // ----- RPC Deleteappserver -----
 func TestDeleteAppserver(t *testing.T) {
+
 	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 		userId := ctx.Value(ctxUserKey).(string)
 		appserver := testAppserver(t, userId, nil)
+		testAppserverSub(t, userId, &qx.AppserverSub{AppserverID: appserver.ID})
+		serverSubsService := service.NewAppserverSubService(dbcPool, ctx)
+
+		// ASSERT
+		serverSubs, _ := serverSubsService.ListUserAppserverAndSub(userId)
+		assert.Equal(t, 1, len(serverSubs))
 
 		// ACT
 		response, err := TestClient.DeleteAppserver(ctx, &pb_mistbe.DeleteAppserverRequest{Id: appserver.ID.String()})
 
 		// ASSERT
+		serverSubs, _ = serverSubsService.ListUserAppserverAndSub(userId)
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
+		assert.Equal(t, 0, len(serverSubs))
 	})
 
-	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
+	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 

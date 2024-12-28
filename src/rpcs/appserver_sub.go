@@ -60,7 +60,7 @@ func (s *Grpcserver) DeleteAppserverSub(
 	appserverSubService := service.NewAppserverSubService(s.DbcPool, ctx)
 
 	// Call delete service method
-	err := appserverSubService.Delete(req.GetId())
+	err := appserverSubService.DeleteByAppserver(req.GetId())
 
 	// Error handling
 	if err != nil {

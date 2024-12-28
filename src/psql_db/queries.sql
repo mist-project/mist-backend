@@ -9,7 +9,7 @@ LIMIT 1;
 SELECT *
 FROM appserver
 WHERE
-  name = COALESCE(sqlc.narg('name'), name)
+  name=COALESCE(sqlc.narg('name'), name)
   AND
   1=0; -- This query might be removed. Hence the 1=0. So it returns no data.
 
@@ -24,8 +24,9 @@ INSERT INTO appserver (
 RETURNING *;
 
 -- name: DeleteAppserver :execrows
-DELETE FROM appserver
-WHERE id = $1;
+DELETE
+FROM appserver
+WHERE id=$1 AND owner_id=$2;
 
 ----- APPSERVER SUB QUERIES -----
 -- name: GetAppserverSub :one
@@ -42,9 +43,9 @@ SELECT
   aps.created_at,
   aps.updated_at  
 FROM appserver_sub as apssub
-JOIN appserver as aps ON apssub.appserver_id = aps.id
+JOIN appserver as aps ON apssub.appserver_id=aps.id
 WHERE
-  apssub.owner_id = $1;
+  apssub.owner_id=$1;
 
 -- name: CreateAppserverSub :one
 INSERT INTO appserver_sub (
@@ -57,8 +58,9 @@ INSERT INTO appserver_sub (
 RETURNING *;
 
 -- name: DeleteAppserverSub :execrows
-DELETE FROM appserver_sub
-WHERE id = $1;
+DELETE
+FROM appserver_sub
+WHERE id=$1;
 
 
 ----- CHANNEL QUERIES -----
@@ -72,9 +74,9 @@ LIMIT 1;
 SELECT *
 FROM channel
 WHERE
-  (name = COALESCE(sqlc.narg('name'), name))
+  (name=COALESCE(sqlc.narg('name'), name))
   AND
-  (appserver_id = COALESCE(sqlc.narg('appserver_id'), appserver_id));
+  (appserver_id=COALESCE(sqlc.narg('appserver_id'), appserver_id));
 
 -- name: CreateChannel :one
 INSERT INTO channel (
@@ -87,5 +89,6 @@ INSERT INTO channel (
 RETURNING *;
 
 -- name: DeleteChannel :execrows
-DELETE FROM channel
-WHERE id = $1;
+DELETE
+FROM channel
+WHERE id=$1;

@@ -85,7 +85,7 @@ func TestGetByIdChannel(t *testing.T) {
 		assert.Equal(t, channel.ID.String(), response.GetChannel().Id)
 	})
 
-	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
+	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -169,7 +169,7 @@ func TestDeleteChannel(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
+	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 

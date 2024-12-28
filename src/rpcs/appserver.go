@@ -14,11 +14,13 @@ func (s *Grpcserver) CreateAppserver(
 	appserverService := service.NewAppserverService(s.DbcPool, ctx)
 	jwtClaims, _ := middleware.GetJWTClaims(ctx)
 
-	appserver, err := appserverService.Create(req.GetName(), jwtClaims.UserID)
+	appserver, err := service.NewAppserverService(s.DbcPool, ctx).Create(req.GetName(), jwtClaims.UserID)
 
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
+
+	service.NewAppserverSubService(s.DbcPool, ctx).Create(appserver.ID.String(), jwtClaims.UserID)
 
 	return &pb_mistbe.CreateAppserverResponse{
 		Appserver: appserverService.PgTypeToPb(appserver),
@@ -61,7 +63,9 @@ func (s *Grpcserver) DeleteAppserver(
 	ctx context.Context, req *pb_mistbe.DeleteAppserverRequest,
 ) (*pb_mistbe.DeleteAppserverResponse, error) {
 
-	err := service.NewAppserverService(s.DbcPool, ctx).Delete(req.GetId())
+	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+
+	err := service.NewAppserverService(s.DbcPool, ctx).Delete(req.GetId(), jwtClaims.UserID)
 
 	if err != nil {
 		return nil, ErrorHandler(err)

@@ -96,7 +96,7 @@ func (service *AppserverSubService) ListUserAppserverAndSub(ownerId string) ([]q
 	return appserverSubs, nil
 }
 
-func (service *AppserverSubService) Delete(id string) error {
+func (service *AppserverSubService) DeleteByAppserver(id string) error {
 	parsedUuid, err := uuid.Parse(id)
 
 	if err != nil {

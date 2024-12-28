@@ -16,6 +16,14 @@ type Appserver struct {
 	UpdatedAt pgtype.Timestamp
 }
 
+type AppserverSub struct {
+	ID          uuid.UUID
+	AppserverID uuid.UUID
+	OwnerID     uuid.UUID
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
 type Channel struct {
 	ID          uuid.UUID
 	Name        string

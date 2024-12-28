@@ -34,21 +34,21 @@ func (service *ChannelService) PgTypeToPb(channel *qx.Channel) *pb_mistbe.Channe
 	}
 }
 
-func (service *ChannelService) Create(name string, appserverID string) (*qx.Channel, error) {
+func (service *ChannelService) Create(name string, appserverId string) (*qx.Channel, error) {
 	validationErrors := []string{}
 	if name == "" {
-		validationErrors = append(validationErrors, fmt.Sprintf("(%d): missing name attribute", ValidationError))
+		validationErrors = AddValidationError("name", validationErrors)
 	}
 
-	if appserverID == "" {
-		validationErrors = append(validationErrors, fmt.Sprintf("(%d): missing appserver_id attribute", ValidationError))
+	if appserverId == "" {
+		validationErrors = AddValidationError("appserver_id", validationErrors)
 	}
 
 	if len(validationErrors) > 0 {
 		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErrors, ",")))
 	}
 
-	parsedUuid, err := uuid.Parse(appserverID)
+	parsedUuid, err := uuid.Parse(appserverId)
 
 	if err != nil {
 		return nil, err
@@ -80,28 +80,26 @@ func (service *ChannelService) GetById(id string) (*qx.Channel, error) {
 	return &channel, nil
 }
 
-func (service *ChannelService) List(name *wrappers.StringValue, appserverID *wrappers.StringValue) ([]qx.Channel, error) {
+func (service *ChannelService) List(name *wrappers.StringValue, appserverId *wrappers.StringValue) ([]qx.Channel, error) {
 	// To query, remember to format the parameters
 	var formatName pgtype.Text
-	var formatAppserverID pgtype.UUID
+	var formatAppserverId pgtype.UUID
 	if name != nil {
 		formatName = pgtype.Text{Valid: true, String: name.Value}
 	}
 
-	if appserverID != nil {
-		parsedUuid, err := uuid.Parse(appserverID.Value)
+	if appserverId != nil {
+		parsedUuid, err := uuid.Parse(appserverId.Value)
 		if err != nil {
 			return nil, err
 		}
-		formatAppserverID = pgtype.UUID{Valid: true, Bytes: parsedUuid}
+		formatAppserverId = pgtype.UUID{Valid: true, Bytes: parsedUuid}
 	} else {
-		formatAppserverID = pgtype.UUID{Valid: false}
+		formatAppserverId = pgtype.UUID{Valid: false}
 	}
 
-	fmt.Printf("name- %v uuid %v", formatName, formatAppserverID)
-
 	channels, err := qx.New(service.dbcPool).ListChannels(
-		service.ctx, qx.ListChannelsParams{Name: formatName, AppserverID: formatAppserverID},
+		service.ctx, qx.ListChannelsParams{Name: formatName, AppserverID: formatAppserverId},
 	)
 
 	if err != nil {

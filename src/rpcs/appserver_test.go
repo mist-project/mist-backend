@@ -15,7 +15,7 @@ import (
 
 // ----- RPC Appservers -----
 func TestListAppServer(t *testing.T) {
-	t.Run("can returns nothing successfully", func(t *testing.T) {
+	t.Run("can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -31,11 +31,11 @@ func TestListAppServer(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
-	t.Run("can return all resources successfully", func(t *testing.T) {
+	t.Run("can_return_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		test_appserver(t, nil)
-		test_appserver(t, &qx.Appserver{Name: "another one"})
+		testAppserver(t, nil)
+		testAppserver(t, &qx.Appserver{Name: "another one"})
 
 		// ACT
 		response, err := TestClient.ListAppservers(ctx, &pb_mistbe.ListAppserversRequest{})
@@ -47,11 +47,11 @@ func TestListAppServer(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetAppservers()))
 	})
 
-	t.Run("can filter successfully", func(t *testing.T) {
+	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		test_appserver(t, nil)
-		test_appserver(t, &qx.Appserver{Name: "another one"})
+		testAppserver(t, nil)
+		testAppserver(t, &qx.Appserver{Name: "another one"})
 
 		// ACT
 		response, err := TestClient.ListAppservers(
@@ -69,10 +69,10 @@ func TestListAppServer(t *testing.T) {
 // ----- RPC GetByIdAppserver -----
 
 func TestGetByIdAppServer(t *testing.T) {
-	t.Run("returns successfully", func(t *testing.T) {
+	t.Run("returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := test_appserver(t, nil)
+		appserver := testAppserver(t, nil)
 
 		// ACT
 		response, err := TestClient.GetByIdAppserver(
@@ -87,7 +87,7 @@ func TestGetByIdAppServer(t *testing.T) {
 		assert.Equal(t, appserver.ID.String(), response.GetAppserver().Id)
 	})
 
-	t.Run("invalid ID returns NotFound error", func(t *testing.T) {
+	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -104,7 +104,7 @@ func TestGetByIdAppServer(t *testing.T) {
 		assert.Contains(t, s.Message(), "resource not found")
 	})
 
-	t.Run("invalid UUID returns parsing error", func(t *testing.T) {
+	t.Run("invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -124,7 +124,7 @@ func TestGetByIdAppServer(t *testing.T) {
 
 // ----- RPC CreateAppserver -----
 func TestCreateAppsever(t *testing.T) {
-	t.Run("creates successfully", func(t *testing.T) {
+	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -138,7 +138,7 @@ func TestCreateAppsever(t *testing.T) {
 		assert.NotNil(t, response.Appserver)
 	})
 
-	t.Run("invalid arguments returns error", func(t *testing.T) {
+	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -156,10 +156,10 @@ func TestCreateAppsever(t *testing.T) {
 
 // ----- RPC Deleteappserver -----
 func TestDeleteAppserver(t *testing.T) {
-	t.Run("deletes successfully", func(t *testing.T) {
+	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := test_appserver(t, nil)
+		appserver := testAppserver(t, nil)
 
 		// ACT
 		response, err := TestClient.DeleteAppserver(ctx, &pb_mistbe.DeleteAppserverRequest{Id: appserver.ID.String()})
@@ -169,7 +169,7 @@ func TestDeleteAppserver(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid ID returns NotFound error", func(t *testing.T) {
+	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 

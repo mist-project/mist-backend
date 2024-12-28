@@ -17,6 +17,14 @@ service MistBEService {
   rpc DeleteAppserver(DeleteAppserverRequest)
       returns (DeleteAppserverResponse) {}
 
+  // ----- APPSERVER SUB -----
+  rpc CreateAppserverSub(CreateAppserverSubRequest)
+      returns (CreateAppserverSubResponse) {}
+  rpc GetUserAppserverSubs(GetUserAppserverSubsRequest)
+      returns (GetUserAppserverSubsResponse) {}
+  rpc DeleteAppserverSub(DeleteAppserverSubRequest)
+      returns (DeleteAppserverSubResponse) {}
+
   // ----- CHANNEL ----
   rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse);
   rpc GetByIdChannel(GetByIdChannelRequest) returns (GetByIdChannelResponse);
@@ -32,6 +40,18 @@ message Appserver {
   google.protobuf.Timestamp updated_at = 4;
 }
 
+message AppserverSub {
+  string id = 1;
+  string appserver_id = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+message AppserverAndSub {
+  string sub_id = 1;
+  Appserver appserver = 2;
+}
+
 message Channel {
   string id = 1;
   string name = 2;
@@ -40,6 +60,7 @@ message Channel {
   google.protobuf.Timestamp updated_at = 5;
 }
 
+// RESPONSE/REQUEST
 // ----- Appserver -----
 message CreateAppserverRequest { string name = 1; }
 message GetByIdAppserverRequest { string id = 1; }
@@ -51,13 +72,22 @@ message GetByIdAppserverResponse { Appserver appserver = 1; }
 message ListAppserversResponse { repeated Appserver appservers = 1; }
 message DeleteAppserverResponse {}
 
-// ----- Channel -----
+// ----- AppserverSub -----
+message CreateAppserverSubRequest { string appserver_id = 1; }
+message GetUserAppserverSubsRequest {}
+message DeleteAppserverSubRequest { string id = 1; }
 
+message CreateAppserverSubResponse { AppserverSub appserver_sub = 1; }
+message GetUserAppserverSubsResponse {
+  repeated AppserverAndSub appservers = 1;
+}
+message DeleteAppserverSubResponse {}
+
+// ----- Channel -----
 message CreateChannelRequest {
   string name = 1;
-  string appserver_id = 2; // Assuming channels are associated with an appserver
+  string appserver_id = 2;
 }
-
 message GetByIdChannelRequest { string id = 1; }
 message ListChannelsRequest {
   google.protobuf.StringValue name = 1;
@@ -69,5 +99,3 @@ message CreateChannelResponse { Channel channel = 1; }
 message GetByIdChannelResponse { Channel channel = 1; }
 message ListChannelsResponse { repeated Channel channels = 1; }
 message DeleteChannelResponse {}
-
-// Channel resource

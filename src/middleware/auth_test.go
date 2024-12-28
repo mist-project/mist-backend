@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -176,4 +177,43 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Contains(t, err.Error(), "unauthenticated")
 	})
+}
+
+func TestGetJWTClaims(t *testing.T) {
+	t.Run("can_successfully_get_claims_from_context", func(t *testing.T) {
+		// ARRANGE
+		claims := &CustomJWTClaims{
+			RegisteredClaims: jwt.RegisteredClaims{
+				Issuer:   "dummy issuer",
+				Audience: jwt.ClaimStrings{"oo aud"},
+
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+			},
+			UserID: uuid.NewString(),
+		}
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, JwtClaimsContextKey, claims)
+
+		// ACT
+		ctxClaims, err := GetJWTClaims(ctx)
+
+		// ASSERT
+		assert.NotNil(t, ctxClaims)
+		assert.Nil(t, err)
+	})
+
+	t.Run("invalid_claims_return_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, JwtClaimsContextKey, "boom")
+
+		// ACT
+		ctxClaims, err := GetJWTClaims(ctx)
+
+		// ASSERT
+		assert.Nil(t, ctxClaims)
+		assert.NotNil(t, err)
+	})
+
 }

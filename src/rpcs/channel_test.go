@@ -1,7 +1,6 @@
 package rpcs
 
 import (
-	"fmt"
 	"testing"
 
 	pb_mistbe "mist/src/protos/mistbe/v1"
@@ -15,7 +14,7 @@ import (
 
 // ----- RPC Channels -----
 func TestListChannels(t *testing.T) {
-	t.Run("returns nothing successfully", func(t *testing.T) {
+	t.Run("returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -31,11 +30,11 @@ func TestListChannels(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetChannels()))
 	})
 
-	t.Run("returns all resources successfully", func(t *testing.T) {
+	t.Run("returns_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		test_channel(t, nil)
-		test_channel(t, nil)
+		testChannel(t, nil)
+		testChannel(t, nil)
 
 		// ACT
 		response, err := TestClient.ListChannels(ctx, &pb_mistbe.ListChannelsRequest{})
@@ -47,32 +46,31 @@ func TestListChannels(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetChannels()))
 	})
 
-	t.Run("can filter successfully", func(t *testing.T) {
+	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		test_channel(t, nil)
-		channelToFilterBy := test_channel(t, nil)
+		testChannel(t, nil)
+		channelToFilterBy := testChannel(t, nil)
 
 		// ACT
 		response, err := TestClient.ListChannels(
-			ctx, &pb_mistbe.ListChannelsRequest{Name: wrapperspb.String(channelToFilterBy.Name)},
+			ctx, &pb_mistbe.ListChannelsRequest{AppserverId: wrapperspb.String(channelToFilterBy.AppserverID.String())},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
 
 		// ASSERT
-		fmt.Printf("\nresponse: %v", response.GetChannels())
 		assert.Equal(t, 1, len(response.GetChannels()))
 	})
 }
 
 // ----- RPC GetByIdChannel -----
 func TestGetByIdChannel(t *testing.T) {
-	t.Run("returns successfully", func(t *testing.T) {
+	t.Run("returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		channel := test_channel(t, nil)
+		channel := testChannel(t, nil)
 
 		// ACT
 		response, err := TestClient.GetByIdChannel(
@@ -87,7 +85,7 @@ func TestGetByIdChannel(t *testing.T) {
 		assert.Equal(t, channel.ID.String(), response.GetChannel().Id)
 	})
 
-	t.Run("invalid ID returns NotFound error", func(t *testing.T) {
+	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -104,7 +102,7 @@ func TestGetByIdChannel(t *testing.T) {
 		assert.Contains(t, s.Message(), "resource not found")
 	})
 
-	t.Run("invalid UUID returns parsing error", func(t *testing.T) {
+	t.Run("invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -124,10 +122,10 @@ func TestGetByIdChannel(t *testing.T) {
 
 // ----- RPC CreateChannel -----
 func TestCreateChannel(t *testing.T) {
-	t.Run("creates successfully", func(t *testing.T) {
+	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := test_appserver(t, nil)
+		appserver := testAppserver(t, nil)
 
 		// ACT
 		response, err := TestClient.CreateChannel(
@@ -140,7 +138,7 @@ func TestCreateChannel(t *testing.T) {
 		assert.NotNil(t, response.Channel)
 	})
 
-	t.Run("invalid arguments returns error", func(t *testing.T) {
+	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 
@@ -158,10 +156,10 @@ func TestCreateChannel(t *testing.T) {
 
 // ----- RPC DeleteChannel -----
 func TestDeleteChannel(t *testing.T) {
-	t.Run("deletes successfully", func(t *testing.T) {
+	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		channel := test_channel(t, nil)
+		channel := testChannel(t, nil)
 
 		// ACT
 		response, err := TestClient.DeleteChannel(ctx, &pb_mistbe.DeleteChannelRequest{Id: channel.ID.String()})
@@ -171,7 +169,7 @@ func TestDeleteChannel(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid ID returns NotFound error", func(t *testing.T) {
+	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 

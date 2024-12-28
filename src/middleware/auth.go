@@ -23,46 +23,49 @@ import (
 // 	// Log the request body. This assumes req implements proto.Message
 // 	log.Printf("Request Body: %v", req)
 
-// 	// Proceed with the handler
-// 	return handler(ctx, req)
-// }
+//		// Proceed with the handler
+//		return handler(ctx, req)
+//	}
+const JwtClaimsContextKey string = "jwt-token"
 
-func verifyJWTTokenClaims(token *jwt.Token) error {
+type CustomJWTClaims struct {
+	jwt.RegisteredClaims // Embed the standard registered claims
+
+	UserID string `json:"user_id"`
+}
+
+func verifyJWTTokenClaims(token *jwt.Token) (*CustomJWTClaims, error) {
 	// Now validate the token's claims
-	claims, _ := token.Claims.(jwt.MapClaims)
+	claims, _ := token.Claims.(*CustomJWTClaims)
 
 	// Validate aud
 	validAudience := false
-	auds, ok := claims["aud"].([]interface{})
-	if !ok {
-		return fmt.Errorf("invalid audience claim")
-	}
+	auds := claims.Audience
 
 	// If "aud" is an array of strings, cast each element to string
 	for _, aud := range auds {
-		audStr, _ := aud.(string)
-
-		if audStr == os.Getenv("MIST_API_JWT_AUDIENCE") {
+		if aud == os.Getenv("MIST_API_JWT_AUDIENCE") {
 			validAudience = true
 			break
 		}
 	}
 
 	if !validAudience {
-		return fmt.Errorf("invalid audience claim")
+		return nil, fmt.Errorf("invalid audience claim")
 	}
 
 	// Validate the issuer (iss) claim
-	if iss, ok := claims["iss"].(string); !ok || iss != os.Getenv("MIST_API_JWT_ISSUER") {
-		return fmt.Errorf("invalid issuer claim")
+	if claims.Issuer != os.Getenv("MIST_API_JWT_ISSUER") {
+		return nil, fmt.Errorf("invalid issuer claim")
 	}
 
-	return nil
+	// AuthJWTClaims
+	return claims, nil
 }
 
-func VerifyJWT(tokenStr string) (*jwt.Token, error) {
+func VerifyJWT(tokenStr string) (*CustomJWTClaims, error) {
 	// Parse the token
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &CustomJWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// TODO: we will need this in the future, for now skip
 		// if token.Method != jwt.SigningMethodHS256 {
 		// 	return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -76,12 +79,12 @@ func VerifyJWT(tokenStr string) (*jwt.Token, error) {
 	}
 
 	// Now validate the token's claims
-	err = verifyJWTTokenClaims(token)
+	claims, err := verifyJWTTokenClaims(token)
 	if err != nil {
 		return nil, err
 	}
 
-	return token, nil
+	return claims, nil
 }
 
 func AuthJwtInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -98,8 +101,8 @@ func AuthJwtInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySe
 				return nil, status.Errorf(codes.Unauthenticated, "invalid token")
 			}
 
-			// We will be using token returned by here eventually. will add to context
-			_, err := VerifyJWT(parameters[1])
+			claims, err := VerifyJWT(parameters[1])
+			ctx = context.WithValue(ctx, JwtClaimsContextKey, claims)
 			if err == nil {
 				// Proceed with next handler
 				return handler(ctx, req)
@@ -109,4 +112,13 @@ func AuthJwtInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySe
 		}
 	}
 	return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+}
+
+func GetJWTClaims(ctx context.Context) (*CustomJWTClaims, error) {
+	claims, ok := ctx.Value(JwtClaimsContextKey).(*CustomJWTClaims)
+	if !ok {
+		return nil, fmt.Errorf("unable to get auth claims")
+	}
+
+	return claims, nil
 }

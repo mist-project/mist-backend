@@ -75,7 +75,7 @@ dump-schema:
 
 
 # ----- TESTS -----
-tests: test-service test-middleware
+tests: generate-queries test-service test-middleware
 
 test-service:
 	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)

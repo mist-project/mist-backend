@@ -19,14 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MistBEService_CreateAppserver_FullMethodName  = "/mistbe.v1.MistBEService/CreateAppserver"
-	MistBEService_GetByIdAppserver_FullMethodName = "/mistbe.v1.MistBEService/GetByIdAppserver"
-	MistBEService_ListAppservers_FullMethodName   = "/mistbe.v1.MistBEService/ListAppservers"
-	MistBEService_DeleteAppserver_FullMethodName  = "/mistbe.v1.MistBEService/DeleteAppserver"
-	MistBEService_CreateChannel_FullMethodName    = "/mistbe.v1.MistBEService/CreateChannel"
-	MistBEService_GetByIdChannel_FullMethodName   = "/mistbe.v1.MistBEService/GetByIdChannel"
-	MistBEService_ListChannels_FullMethodName     = "/mistbe.v1.MistBEService/ListChannels"
-	MistBEService_DeleteChannel_FullMethodName    = "/mistbe.v1.MistBEService/DeleteChannel"
+	MistBEService_CreateAppserver_FullMethodName      = "/mistbe.v1.MistBEService/CreateAppserver"
+	MistBEService_GetByIdAppserver_FullMethodName     = "/mistbe.v1.MistBEService/GetByIdAppserver"
+	MistBEService_ListAppservers_FullMethodName       = "/mistbe.v1.MistBEService/ListAppservers"
+	MistBEService_DeleteAppserver_FullMethodName      = "/mistbe.v1.MistBEService/DeleteAppserver"
+	MistBEService_CreateAppserverSub_FullMethodName   = "/mistbe.v1.MistBEService/CreateAppserverSub"
+	MistBEService_GetUserAppserverSubs_FullMethodName = "/mistbe.v1.MistBEService/GetUserAppserverSubs"
+	MistBEService_DeleteAppserverSub_FullMethodName   = "/mistbe.v1.MistBEService/DeleteAppserverSub"
+	MistBEService_CreateChannel_FullMethodName        = "/mistbe.v1.MistBEService/CreateChannel"
+	MistBEService_GetByIdChannel_FullMethodName       = "/mistbe.v1.MistBEService/GetByIdChannel"
+	MistBEService_ListChannels_FullMethodName         = "/mistbe.v1.MistBEService/ListChannels"
+	MistBEService_DeleteChannel_FullMethodName        = "/mistbe.v1.MistBEService/DeleteChannel"
 )
 
 // MistBEServiceClient is the client API for MistBEService service.
@@ -40,6 +43,10 @@ type MistBEServiceClient interface {
 	GetByIdAppserver(ctx context.Context, in *GetByIdAppserverRequest, opts ...grpc.CallOption) (*GetByIdAppserverResponse, error)
 	ListAppservers(ctx context.Context, in *ListAppserversRequest, opts ...grpc.CallOption) (*ListAppserversResponse, error)
 	DeleteAppserver(ctx context.Context, in *DeleteAppserverRequest, opts ...grpc.CallOption) (*DeleteAppserverResponse, error)
+	// ----- APPSERVER SUB -----
+	CreateAppserverSub(ctx context.Context, in *CreateAppserverSubRequest, opts ...grpc.CallOption) (*CreateAppserverSubResponse, error)
+	GetUserAppserverSubs(ctx context.Context, in *GetUserAppserverSubsRequest, opts ...grpc.CallOption) (*GetUserAppserverSubsResponse, error)
+	DeleteAppserverSub(ctx context.Context, in *DeleteAppserverSubRequest, opts ...grpc.CallOption) (*DeleteAppserverSubResponse, error)
 	// ----- CHANNEL ----
 	CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error)
 	GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error)
@@ -89,6 +96,36 @@ func (c *mistBEServiceClient) DeleteAppserver(ctx context.Context, in *DeleteApp
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteAppserverResponse)
 	err := c.cc.Invoke(ctx, MistBEService_DeleteAppserver_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) CreateAppserverSub(ctx context.Context, in *CreateAppserverSubRequest, opts ...grpc.CallOption) (*CreateAppserverSubResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateAppserverSubResponse)
+	err := c.cc.Invoke(ctx, MistBEService_CreateAppserverSub_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) GetUserAppserverSubs(ctx context.Context, in *GetUserAppserverSubsRequest, opts ...grpc.CallOption) (*GetUserAppserverSubsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserAppserverSubsResponse)
+	err := c.cc.Invoke(ctx, MistBEService_GetUserAppserverSubs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) DeleteAppserverSub(ctx context.Context, in *DeleteAppserverSubRequest, opts ...grpc.CallOption) (*DeleteAppserverSubResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteAppserverSubResponse)
+	err := c.cc.Invoke(ctx, MistBEService_DeleteAppserverSub_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +183,10 @@ type MistBEServiceServer interface {
 	GetByIdAppserver(context.Context, *GetByIdAppserverRequest) (*GetByIdAppserverResponse, error)
 	ListAppservers(context.Context, *ListAppserversRequest) (*ListAppserversResponse, error)
 	DeleteAppserver(context.Context, *DeleteAppserverRequest) (*DeleteAppserverResponse, error)
+	// ----- APPSERVER SUB -----
+	CreateAppserverSub(context.Context, *CreateAppserverSubRequest) (*CreateAppserverSubResponse, error)
+	GetUserAppserverSubs(context.Context, *GetUserAppserverSubsRequest) (*GetUserAppserverSubsResponse, error)
+	DeleteAppserverSub(context.Context, *DeleteAppserverSubRequest) (*DeleteAppserverSubResponse, error)
 	// ----- CHANNEL ----
 	CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error)
 	GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error)
@@ -172,6 +213,15 @@ func (UnimplementedMistBEServiceServer) ListAppservers(context.Context, *ListApp
 }
 func (UnimplementedMistBEServiceServer) DeleteAppserver(context.Context, *DeleteAppserverRequest) (*DeleteAppserverResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserver not implemented")
+}
+func (UnimplementedMistBEServiceServer) CreateAppserverSub(context.Context, *CreateAppserverSubRequest) (*CreateAppserverSubResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAppserverSub not implemented")
+}
+func (UnimplementedMistBEServiceServer) GetUserAppserverSubs(context.Context, *GetUserAppserverSubsRequest) (*GetUserAppserverSubsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserAppserverSubs not implemented")
+}
+func (UnimplementedMistBEServiceServer) DeleteAppserverSub(context.Context, *DeleteAppserverSubRequest) (*DeleteAppserverSubResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserverSub not implemented")
 }
 func (UnimplementedMistBEServiceServer) CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateChannel not implemented")
@@ -278,6 +328,60 @@ func _MistBEService_DeleteAppserver_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MistBEService_CreateAppserverSub_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAppserverSubRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).CreateAppserverSub(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_CreateAppserverSub_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).CreateAppserverSub(ctx, req.(*CreateAppserverSubRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MistBEService_GetUserAppserverSubs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserAppserverSubsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).GetUserAppserverSubs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_GetUserAppserverSubs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).GetUserAppserverSubs(ctx, req.(*GetUserAppserverSubsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MistBEService_DeleteAppserverSub_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAppserverSubRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).DeleteAppserverSub(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_DeleteAppserverSub_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).DeleteAppserverSub(ctx, req.(*DeleteAppserverSubRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MistBEService_CreateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateChannelRequest)
 	if err := dec(in); err != nil {
@@ -372,6 +476,18 @@ var MistBEService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteAppserver",
 			Handler:    _MistBEService_DeleteAppserver_Handler,
+		},
+		{
+			MethodName: "CreateAppserverSub",
+			Handler:    _MistBEService_CreateAppserverSub_Handler,
+		},
+		{
+			MethodName: "GetUserAppserverSubs",
+			Handler:    _MistBEService_GetUserAppserverSubs_Handler,
+		},
+		{
+			MethodName: "DeleteAppserverSub",
+			Handler:    _MistBEService_DeleteAppserverSub_Handler,
 		},
 		{
 			MethodName: "CreateChannel",

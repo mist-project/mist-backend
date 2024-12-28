@@ -33,6 +33,35 @@ func (q *Queries) CreateAppserver(ctx context.Context, name string) (Appserver, 
 	return i, err
 }
 
+const createAppserverSub = `-- name: CreateAppserverSub :one
+INSERT INTO appserver_sub (
+  appserver_id,
+  owner_id
+) values (
+  $1,
+  $2
+)
+RETURNING id, appserver_id, owner_id, created_at, updated_at
+`
+
+type CreateAppserverSubParams struct {
+	AppserverID uuid.UUID
+	OwnerID     uuid.UUID
+}
+
+func (q *Queries) CreateAppserverSub(ctx context.Context, arg CreateAppserverSubParams) (AppserverSub, error) {
+	row := q.db.QueryRow(ctx, createAppserverSub, arg.AppserverID, arg.OwnerID)
+	var i AppserverSub
+	err := row.Scan(
+		&i.ID,
+		&i.AppserverID,
+		&i.OwnerID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createChannel = `-- name: CreateChannel :one
 INSERT INTO channel (
   name,
@@ -75,6 +104,19 @@ func (q *Queries) DeleteAppserver(ctx context.Context, id uuid.UUID) (int64, err
 	return result.RowsAffected(), nil
 }
 
+const deleteAppserverSub = `-- name: DeleteAppserverSub :execrows
+DELETE FROM appserver_sub
+WHERE id = $1
+`
+
+func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAppserverSub, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteChannel = `-- name: DeleteChannel :execrows
 DELETE FROM channel
 WHERE id = $1
@@ -108,6 +150,27 @@ func (q *Queries) GetAppserver(ctx context.Context, id uuid.UUID) (Appserver, er
 	return i, err
 }
 
+const getAppserverSub = `-- name: GetAppserverSub :one
+SELECT id, appserver_id, owner_id, created_at, updated_at
+FROM appserver_sub
+WHERE id=$1
+LIMIT 1
+`
+
+// --- APPSERVER SUB QUERIES -----
+func (q *Queries) GetAppserverSub(ctx context.Context, id uuid.UUID) (AppserverSub, error) {
+	row := q.db.QueryRow(ctx, getAppserverSub, id)
+	var i AppserverSub
+	err := row.Scan(
+		&i.ID,
+		&i.AppserverID,
+		&i.OwnerID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getChannel = `-- name: GetChannel :one
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel
@@ -127,6 +190,53 @@ func (q *Queries) GetChannel(ctx context.Context, id uuid.UUID) (Channel, error)
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getUserAppserverSubs = `-- name: GetUserAppserverSubs :many
+SELECT 
+  apssub.id as appserver_sub_id,
+  aps.id,
+  aps.name,
+  aps.created_at,
+  aps.updated_at  
+FROM appserver_sub as apssub
+JOIN appserver as aps ON apssub.appserver_id = aps.id
+WHERE
+  apssub.owner_id = $1
+`
+
+type GetUserAppserverSubsRow struct {
+	AppserverSubID uuid.UUID
+	ID             uuid.UUID
+	Name           string
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+}
+
+func (q *Queries) GetUserAppserverSubs(ctx context.Context, ownerID uuid.UUID) ([]GetUserAppserverSubsRow, error) {
+	rows, err := q.db.Query(ctx, getUserAppserverSubs, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserAppserverSubsRow
+	for rows.Next() {
+		var i GetUserAppserverSubsRow
+		if err := rows.Scan(
+			&i.AppserverSubID,
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listAppservers = `-- name: ListAppservers :many

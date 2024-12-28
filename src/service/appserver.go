@@ -41,7 +41,7 @@ func (service *AppserverService) Create(name string) (*qx.Appserver, error) {
 	// Pydantic object validation)
 	validationErrors := []string{}
 	if name == "" {
-		validationErrors = append(validationErrors, fmt.Sprintf("(%d): missing name attribute", ValidationError))
+		validationErrors = AddValidationError("name", validationErrors)
 	}
 
 	if len(validationErrors) > 0 {

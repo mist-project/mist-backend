@@ -33,3 +33,7 @@ func ParseServiceError(service_error string) CustomGRPCError {
 
 	return UnknownError
 }
+
+func AddValidationError(attribute string, validationErrors []string) []string {
+	return append(validationErrors, fmt.Sprintf("missing %s attribute", attribute))
+}

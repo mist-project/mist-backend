@@ -35,6 +35,8 @@ var lis net.Listener
 
 var once sync.Once
 
+var ctxUserKey = "userRequestId"
+
 func TestMain(m *testing.M) {
 	// ---- SETUP -----
 	runTestDbMigrations()
@@ -120,6 +122,8 @@ func rpcTestCleanup() {
 
 func setup(t *testing.T, cleanup func()) context.Context {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	userRequestId := uuid.NewString()
+	ctx = context.WithValue(ctx, ctxUserKey, userRequestId)
 
 	t.Cleanup(func() {
 		teardown(ctx)
@@ -132,9 +136,9 @@ func setup(t *testing.T, cleanup func()) context.Context {
 			iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 			aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
 			secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
+			userId:    userRequestId,
 		},
 	)
-	fmt.Printf("token str %s", tokenStr)
 
 	grpcMetadata := metadata.Pairs(
 		"authorization", fmt.Sprintf("Bearer %s", tokenStr),
@@ -164,18 +168,22 @@ type CreateTokenParams struct {
 	iss       string
 	aud       []string
 	secretKey string
+	userId    string
 }
 
 func CreateJWTToken(t *testing.T, params *CreateTokenParams) string {
 	// Define secret key for signing the token
 
 	// Define JWT claims
-	claims := &jwt.RegisteredClaims{
-		Issuer:   params.iss,
-		Audience: params.aud,
+	claims := &middleware.CustomJWTClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:   params.iss,
+			Audience: params.aud,
 
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+		UserID: params.userId,
 	}
 	// Create a new token with specified claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -189,7 +197,7 @@ func CreateJWTToken(t *testing.T, params *CreateTokenParams) string {
 }
 
 // ----- DB HELPER FUNCTIONS -----
-func test_appserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
+func testAppserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
 	// Define attributes
 	var name string
 
@@ -208,7 +216,32 @@ func test_appserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
 	return &as
 }
 
-func test_channel(t *testing.T, channel *qx.Channel) *qx.Channel {
+func testAppserverSub(t *testing.T, userId string, appserverSub *qx.AppserverSub) *qx.AppserverSub {
+	// Define attributes
+	var appserverId uuid.UUID
+	ownerId, err := uuid.Parse(userId)
+
+	if err != nil {
+		t.Fatalf("unable to create appserverSub. Error %v", err)
+	}
+
+	if appserverSub != nil {
+		// Custom values
+		appserverId = appserverSub.AppserverID
+	} else {
+		appserverId = testAppserver(t, nil).ID
+	}
+
+	asSub, err := qx.New(dbcPool).CreateAppserverSub(context.Background(), qx.CreateAppserverSubParams{
+		AppserverID: appserverId, OwnerID: ownerId,
+	})
+	if err != nil {
+		t.Fatalf("Unable to create appserverSub. Error: %v", err)
+	}
+	return &asSub
+}
+
+func testChannel(t *testing.T, channel *qx.Channel) *qx.Channel {
 	// Define attributes
 	var appserverId uuid.UUID
 	var name string
@@ -220,7 +253,7 @@ func test_channel(t *testing.T, channel *qx.Channel) *qx.Channel {
 	} else {
 		// Default values
 		name = fmt.Sprintf("%s - %s", faker.Word(), uuid.NewString())
-		appserverId = test_appserver(t, nil).ID
+		appserverId = testAppserver(t, nil).ID
 
 	}
 

@@ -1,0 +1,136 @@
+package rpcs
+
+import (
+	"testing"
+
+	pb_mistbe "mist/src/protos/mistbe/v1"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+// ----- RPC AppserverSub -----
+
+// Test GetUserAppserverSubs
+func TestGetUserAppserverSubs(t *testing.T) {
+	t.Run("can_return_nothing_successfully", func(t *testing.T) {
+		// ARRANGE
+		ctx := setup(t, func() {})
+
+		// ACT
+		response, err := TestClient.GetUserAppserverSubs(
+			ctx, &pb_mistbe.GetUserAppserverSubsRequest{},
+		)
+		if err != nil {
+			t.Fatalf("Error performing request %v", err)
+		}
+
+		// ASSERT
+		assert.Equal(t, 0, len(response.GetAppservers()))
+	})
+
+	t.Run("can_return_all_appserver_subs_successfully", func(t *testing.T) {
+		// ARRANGE
+		ctx := setup(t, func() {})
+		userId := ctx.Value(ctxUserKey).(string)
+		testAppserverSub(t, userId, nil)
+		testAppserverSub(t, userId, nil)
+
+		// ACT
+		response, err := TestClient.GetUserAppserverSubs(ctx, &pb_mistbe.GetUserAppserverSubsRequest{})
+		if err != nil {
+			t.Fatalf("Error performing request %v", err)
+		}
+
+		// ASSERT
+		assert.Equal(t, 2, len(response.GetAppservers()))
+	})
+
+	t.Run("can_filter_appserver_subs_successfully", func(t *testing.T) {
+		// ARRANGE
+		ctx := setup(t, func() {})
+		userId := ctx.Value(ctxUserKey).(string)
+		testAppserverSub(t, userId, nil)
+		testAppserverSub(t, uuid.NewString(), nil)
+
+		// ACT
+		response, err := TestClient.GetUserAppserverSubs(
+			ctx, &pb_mistbe.GetUserAppserverSubsRequest{},
+		)
+		if err != nil {
+			t.Fatalf("Error performing request %v", err)
+		}
+
+		// ASSERT
+		assert.Equal(t, 1, len(response.GetAppservers()))
+	})
+}
+
+// ----- RPC CreateAppserverSub -----
+func TestCreateAppserverSub(t *testing.T) {
+	t.Run("creates_successfully", func(t *testing.T) {
+		// ARRANGE
+		ctx := setup(t, func() {})
+		appserver := testAppserver(t, nil)
+
+		// ACT
+		response, err := TestClient.CreateAppserverSub(ctx, &pb_mistbe.CreateAppserverSubRequest{
+			AppserverId: appserver.ID.String(),
+		})
+		if err != nil {
+			t.Fatalf("Error performing request %v", err)
+		}
+
+		// ASSERT
+		assert.NotNil(t, response.AppserverSub)
+	})
+
+	t.Run("invalid_arguments_return_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := setup(t, func() {})
+
+		// ACT
+		response, err := TestClient.CreateAppserverSub(ctx, &pb_mistbe.CreateAppserverSubRequest{})
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.InvalidArgument, s.Code())
+		assert.Contains(t, s.Message(), "(-1): missing appserver_id attribute")
+	})
+}
+
+// ----- RPC DeleteAppserverSub -----
+func TestDeleteAppserverSub(t *testing.T) {
+	t.Run("deletes_successfully", func(t *testing.T) {
+		// ARRANGE
+		ctx := setup(t, func() {})
+		userId := ctx.Value(ctxUserKey).(string)
+		appserverSub := testAppserverSub(t, userId, nil)
+
+		// ACT
+		response, err := TestClient.DeleteAppserverSub(ctx, &pb_mistbe.DeleteAppserverSubRequest{Id: appserverSub.ID.String()})
+
+		// ASSERT
+		assert.NotNil(t, response)
+		assert.Nil(t, err)
+	})
+
+	t.Run("invalid_id_returns_NotFound_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := setup(t, func() {})
+
+		// ACT
+		response, err := TestClient.DeleteAppserverSub(ctx, &pb_mistbe.DeleteAppserverSubRequest{Id: uuid.NewString()})
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.NotFound, s.Code())
+		assert.Contains(t, s.Message(), "no rows were deleted")
+	})
+}

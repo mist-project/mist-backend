@@ -125,7 +125,7 @@ func TestCreateChannel(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		appserver := testAppserver(t, uuid.NewString(), nil)
 
 		// ACT
 		response, err := TestClient.CreateChannel(

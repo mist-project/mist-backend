@@ -33,7 +33,7 @@ func (service *AppserverService) PgTypeToPb(appserver *qx.Appserver) *pb_mistbe.
 	}
 }
 
-func (service *AppserverService) Create(name string) (*qx.Appserver, error) {
+func (service *AppserverService) Create(name string, userId string) (*qx.Appserver, error) {
 	// Keeping the validationErrors variable as a way to show the pattern I'd like to follow (using a list of
 	// validation errors to then send them)
 	// Note: might change the pattern to use some sort of validation package. This might be duable by changing the
@@ -44,11 +44,23 @@ func (service *AppserverService) Create(name string) (*qx.Appserver, error) {
 		validationErrors = AddValidationError("name", validationErrors)
 	}
 
+	if userId == "" {
+		validationErrors = AddValidationError("user_id", validationErrors)
+	}
+
 	if len(validationErrors) > 0 {
 		return nil, errors.New(fmt.Sprintf("(%d): missing name attribute", ValidationError))
 	}
 
-	appserver, err := qx.New(service.dbcPool).CreateAppserver(service.ctx, name)
+	parsedUserId, err := uuid.Parse(userId)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("(%d): %v", ValidationError, err))
+	}
+
+	appserver, err := qx.New(service.dbcPool).CreateAppserver(service.ctx, qx.CreateAppserverParams{
+		Name:    name,
+		OwnerID: parsedUserId,
+	})
 	return &appserver, err
 }
 

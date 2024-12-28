@@ -73,7 +73,8 @@ func TestCreateAppserverSub(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		userId := ctx.Value(ctxUserKey).(string)
+		appserver := testAppserver(t, userId, nil)
 
 		// ACT
 		response, err := TestClient.CreateAppserverSub(ctx, &pb_mistbe.CreateAppserverSubRequest{

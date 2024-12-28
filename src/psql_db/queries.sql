@@ -9,13 +9,17 @@ LIMIT 1;
 SELECT *
 FROM appserver
 WHERE
-  name = COALESCE(sqlc.narg('name'), name);
+  name = COALESCE(sqlc.narg('name'), name)
+  AND
+  1=0; -- This query might be removed. Hence the 1=0. So it returns no data.
 
 -- name: CreateAppserver :one
 INSERT INTO appserver (
-  name
+  name,
+  owner_id
 ) values (
-  $1
+  $1,
+  $2
 )
 RETURNING *;
 

@@ -197,19 +197,28 @@ func CreateJWTToken(t *testing.T, params *CreateTokenParams) string {
 }
 
 // ----- DB HELPER FUNCTIONS -----
-func testAppserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
+func testAppserver(t *testing.T, userId string, appserver *qx.Appserver) *qx.Appserver {
 	// Define attributes
 	var name string
+	parsedUserId, err := uuid.Parse(userId)
+
+	if err != nil {
+		t.Fatalf("unable to create appserver. Error %v", err)
+	}
 
 	if appserver != nil {
 		// Custom values
 		name = appserver.Name
+
 	} else {
 		// Default values
 		name = fmt.Sprintf("%s - %s", faker.Word(), uuid.NewString())
 	}
 
-	as, err := qx.New(dbcPool).CreateAppserver(context.Background(), name)
+	as, err := qx.New(dbcPool).CreateAppserver(context.Background(), qx.CreateAppserverParams{
+		Name:    name,
+		OwnerID: parsedUserId,
+	})
 	if err != nil {
 		t.Fatalf("Unable to create appserver. Error: %v", err)
 	}
@@ -229,7 +238,7 @@ func testAppserverSub(t *testing.T, userId string, appserverSub *qx.AppserverSub
 		// Custom values
 		appserverId = appserverSub.AppserverID
 	} else {
-		appserverId = testAppserver(t, nil).ID
+		appserverId = testAppserver(t, userId, nil).ID
 	}
 
 	asSub, err := qx.New(dbcPool).CreateAppserverSub(context.Background(), qx.CreateAppserverSubParams{
@@ -253,7 +262,7 @@ func testChannel(t *testing.T, channel *qx.Channel) *qx.Channel {
 	} else {
 		// Default values
 		name = fmt.Sprintf("%s - %s", faker.Word(), uuid.NewString())
-		appserverId = testAppserver(t, nil).ID
+		appserverId = testAppserver(t, uuid.NewString(), nil).ID
 
 	}
 

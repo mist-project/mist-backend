@@ -3,6 +3,7 @@ package rpcs
 import (
 	"context"
 
+	"mist/src/middleware"
 	pb_mistbe "mist/src/protos/mistbe/v1"
 	"mist/src/service"
 )
@@ -11,7 +12,9 @@ func (s *Grpcserver) CreateAppserver(
 	ctx context.Context, req *pb_mistbe.CreateAppserverRequest,
 ) (*pb_mistbe.CreateAppserverResponse, error) {
 	appserverService := service.NewAppserverService(s.DbcPool, ctx)
-	appserver, err := appserverService.Create(req.GetName())
+	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+
+	appserver, err := appserverService.Create(req.GetName(), jwtClaims.UserID)
 
 	if err != nil {
 		return nil, ErrorHandler(err)

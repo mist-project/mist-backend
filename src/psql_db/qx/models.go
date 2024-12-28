@@ -12,6 +12,7 @@ import (
 type Appserver struct {
 	ID        uuid.UUID
 	Name      string
+	OwnerID   uuid.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }

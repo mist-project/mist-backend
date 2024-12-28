@@ -13,20 +13,30 @@ import (
 )
 
 const createAppserver = `-- name: CreateAppserver :one
+
 INSERT INTO appserver (
-  name
+  name,
+  owner_id
 ) values (
-  $1
+  $1,
+  $2
 )
-RETURNING id, name, created_at, updated_at
+RETURNING id, name, owner_id, created_at, updated_at
 `
 
-func (q *Queries) CreateAppserver(ctx context.Context, name string) (Appserver, error) {
-	row := q.db.QueryRow(ctx, createAppserver, name)
+type CreateAppserverParams struct {
+	Name    string
+	OwnerID uuid.UUID
+}
+
+// This query might be removed. Hence the 1=0. So it returns no data.
+func (q *Queries) CreateAppserver(ctx context.Context, arg CreateAppserverParams) (Appserver, error) {
+	row := q.db.QueryRow(ctx, createAppserver, arg.Name, arg.OwnerID)
 	var i Appserver
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.OwnerID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -131,7 +141,7 @@ func (q *Queries) DeleteChannel(ctx context.Context, id uuid.UUID) (int64, error
 }
 
 const getAppserver = `-- name: GetAppserver :one
-SELECT id, name, created_at, updated_at
+SELECT id, name, owner_id, created_at, updated_at
 FROM appserver
 WHERE id=$1
 LIMIT 1
@@ -144,6 +154,7 @@ func (q *Queries) GetAppserver(ctx context.Context, id uuid.UUID) (Appserver, er
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.OwnerID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -240,10 +251,12 @@ func (q *Queries) GetUserAppserverSubs(ctx context.Context, ownerID uuid.UUID) (
 }
 
 const listAppservers = `-- name: ListAppservers :many
-SELECT id, name, created_at, updated_at
+SELECT id, name, owner_id, created_at, updated_at
 FROM appserver
 WHERE
   name = COALESCE($1, name)
+  AND
+  1=0
 `
 
 func (q *Queries) ListAppservers(ctx context.Context, name pgtype.Text) ([]Appserver, error) {
@@ -258,6 +271,7 @@ func (q *Queries) ListAppservers(ctx context.Context, name pgtype.Text) ([]Appse
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.OwnerID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

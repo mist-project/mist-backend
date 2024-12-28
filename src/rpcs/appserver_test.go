@@ -34,8 +34,9 @@ func TestListAppServer(t *testing.T) {
 	t.Run("can_return_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		testAppserver(t, nil)
-		testAppserver(t, &qx.Appserver{Name: "another one"})
+		userId := ctx.Value(ctxUserKey).(string)
+		testAppserver(t, userId, nil)
+		testAppserver(t, userId, &qx.Appserver{Name: "another one"})
 
 		// ACT
 		response, err := TestClient.ListAppservers(ctx, &pb_mistbe.ListAppserversRequest{})
@@ -44,14 +45,15 @@ func TestListAppServer(t *testing.T) {
 		}
 
 		// ASSERT
-		assert.Equal(t, 2, len(response.GetAppservers()))
+		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
 	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		testAppserver(t, nil)
-		testAppserver(t, &qx.Appserver{Name: "another one"})
+		userId := ctx.Value(ctxUserKey).(string)
+		testAppserver(t, userId, nil)
+		testAppserver(t, userId, &qx.Appserver{Name: "another one"})
 
 		// ACT
 		response, err := TestClient.ListAppservers(
@@ -62,7 +64,7 @@ func TestListAppServer(t *testing.T) {
 		}
 
 		// ASSERT
-		assert.Equal(t, 1, len(response.GetAppservers()))
+		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 }
 
@@ -72,7 +74,8 @@ func TestGetByIdAppServer(t *testing.T) {
 	t.Run("returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		userId := ctx.Value(ctxUserKey).(string)
+		appserver := testAppserver(t, userId, nil)
 
 		// ACT
 		response, err := TestClient.GetByIdAppserver(
@@ -159,7 +162,8 @@ func TestDeleteAppserver(t *testing.T) {
 	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		userId := ctx.Value(ctxUserKey).(string)
+		appserver := testAppserver(t, userId, nil)
 
 		// ACT
 		response, err := TestClient.DeleteAppserver(ctx, &pb_mistbe.DeleteAppserverRequest{Id: appserver.ID.String()})

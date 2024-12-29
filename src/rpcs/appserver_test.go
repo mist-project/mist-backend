@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
@@ -22,7 +22,7 @@ func TestListAppServer(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.ListAppservers(
-			ctx, &pb_mistbe.ListAppserversRequest{Name: wrapperspb.String("random")},
+			ctx, &pb_servers.ListAppserversRequest{Name: wrapperspb.String("random")},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -40,7 +40,7 @@ func TestListAppServer(t *testing.T) {
 		testAppserver(t, userId, &qx.Appserver{Name: "another one"})
 
 		// ACT
-		response, err := TestClient.ListAppservers(ctx, &pb_mistbe.ListAppserversRequest{})
+		response, err := TestClient.ListAppservers(ctx, &pb_servers.ListAppserversRequest{})
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -58,7 +58,7 @@ func TestListAppServer(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.ListAppservers(
-			ctx, &pb_mistbe.ListAppserversRequest{Name: wrapperspb.String("another one")},
+			ctx, &pb_servers.ListAppserversRequest{Name: wrapperspb.String("another one")},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -80,7 +80,7 @@ func TestGetByIdAppServer(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetByIdAppserver(
-			ctx, &pb_mistbe.GetByIdAppserverRequest{Id: appserver.ID.String()},
+			ctx, &pb_servers.GetByIdAppserverRequest{Id: appserver.ID.String()},
 		)
 
 		if err != nil {
@@ -97,7 +97,7 @@ func TestGetByIdAppServer(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetByIdAppserver(
-			ctx, &pb_mistbe.GetByIdAppserverRequest{Id: uuid.NewString()},
+			ctx, &pb_servers.GetByIdAppserverRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -114,7 +114,7 @@ func TestGetByIdAppServer(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetByIdAppserver(
-			ctx, &pb_mistbe.GetByIdAppserverRequest{Id: "foo"},
+			ctx, &pb_servers.GetByIdAppserverRequest{Id: "foo"},
 		)
 		s, ok := status.FromError(err)
 
@@ -134,7 +134,7 @@ func TestCreateAppsever(t *testing.T) {
 		userId := ctx.Value(ctxUserKey).(string)
 
 		// ACT
-		response, err := TestClient.CreateAppserver(ctx, &pb_mistbe.CreateAppserverRequest{Name: "someone"})
+		response, err := TestClient.CreateAppserver(ctx, &pb_servers.CreateAppserverRequest{Name: "someone"})
 
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -151,7 +151,7 @@ func TestCreateAppsever(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestClient.CreateAppserver(ctx, &pb_mistbe.CreateAppserverRequest{})
+		response, err := TestClient.CreateAppserver(ctx, &pb_servers.CreateAppserverRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -178,7 +178,7 @@ func TestDeleteAppserver(t *testing.T) {
 		assert.Equal(t, 1, len(serverSubs))
 
 		// ACT
-		response, err := TestClient.DeleteAppserver(ctx, &pb_mistbe.DeleteAppserverRequest{Id: appserver.ID.String()})
+		response, err := TestClient.DeleteAppserver(ctx, &pb_servers.DeleteAppserverRequest{Id: appserver.ID.String()})
 
 		// ASSERT
 		serverSubs, _ = serverSubsService.ListUserAppserverAndSub(userId)
@@ -192,7 +192,7 @@ func TestDeleteAppserver(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestClient.DeleteAppserver(ctx, &pb_mistbe.DeleteAppserverRequest{Id: uuid.NewString()})
+		response, err := TestClient.DeleteAppserver(ctx, &pb_servers.DeleteAppserverRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

@@ -3,7 +3,7 @@ package rpcs
 import (
 	"testing"
 
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ func TestGetUserAppserverSubs(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetUserAppserverSubs(
-			ctx, &pb_mistbe.GetUserAppserverSubsRequest{},
+			ctx, &pb_servers.GetUserAppserverSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -39,7 +39,7 @@ func TestGetUserAppserverSubs(t *testing.T) {
 		testAppserverSub(t, userId, nil)
 
 		// ACT
-		response, err := TestClient.GetUserAppserverSubs(ctx, &pb_mistbe.GetUserAppserverSubsRequest{})
+		response, err := TestClient.GetUserAppserverSubs(ctx, &pb_servers.GetUserAppserverSubsRequest{})
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -57,7 +57,7 @@ func TestGetUserAppserverSubs(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetUserAppserverSubs(
-			ctx, &pb_mistbe.GetUserAppserverSubsRequest{},
+			ctx, &pb_servers.GetUserAppserverSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -77,7 +77,7 @@ func TestCreateAppserverSub(t *testing.T) {
 		appserver := testAppserver(t, userId, nil)
 
 		// ACT
-		response, err := TestClient.CreateAppserverSub(ctx, &pb_mistbe.CreateAppserverSubRequest{
+		response, err := TestClient.CreateAppserverSub(ctx, &pb_servers.CreateAppserverSubRequest{
 			AppserverId: appserver.ID.String(),
 		})
 		if err != nil {
@@ -93,7 +93,7 @@ func TestCreateAppserverSub(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestClient.CreateAppserverSub(ctx, &pb_mistbe.CreateAppserverSubRequest{})
+		response, err := TestClient.CreateAppserverSub(ctx, &pb_servers.CreateAppserverSubRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -113,7 +113,7 @@ func TestDeleteAppserverSubs(t *testing.T) {
 		appserverSub := testAppserverSub(t, userId, nil)
 
 		// ACT
-		response, err := TestClient.DeleteAppserverSub(ctx, &pb_mistbe.DeleteAppserverSubRequest{Id: appserverSub.ID.String()})
+		response, err := TestClient.DeleteAppserverSub(ctx, &pb_servers.DeleteAppserverSubRequest{Id: appserverSub.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -125,7 +125,7 @@ func TestDeleteAppserverSubs(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestClient.DeleteAppserverSub(ctx, &pb_mistbe.DeleteAppserverSubRequest{Id: uuid.NewString()})
+		response, err := TestClient.DeleteAppserverSub(ctx, &pb_servers.DeleteAppserverSubRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

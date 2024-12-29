@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.0
 // 	protoc        (unknown)
-// source: mistbe/v1/mistbe.proto
+// source: server/v1/server.proto
 
-package mistbe
+package server
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -35,7 +35,7 @@ type Appserver struct {
 
 func (x *Appserver) Reset() {
 	*x = Appserver{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[0]
+	mi := &file_server_v1_server_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +47,7 @@ func (x *Appserver) String() string {
 func (*Appserver) ProtoMessage() {}
 
 func (x *Appserver) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[0]
+	mi := &file_server_v1_server_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +60,7 @@ func (x *Appserver) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Appserver.ProtoReflect.Descriptor instead.
 func (*Appserver) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{0}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Appserver) GetId() string {
@@ -103,7 +103,7 @@ type AppserverSub struct {
 
 func (x *AppserverSub) Reset() {
 	*x = AppserverSub{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[1]
+	mi := &file_server_v1_server_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -115,7 +115,7 @@ func (x *AppserverSub) String() string {
 func (*AppserverSub) ProtoMessage() {}
 
 func (x *AppserverSub) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[1]
+	mi := &file_server_v1_server_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -128,7 +128,7 @@ func (x *AppserverSub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppserverSub.ProtoReflect.Descriptor instead.
 func (*AppserverSub) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{1}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AppserverSub) GetId() string {
@@ -169,7 +169,7 @@ type AppserverAndSub struct {
 
 func (x *AppserverAndSub) Reset() {
 	*x = AppserverAndSub{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[2]
+	mi := &file_server_v1_server_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -181,7 +181,7 @@ func (x *AppserverAndSub) String() string {
 func (*AppserverAndSub) ProtoMessage() {}
 
 func (x *AppserverAndSub) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[2]
+	mi := &file_server_v1_server_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -194,7 +194,7 @@ func (x *AppserverAndSub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppserverAndSub.ProtoReflect.Descriptor instead.
 func (*AppserverAndSub) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{2}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *AppserverAndSub) GetSubId() string {
@@ -224,7 +224,7 @@ type AppserverRole struct {
 
 func (x *AppserverRole) Reset() {
 	*x = AppserverRole{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[3]
+	mi := &file_server_v1_server_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -236,7 +236,7 @@ func (x *AppserverRole) String() string {
 func (*AppserverRole) ProtoMessage() {}
 
 func (x *AppserverRole) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[3]
+	mi := &file_server_v1_server_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -249,7 +249,7 @@ func (x *AppserverRole) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppserverRole.ProtoReflect.Descriptor instead.
 func (*AppserverRole) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{3}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *AppserverRole) GetId() string {
@@ -300,7 +300,7 @@ type Channel struct {
 
 func (x *Channel) Reset() {
 	*x = Channel{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[4]
+	mi := &file_server_v1_server_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -312,7 +312,7 @@ func (x *Channel) String() string {
 func (*Channel) ProtoMessage() {}
 
 func (x *Channel) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[4]
+	mi := &file_server_v1_server_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -325,7 +325,7 @@ func (x *Channel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Channel.ProtoReflect.Descriptor instead.
 func (*Channel) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{4}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Channel) GetId() string {
@@ -374,7 +374,7 @@ type CreateAppserverRequest struct {
 
 func (x *CreateAppserverRequest) Reset() {
 	*x = CreateAppserverRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[5]
+	mi := &file_server_v1_server_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -386,7 +386,7 @@ func (x *CreateAppserverRequest) String() string {
 func (*CreateAppserverRequest) ProtoMessage() {}
 
 func (x *CreateAppserverRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[5]
+	mi := &file_server_v1_server_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -399,7 +399,7 @@ func (x *CreateAppserverRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{5}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateAppserverRequest) GetName() string {
@@ -418,7 +418,7 @@ type GetByIdAppserverRequest struct {
 
 func (x *GetByIdAppserverRequest) Reset() {
 	*x = GetByIdAppserverRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[6]
+	mi := &file_server_v1_server_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -430,7 +430,7 @@ func (x *GetByIdAppserverRequest) String() string {
 func (*GetByIdAppserverRequest) ProtoMessage() {}
 
 func (x *GetByIdAppserverRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[6]
+	mi := &file_server_v1_server_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -443,7 +443,7 @@ func (x *GetByIdAppserverRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdAppserverRequest.ProtoReflect.Descriptor instead.
 func (*GetByIdAppserverRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{6}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetByIdAppserverRequest) GetId() string {
@@ -462,7 +462,7 @@ type ListAppserversRequest struct {
 
 func (x *ListAppserversRequest) Reset() {
 	*x = ListAppserversRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[7]
+	mi := &file_server_v1_server_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -474,7 +474,7 @@ func (x *ListAppserversRequest) String() string {
 func (*ListAppserversRequest) ProtoMessage() {}
 
 func (x *ListAppserversRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[7]
+	mi := &file_server_v1_server_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -487,7 +487,7 @@ func (x *ListAppserversRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAppserversRequest.ProtoReflect.Descriptor instead.
 func (*ListAppserversRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{7}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListAppserversRequest) GetName() *wrapperspb.StringValue {
@@ -506,7 +506,7 @@ type DeleteAppserverRequest struct {
 
 func (x *DeleteAppserverRequest) Reset() {
 	*x = DeleteAppserverRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[8]
+	mi := &file_server_v1_server_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -518,7 +518,7 @@ func (x *DeleteAppserverRequest) String() string {
 func (*DeleteAppserverRequest) ProtoMessage() {}
 
 func (x *DeleteAppserverRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[8]
+	mi := &file_server_v1_server_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -531,7 +531,7 @@ func (x *DeleteAppserverRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{8}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeleteAppserverRequest) GetId() string {
@@ -550,7 +550,7 @@ type CreateAppserverResponse struct {
 
 func (x *CreateAppserverResponse) Reset() {
 	*x = CreateAppserverResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[9]
+	mi := &file_server_v1_server_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -562,7 +562,7 @@ func (x *CreateAppserverResponse) String() string {
 func (*CreateAppserverResponse) ProtoMessage() {}
 
 func (x *CreateAppserverResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[9]
+	mi := &file_server_v1_server_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -575,7 +575,7 @@ func (x *CreateAppserverResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppserverResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{9}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *CreateAppserverResponse) GetAppserver() *Appserver {
@@ -594,7 +594,7 @@ type GetByIdAppserverResponse struct {
 
 func (x *GetByIdAppserverResponse) Reset() {
 	*x = GetByIdAppserverResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[10]
+	mi := &file_server_v1_server_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -606,7 +606,7 @@ func (x *GetByIdAppserverResponse) String() string {
 func (*GetByIdAppserverResponse) ProtoMessage() {}
 
 func (x *GetByIdAppserverResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[10]
+	mi := &file_server_v1_server_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -619,7 +619,7 @@ func (x *GetByIdAppserverResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdAppserverResponse.ProtoReflect.Descriptor instead.
 func (*GetByIdAppserverResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{10}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetByIdAppserverResponse) GetAppserver() *Appserver {
@@ -638,7 +638,7 @@ type ListAppserversResponse struct {
 
 func (x *ListAppserversResponse) Reset() {
 	*x = ListAppserversResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[11]
+	mi := &file_server_v1_server_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -650,7 +650,7 @@ func (x *ListAppserversResponse) String() string {
 func (*ListAppserversResponse) ProtoMessage() {}
 
 func (x *ListAppserversResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[11]
+	mi := &file_server_v1_server_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -663,7 +663,7 @@ func (x *ListAppserversResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAppserversResponse.ProtoReflect.Descriptor instead.
 func (*ListAppserversResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{11}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListAppserversResponse) GetAppservers() []*Appserver {
@@ -681,7 +681,7 @@ type DeleteAppserverResponse struct {
 
 func (x *DeleteAppserverResponse) Reset() {
 	*x = DeleteAppserverResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[12]
+	mi := &file_server_v1_server_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -693,7 +693,7 @@ func (x *DeleteAppserverResponse) String() string {
 func (*DeleteAppserverResponse) ProtoMessage() {}
 
 func (x *DeleteAppserverResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[12]
+	mi := &file_server_v1_server_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -706,7 +706,7 @@ func (x *DeleteAppserverResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{12}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{12}
 }
 
 // ----- AppserverSub -----
@@ -719,7 +719,7 @@ type CreateAppserverSubRequest struct {
 
 func (x *CreateAppserverSubRequest) Reset() {
 	*x = CreateAppserverSubRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[13]
+	mi := &file_server_v1_server_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -731,7 +731,7 @@ func (x *CreateAppserverSubRequest) String() string {
 func (*CreateAppserverSubRequest) ProtoMessage() {}
 
 func (x *CreateAppserverSubRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[13]
+	mi := &file_server_v1_server_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -744,7 +744,7 @@ func (x *CreateAppserverSubRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverSubRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppserverSubRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{13}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CreateAppserverSubRequest) GetAppserverId() string {
@@ -762,7 +762,7 @@ type GetUserAppserverSubsRequest struct {
 
 func (x *GetUserAppserverSubsRequest) Reset() {
 	*x = GetUserAppserverSubsRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[14]
+	mi := &file_server_v1_server_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -774,7 +774,7 @@ func (x *GetUserAppserverSubsRequest) String() string {
 func (*GetUserAppserverSubsRequest) ProtoMessage() {}
 
 func (x *GetUserAppserverSubsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[14]
+	mi := &file_server_v1_server_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -787,7 +787,7 @@ func (x *GetUserAppserverSubsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserAppserverSubsRequest.ProtoReflect.Descriptor instead.
 func (*GetUserAppserverSubsRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{14}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{14}
 }
 
 type DeleteAppserverSubRequest struct {
@@ -799,7 +799,7 @@ type DeleteAppserverSubRequest struct {
 
 func (x *DeleteAppserverSubRequest) Reset() {
 	*x = DeleteAppserverSubRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[15]
+	mi := &file_server_v1_server_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -811,7 +811,7 @@ func (x *DeleteAppserverSubRequest) String() string {
 func (*DeleteAppserverSubRequest) ProtoMessage() {}
 
 func (x *DeleteAppserverSubRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[15]
+	mi := &file_server_v1_server_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,7 +824,7 @@ func (x *DeleteAppserverSubRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverSubRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverSubRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{15}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DeleteAppserverSubRequest) GetId() string {
@@ -843,7 +843,7 @@ type CreateAppserverSubResponse struct {
 
 func (x *CreateAppserverSubResponse) Reset() {
 	*x = CreateAppserverSubResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[16]
+	mi := &file_server_v1_server_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -855,7 +855,7 @@ func (x *CreateAppserverSubResponse) String() string {
 func (*CreateAppserverSubResponse) ProtoMessage() {}
 
 func (x *CreateAppserverSubResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[16]
+	mi := &file_server_v1_server_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -868,7 +868,7 @@ func (x *CreateAppserverSubResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverSubResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppserverSubResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{16}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CreateAppserverSubResponse) GetAppserverSub() *AppserverSub {
@@ -887,7 +887,7 @@ type GetUserAppserverSubsResponse struct {
 
 func (x *GetUserAppserverSubsResponse) Reset() {
 	*x = GetUserAppserverSubsResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[17]
+	mi := &file_server_v1_server_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -899,7 +899,7 @@ func (x *GetUserAppserverSubsResponse) String() string {
 func (*GetUserAppserverSubsResponse) ProtoMessage() {}
 
 func (x *GetUserAppserverSubsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[17]
+	mi := &file_server_v1_server_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -912,7 +912,7 @@ func (x *GetUserAppserverSubsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserAppserverSubsResponse.ProtoReflect.Descriptor instead.
 func (*GetUserAppserverSubsResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{17}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GetUserAppserverSubsResponse) GetAppservers() []*AppserverAndSub {
@@ -930,7 +930,7 @@ type DeleteAppserverSubResponse struct {
 
 func (x *DeleteAppserverSubResponse) Reset() {
 	*x = DeleteAppserverSubResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[18]
+	mi := &file_server_v1_server_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -942,7 +942,7 @@ func (x *DeleteAppserverSubResponse) String() string {
 func (*DeleteAppserverSubResponse) ProtoMessage() {}
 
 func (x *DeleteAppserverSubResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[18]
+	mi := &file_server_v1_server_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -955,7 +955,7 @@ func (x *DeleteAppserverSubResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverSubResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverSubResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{18}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{18}
 }
 
 // ----- AppserverRole -----
@@ -969,7 +969,7 @@ type CreateAppserverRoleRequest struct {
 
 func (x *CreateAppserverRoleRequest) Reset() {
 	*x = CreateAppserverRoleRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[19]
+	mi := &file_server_v1_server_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -981,7 +981,7 @@ func (x *CreateAppserverRoleRequest) String() string {
 func (*CreateAppserverRoleRequest) ProtoMessage() {}
 
 func (x *CreateAppserverRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[19]
+	mi := &file_server_v1_server_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -994,7 +994,7 @@ func (x *CreateAppserverRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRoleRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRoleRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{19}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CreateAppserverRoleRequest) GetAppserverId() string {
@@ -1020,7 +1020,7 @@ type GetAllAppserverRolesRequest struct {
 
 func (x *GetAllAppserverRolesRequest) Reset() {
 	*x = GetAllAppserverRolesRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[20]
+	mi := &file_server_v1_server_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1032,7 +1032,7 @@ func (x *GetAllAppserverRolesRequest) String() string {
 func (*GetAllAppserverRolesRequest) ProtoMessage() {}
 
 func (x *GetAllAppserverRolesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[20]
+	mi := &file_server_v1_server_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1045,7 +1045,7 @@ func (x *GetAllAppserverRolesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllAppserverRolesRequest.ProtoReflect.Descriptor instead.
 func (*GetAllAppserverRolesRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{20}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetAllAppserverRolesRequest) GetAppserverId() string {
@@ -1064,7 +1064,7 @@ type DeleteAppserverRoleRequest struct {
 
 func (x *DeleteAppserverRoleRequest) Reset() {
 	*x = DeleteAppserverRoleRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[21]
+	mi := &file_server_v1_server_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1076,7 +1076,7 @@ func (x *DeleteAppserverRoleRequest) String() string {
 func (*DeleteAppserverRoleRequest) ProtoMessage() {}
 
 func (x *DeleteAppserverRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[21]
+	mi := &file_server_v1_server_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1089,7 +1089,7 @@ func (x *DeleteAppserverRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRoleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRoleRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{21}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DeleteAppserverRoleRequest) GetId() string {
@@ -1108,7 +1108,7 @@ type CreateAppserverRoleResponse struct {
 
 func (x *CreateAppserverRoleResponse) Reset() {
 	*x = CreateAppserverRoleResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[22]
+	mi := &file_server_v1_server_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1120,7 +1120,7 @@ func (x *CreateAppserverRoleResponse) String() string {
 func (*CreateAppserverRoleResponse) ProtoMessage() {}
 
 func (x *CreateAppserverRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[22]
+	mi := &file_server_v1_server_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1133,7 +1133,7 @@ func (x *CreateAppserverRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRoleResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRoleResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{22}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *CreateAppserverRoleResponse) GetAppserverRole() *AppserverRole {
@@ -1152,7 +1152,7 @@ type GetAllAppserverRolesResponse struct {
 
 func (x *GetAllAppserverRolesResponse) Reset() {
 	*x = GetAllAppserverRolesResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[23]
+	mi := &file_server_v1_server_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1164,7 +1164,7 @@ func (x *GetAllAppserverRolesResponse) String() string {
 func (*GetAllAppserverRolesResponse) ProtoMessage() {}
 
 func (x *GetAllAppserverRolesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[23]
+	mi := &file_server_v1_server_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1177,7 +1177,7 @@ func (x *GetAllAppserverRolesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllAppserverRolesResponse.ProtoReflect.Descriptor instead.
 func (*GetAllAppserverRolesResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{23}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetAllAppserverRolesResponse) GetAppserverRoles() []*AppserverRole {
@@ -1195,7 +1195,7 @@ type DeleteAppserverRoleResponse struct {
 
 func (x *DeleteAppserverRoleResponse) Reset() {
 	*x = DeleteAppserverRoleResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[24]
+	mi := &file_server_v1_server_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1207,7 +1207,7 @@ func (x *DeleteAppserverRoleResponse) String() string {
 func (*DeleteAppserverRoleResponse) ProtoMessage() {}
 
 func (x *DeleteAppserverRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[24]
+	mi := &file_server_v1_server_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1220,7 +1220,7 @@ func (x *DeleteAppserverRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRoleResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRoleResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{24}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{24}
 }
 
 // ----- Channel -----
@@ -1234,7 +1234,7 @@ type CreateChannelRequest struct {
 
 func (x *CreateChannelRequest) Reset() {
 	*x = CreateChannelRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[25]
+	mi := &file_server_v1_server_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1246,7 +1246,7 @@ func (x *CreateChannelRequest) String() string {
 func (*CreateChannelRequest) ProtoMessage() {}
 
 func (x *CreateChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[25]
+	mi := &file_server_v1_server_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1259,7 +1259,7 @@ func (x *CreateChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateChannelRequest.ProtoReflect.Descriptor instead.
 func (*CreateChannelRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{25}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *CreateChannelRequest) GetName() string {
@@ -1285,7 +1285,7 @@ type GetByIdChannelRequest struct {
 
 func (x *GetByIdChannelRequest) Reset() {
 	*x = GetByIdChannelRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[26]
+	mi := &file_server_v1_server_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1297,7 +1297,7 @@ func (x *GetByIdChannelRequest) String() string {
 func (*GetByIdChannelRequest) ProtoMessage() {}
 
 func (x *GetByIdChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[26]
+	mi := &file_server_v1_server_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1310,7 +1310,7 @@ func (x *GetByIdChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdChannelRequest.ProtoReflect.Descriptor instead.
 func (*GetByIdChannelRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{26}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *GetByIdChannelRequest) GetId() string {
@@ -1330,7 +1330,7 @@ type ListChannelsRequest struct {
 
 func (x *ListChannelsRequest) Reset() {
 	*x = ListChannelsRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[27]
+	mi := &file_server_v1_server_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1342,7 +1342,7 @@ func (x *ListChannelsRequest) String() string {
 func (*ListChannelsRequest) ProtoMessage() {}
 
 func (x *ListChannelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[27]
+	mi := &file_server_v1_server_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1355,7 +1355,7 @@ func (x *ListChannelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChannelsRequest.ProtoReflect.Descriptor instead.
 func (*ListChannelsRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{27}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *ListChannelsRequest) GetName() *wrapperspb.StringValue {
@@ -1381,7 +1381,7 @@ type DeleteChannelRequest struct {
 
 func (x *DeleteChannelRequest) Reset() {
 	*x = DeleteChannelRequest{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[28]
+	mi := &file_server_v1_server_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1393,7 +1393,7 @@ func (x *DeleteChannelRequest) String() string {
 func (*DeleteChannelRequest) ProtoMessage() {}
 
 func (x *DeleteChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[28]
+	mi := &file_server_v1_server_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1406,7 +1406,7 @@ func (x *DeleteChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteChannelRequest.ProtoReflect.Descriptor instead.
 func (*DeleteChannelRequest) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{28}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *DeleteChannelRequest) GetId() string {
@@ -1425,7 +1425,7 @@ type CreateChannelResponse struct {
 
 func (x *CreateChannelResponse) Reset() {
 	*x = CreateChannelResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[29]
+	mi := &file_server_v1_server_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1437,7 +1437,7 @@ func (x *CreateChannelResponse) String() string {
 func (*CreateChannelResponse) ProtoMessage() {}
 
 func (x *CreateChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[29]
+	mi := &file_server_v1_server_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1450,7 +1450,7 @@ func (x *CreateChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateChannelResponse.ProtoReflect.Descriptor instead.
 func (*CreateChannelResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{29}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *CreateChannelResponse) GetChannel() *Channel {
@@ -1469,7 +1469,7 @@ type GetByIdChannelResponse struct {
 
 func (x *GetByIdChannelResponse) Reset() {
 	*x = GetByIdChannelResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[30]
+	mi := &file_server_v1_server_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1481,7 +1481,7 @@ func (x *GetByIdChannelResponse) String() string {
 func (*GetByIdChannelResponse) ProtoMessage() {}
 
 func (x *GetByIdChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[30]
+	mi := &file_server_v1_server_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1494,7 +1494,7 @@ func (x *GetByIdChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdChannelResponse.ProtoReflect.Descriptor instead.
 func (*GetByIdChannelResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{30}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *GetByIdChannelResponse) GetChannel() *Channel {
@@ -1513,7 +1513,7 @@ type ListChannelsResponse struct {
 
 func (x *ListChannelsResponse) Reset() {
 	*x = ListChannelsResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[31]
+	mi := &file_server_v1_server_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1525,7 +1525,7 @@ func (x *ListChannelsResponse) String() string {
 func (*ListChannelsResponse) ProtoMessage() {}
 
 func (x *ListChannelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[31]
+	mi := &file_server_v1_server_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1538,7 +1538,7 @@ func (x *ListChannelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChannelsResponse.ProtoReflect.Descriptor instead.
 func (*ListChannelsResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{31}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ListChannelsResponse) GetChannels() []*Channel {
@@ -1556,7 +1556,7 @@ type DeleteChannelResponse struct {
 
 func (x *DeleteChannelResponse) Reset() {
 	*x = DeleteChannelResponse{}
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[32]
+	mi := &file_server_v1_server_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1568,7 +1568,7 @@ func (x *DeleteChannelResponse) String() string {
 func (*DeleteChannelResponse) ProtoMessage() {}
 
 func (x *DeleteChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mistbe_v1_mistbe_proto_msgTypes[32]
+	mi := &file_server_v1_server_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1581,14 +1581,14 @@ func (x *DeleteChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteChannelResponse.ProtoReflect.Descriptor instead.
 func (*DeleteChannelResponse) Descriptor() ([]byte, []int) {
-	return file_mistbe_v1_mistbe_proto_rawDescGZIP(), []int{32}
+	return file_server_v1_server_proto_rawDescGZIP(), []int{32}
 }
 
-var File_mistbe_v1_mistbe_proto protoreflect.FileDescriptor
+var File_server_v1_server_proto protoreflect.FileDescriptor
 
-var file_mistbe_v1_mistbe_proto_rawDesc = []byte{
-	0x0a, 0x16, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x69, 0x73, 0x74,
-	0x62, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65,
+var file_server_v1_server_proto_rawDesc = []byte{
+	0x0a, 0x16, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x76, 0x31, 0x2f, 0x73, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x2e, 0x76, 0x31, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f,
@@ -1619,7 +1619,7 @@ var file_mistbe_v1_mistbe_proto_rawDesc = []byte{
 	0x76, 0x65, 0x72, 0x41, 0x6e, 0x64, 0x53, 0x75, 0x62, 0x12, 0x15, 0x0a, 0x06, 0x73, 0x75, 0x62,
 	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x73, 0x75, 0x62, 0x49, 0x64,
 	0x12, 0x32, 0x0a, 0x09, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e,
 	0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x09, 0x61, 0x70, 0x70, 0x73, 0x65,
 	0x72, 0x76, 0x65, 0x72, 0x22, 0xcc, 0x01, 0x0a, 0x0d, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
@@ -1662,17 +1662,17 @@ var file_mistbe_v1_mistbe_proto_rawDesc = []byte{
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x4d, 0x0a, 0x17, 0x43, 0x72,
 	0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x32, 0x0a, 0x09, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x09,
+	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x09,
 	0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x22, 0x4e, 0x0a, 0x18, 0x47, 0x65, 0x74,
 	0x42, 0x79, 0x49, 0x64, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x32, 0x0a, 0x09, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x09,
+	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x09,
 	0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x22, 0x4e, 0x0a, 0x16, 0x4c, 0x69, 0x73,
 	0x74, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
 	0x6e, 0x73, 0x65, 0x12, 0x34, 0x0a, 0x0a, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
-	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65,
+	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x0a, 0x61,
 	0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x22, 0x19, 0x0a, 0x17, 0x44, 0x65, 0x6c,
 	0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70,
@@ -1688,13 +1688,13 @@ var file_mistbe_v1_mistbe_proto_rawDesc = []byte{
 	0x22, 0x5a, 0x0a, 0x1a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72,
 	0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3c,
 	0x0a, 0x0d, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x5f, 0x73, 0x75, 0x62, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76,
 	0x31, 0x2e, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x52, 0x0c,
 	0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x22, 0x5a, 0x0a, 0x1c,
 	0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x53, 0x75, 0x62, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3a, 0x0a, 0x0a,
 	0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x1a, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70,
+	0x32, 0x1a, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x70, 0x70,
 	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x41, 0x6e, 0x64, 0x53, 0x75, 0x62, 0x52, 0x0a, 0x61, 0x70,
 	0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x22, 0x1c, 0x0a, 0x1a, 0x44, 0x65, 0x6c, 0x65,
 	0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x52, 0x65,
@@ -1714,13 +1714,13 @@ var file_mistbe_v1_mistbe_proto_rawDesc = []byte{
 	0x72, 0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f,
 	0x6c, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3f, 0x0a, 0x0e, 0x61, 0x70,
 	0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x5f, 0x72, 0x6f, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x18, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x41,
+	0x28, 0x0b, 0x32, 0x18, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x41,
 	0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x52, 0x0d, 0x61, 0x70,
 	0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x22, 0x61, 0x0a, 0x1c, 0x47,
 	0x65, 0x74, 0x41, 0x6c, 0x6c, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f,
 	0x6c, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x41, 0x0a, 0x0f, 0x61,
 	0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x5f, 0x72, 0x6f, 0x6c, 0x65, 0x73, 0x18, 0x01,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31,
 	0x2e, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x52, 0x0e,
 	0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x73, 0x22, 0x1d,
 	0x0a, 0x1b, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65,
@@ -1746,207 +1746,207 @@ var file_mistbe_v1_mistbe_proto_rawDesc = []byte{
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x45, 0x0a, 0x15, 0x43, 0x72, 0x65, 0x61,
 	0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x2c, 0x0a, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43,
+	0x28, 0x0b, 0x32, 0x12, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43,
 	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x22,
 	0x46, 0x0a, 0x16, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49, 0x64, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65,
 	0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x07, 0x63, 0x68, 0x61,
-	0x6e, 0x6e, 0x65, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x69, 0x73,
-	0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x07,
+	0x6e, 0x6e, 0x65, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x73, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x07,
 	0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x22, 0x46, 0x0a, 0x14, 0x4c, 0x69, 0x73, 0x74, 0x43,
 	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
 	0x2e, 0x0a, 0x08, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x12, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x68,
+	0x0b, 0x32, 0x12, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x68,
 	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x08, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x22,
 	0x17, 0x0a, 0x15, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xbf, 0x0a, 0x0a, 0x0d, 0x4d, 0x69, 0x73,
-	0x74, 0x42, 0x45, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5a, 0x0a, 0x0f, 0x43, 0x72,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xbf, 0x0a, 0x0a, 0x0d, 0x53, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5a, 0x0a, 0x0f, 0x43, 0x72,
 	0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x21, 0x2e,
-	0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
 	0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x22, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65,
+	0x1a, 0x22, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65,
 	0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70,
 	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x5d, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49,
-	0x64, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x22, 0x2e, 0x6d, 0x69, 0x73,
-	0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49, 0x64, 0x41, 0x70,
+	0x64, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x22, 0x2e, 0x73, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49, 0x64, 0x41, 0x70,
 	0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x23,
-	0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x42, 0x79,
+	0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x42, 0x79,
 	0x49, 0x64, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f,
 	0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x57, 0x0a, 0x0e, 0x4c, 0x69, 0x73, 0x74, 0x41, 0x70, 0x70,
-	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x12, 0x20, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x12, 0x20, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65,
-	0x72, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x6d, 0x69, 0x73, 0x74,
-	0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72,
+	0x72, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x73, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72,
 	0x76, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x5a,
 	0x0a, 0x0f, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65,
-	0x72, 0x12, 0x21, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65,
+	0x72, 0x12, 0x21, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65,
 	0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31,
 	0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x63, 0x0a, 0x12, 0x43, 0x72,
 	0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62,
-	0x12, 0x24, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65,
+	0x12, 0x24, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65,
 	0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e,
 	0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x53, 0x75, 0x62, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12,
 	0x69, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72,
-	0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x73, 0x12, 0x26, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65,
+	0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x73, 0x12, 0x26, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x41, 0x70, 0x70, 0x73, 0x65,
 	0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x27, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x55,
+	0x27, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x55,
 	0x73, 0x65, 0x72, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x73,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x63, 0x0a, 0x12, 0x44, 0x65,
 	0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62,
-	0x12, 0x24, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c,
+	0x12, 0x24, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c,
 	0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x53, 0x75, 0x62, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e,
 	0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x53, 0x75, 0x62, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12,
 	0x66, 0x0a, 0x13, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x12, 0x25, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e,
+	0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x12, 0x25, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e,
 	0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x26, 0x2e,
-	0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
 	0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x69, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x41, 0x6c,
 	0x6c, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x73, 0x12,
-	0x26, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x41,
+	0x26, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x41,
 	0x6c, 0x6c, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x73,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72,
 	0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
 	0x22, 0x00, 0x12, 0x66, 0x0a, 0x13, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73,
-	0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x12, 0x25, 0x2e, 0x6d, 0x69, 0x73, 0x74,
-	0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73,
+	0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x12, 0x25, 0x2e, 0x73, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73,
 	0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x26, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c,
+	0x1a, 0x26, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c,
 	0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x52, 0x6f, 0x6c, 0x65,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x52, 0x0a, 0x0d, 0x43, 0x72,
-	0x65, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x1f, 0x2e, 0x6d, 0x69,
-	0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x43, 0x68,
-	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x6d,
-	0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x43,
+	0x65, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x1f, 0x2e, 0x73, 0x65,
+	0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x43, 0x68,
+	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x73,
+	0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x43,
 	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x55,
 	0x0a, 0x0e, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49, 0x64, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
-	0x12, 0x20, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74,
+	0x12, 0x20, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74,
 	0x42, 0x79, 0x49, 0x64, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x21, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x47,
+	0x73, 0x74, 0x1a, 0x21, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47,
 	0x65, 0x74, 0x42, 0x79, 0x49, 0x64, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4f, 0x0a, 0x0c, 0x4c, 0x69, 0x73, 0x74, 0x43, 0x68, 0x61,
-	0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x12, 0x1e, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76,
+	0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x12, 0x1e, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76,
 	0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65, 0x2e, 0x76,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x76,
 	0x31, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x73, 0x52, 0x65,
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x52, 0x0a, 0x0d, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
-	0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x1f, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62, 0x65,
+	0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x1f, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
 	0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65,
-	0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x6d, 0x69, 0x73, 0x74, 0x62,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e,
-	0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x09, 0x5a, 0x07, 0x2f, 0x6d,
-	0x69, 0x73, 0x74, 0x62, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x6e,
+	0x65, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x09, 0x5a, 0x07, 0x2f, 0x73,
+	0x65, 0x72, 0x76, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_mistbe_v1_mistbe_proto_rawDescOnce sync.Once
-	file_mistbe_v1_mistbe_proto_rawDescData = file_mistbe_v1_mistbe_proto_rawDesc
+	file_server_v1_server_proto_rawDescOnce sync.Once
+	file_server_v1_server_proto_rawDescData = file_server_v1_server_proto_rawDesc
 )
 
-func file_mistbe_v1_mistbe_proto_rawDescGZIP() []byte {
-	file_mistbe_v1_mistbe_proto_rawDescOnce.Do(func() {
-		file_mistbe_v1_mistbe_proto_rawDescData = protoimpl.X.CompressGZIP(file_mistbe_v1_mistbe_proto_rawDescData)
+func file_server_v1_server_proto_rawDescGZIP() []byte {
+	file_server_v1_server_proto_rawDescOnce.Do(func() {
+		file_server_v1_server_proto_rawDescData = protoimpl.X.CompressGZIP(file_server_v1_server_proto_rawDescData)
 	})
-	return file_mistbe_v1_mistbe_proto_rawDescData
+	return file_server_v1_server_proto_rawDescData
 }
 
-var file_mistbe_v1_mistbe_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
-var file_mistbe_v1_mistbe_proto_goTypes = []any{
-	(*Appserver)(nil),                    // 0: mistbe.v1.Appserver
-	(*AppserverSub)(nil),                 // 1: mistbe.v1.AppserverSub
-	(*AppserverAndSub)(nil),              // 2: mistbe.v1.AppserverAndSub
-	(*AppserverRole)(nil),                // 3: mistbe.v1.AppserverRole
-	(*Channel)(nil),                      // 4: mistbe.v1.Channel
-	(*CreateAppserverRequest)(nil),       // 5: mistbe.v1.CreateAppserverRequest
-	(*GetByIdAppserverRequest)(nil),      // 6: mistbe.v1.GetByIdAppserverRequest
-	(*ListAppserversRequest)(nil),        // 7: mistbe.v1.ListAppserversRequest
-	(*DeleteAppserverRequest)(nil),       // 8: mistbe.v1.DeleteAppserverRequest
-	(*CreateAppserverResponse)(nil),      // 9: mistbe.v1.CreateAppserverResponse
-	(*GetByIdAppserverResponse)(nil),     // 10: mistbe.v1.GetByIdAppserverResponse
-	(*ListAppserversResponse)(nil),       // 11: mistbe.v1.ListAppserversResponse
-	(*DeleteAppserverResponse)(nil),      // 12: mistbe.v1.DeleteAppserverResponse
-	(*CreateAppserverSubRequest)(nil),    // 13: mistbe.v1.CreateAppserverSubRequest
-	(*GetUserAppserverSubsRequest)(nil),  // 14: mistbe.v1.GetUserAppserverSubsRequest
-	(*DeleteAppserverSubRequest)(nil),    // 15: mistbe.v1.DeleteAppserverSubRequest
-	(*CreateAppserverSubResponse)(nil),   // 16: mistbe.v1.CreateAppserverSubResponse
-	(*GetUserAppserverSubsResponse)(nil), // 17: mistbe.v1.GetUserAppserverSubsResponse
-	(*DeleteAppserverSubResponse)(nil),   // 18: mistbe.v1.DeleteAppserverSubResponse
-	(*CreateAppserverRoleRequest)(nil),   // 19: mistbe.v1.CreateAppserverRoleRequest
-	(*GetAllAppserverRolesRequest)(nil),  // 20: mistbe.v1.GetAllAppserverRolesRequest
-	(*DeleteAppserverRoleRequest)(nil),   // 21: mistbe.v1.DeleteAppserverRoleRequest
-	(*CreateAppserverRoleResponse)(nil),  // 22: mistbe.v1.CreateAppserverRoleResponse
-	(*GetAllAppserverRolesResponse)(nil), // 23: mistbe.v1.GetAllAppserverRolesResponse
-	(*DeleteAppserverRoleResponse)(nil),  // 24: mistbe.v1.DeleteAppserverRoleResponse
-	(*CreateChannelRequest)(nil),         // 25: mistbe.v1.CreateChannelRequest
-	(*GetByIdChannelRequest)(nil),        // 26: mistbe.v1.GetByIdChannelRequest
-	(*ListChannelsRequest)(nil),          // 27: mistbe.v1.ListChannelsRequest
-	(*DeleteChannelRequest)(nil),         // 28: mistbe.v1.DeleteChannelRequest
-	(*CreateChannelResponse)(nil),        // 29: mistbe.v1.CreateChannelResponse
-	(*GetByIdChannelResponse)(nil),       // 30: mistbe.v1.GetByIdChannelResponse
-	(*ListChannelsResponse)(nil),         // 31: mistbe.v1.ListChannelsResponse
-	(*DeleteChannelResponse)(nil),        // 32: mistbe.v1.DeleteChannelResponse
+var file_server_v1_server_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
+var file_server_v1_server_proto_goTypes = []any{
+	(*Appserver)(nil),                    // 0: server.v1.Appserver
+	(*AppserverSub)(nil),                 // 1: server.v1.AppserverSub
+	(*AppserverAndSub)(nil),              // 2: server.v1.AppserverAndSub
+	(*AppserverRole)(nil),                // 3: server.v1.AppserverRole
+	(*Channel)(nil),                      // 4: server.v1.Channel
+	(*CreateAppserverRequest)(nil),       // 5: server.v1.CreateAppserverRequest
+	(*GetByIdAppserverRequest)(nil),      // 6: server.v1.GetByIdAppserverRequest
+	(*ListAppserversRequest)(nil),        // 7: server.v1.ListAppserversRequest
+	(*DeleteAppserverRequest)(nil),       // 8: server.v1.DeleteAppserverRequest
+	(*CreateAppserverResponse)(nil),      // 9: server.v1.CreateAppserverResponse
+	(*GetByIdAppserverResponse)(nil),     // 10: server.v1.GetByIdAppserverResponse
+	(*ListAppserversResponse)(nil),       // 11: server.v1.ListAppserversResponse
+	(*DeleteAppserverResponse)(nil),      // 12: server.v1.DeleteAppserverResponse
+	(*CreateAppserverSubRequest)(nil),    // 13: server.v1.CreateAppserverSubRequest
+	(*GetUserAppserverSubsRequest)(nil),  // 14: server.v1.GetUserAppserverSubsRequest
+	(*DeleteAppserverSubRequest)(nil),    // 15: server.v1.DeleteAppserverSubRequest
+	(*CreateAppserverSubResponse)(nil),   // 16: server.v1.CreateAppserverSubResponse
+	(*GetUserAppserverSubsResponse)(nil), // 17: server.v1.GetUserAppserverSubsResponse
+	(*DeleteAppserverSubResponse)(nil),   // 18: server.v1.DeleteAppserverSubResponse
+	(*CreateAppserverRoleRequest)(nil),   // 19: server.v1.CreateAppserverRoleRequest
+	(*GetAllAppserverRolesRequest)(nil),  // 20: server.v1.GetAllAppserverRolesRequest
+	(*DeleteAppserverRoleRequest)(nil),   // 21: server.v1.DeleteAppserverRoleRequest
+	(*CreateAppserverRoleResponse)(nil),  // 22: server.v1.CreateAppserverRoleResponse
+	(*GetAllAppserverRolesResponse)(nil), // 23: server.v1.GetAllAppserverRolesResponse
+	(*DeleteAppserverRoleResponse)(nil),  // 24: server.v1.DeleteAppserverRoleResponse
+	(*CreateChannelRequest)(nil),         // 25: server.v1.CreateChannelRequest
+	(*GetByIdChannelRequest)(nil),        // 26: server.v1.GetByIdChannelRequest
+	(*ListChannelsRequest)(nil),          // 27: server.v1.ListChannelsRequest
+	(*DeleteChannelRequest)(nil),         // 28: server.v1.DeleteChannelRequest
+	(*CreateChannelResponse)(nil),        // 29: server.v1.CreateChannelResponse
+	(*GetByIdChannelResponse)(nil),       // 30: server.v1.GetByIdChannelResponse
+	(*ListChannelsResponse)(nil),         // 31: server.v1.ListChannelsResponse
+	(*DeleteChannelResponse)(nil),        // 32: server.v1.DeleteChannelResponse
 	(*timestamppb.Timestamp)(nil),        // 33: google.protobuf.Timestamp
 	(*wrapperspb.StringValue)(nil),       // 34: google.protobuf.StringValue
 }
-var file_mistbe_v1_mistbe_proto_depIdxs = []int32{
-	33, // 0: mistbe.v1.Appserver.created_at:type_name -> google.protobuf.Timestamp
-	33, // 1: mistbe.v1.Appserver.updated_at:type_name -> google.protobuf.Timestamp
-	33, // 2: mistbe.v1.AppserverSub.created_at:type_name -> google.protobuf.Timestamp
-	33, // 3: mistbe.v1.AppserverSub.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: mistbe.v1.AppserverAndSub.appserver:type_name -> mistbe.v1.Appserver
-	33, // 5: mistbe.v1.AppserverRole.created_at:type_name -> google.protobuf.Timestamp
-	33, // 6: mistbe.v1.AppserverRole.updated_at:type_name -> google.protobuf.Timestamp
-	33, // 7: mistbe.v1.Channel.created_at:type_name -> google.protobuf.Timestamp
-	33, // 8: mistbe.v1.Channel.updated_at:type_name -> google.protobuf.Timestamp
-	34, // 9: mistbe.v1.ListAppserversRequest.name:type_name -> google.protobuf.StringValue
-	0,  // 10: mistbe.v1.CreateAppserverResponse.appserver:type_name -> mistbe.v1.Appserver
-	0,  // 11: mistbe.v1.GetByIdAppserverResponse.appserver:type_name -> mistbe.v1.Appserver
-	0,  // 12: mistbe.v1.ListAppserversResponse.appservers:type_name -> mistbe.v1.Appserver
-	1,  // 13: mistbe.v1.CreateAppserverSubResponse.appserver_sub:type_name -> mistbe.v1.AppserverSub
-	2,  // 14: mistbe.v1.GetUserAppserverSubsResponse.appservers:type_name -> mistbe.v1.AppserverAndSub
-	3,  // 15: mistbe.v1.CreateAppserverRoleResponse.appserver_role:type_name -> mistbe.v1.AppserverRole
-	3,  // 16: mistbe.v1.GetAllAppserverRolesResponse.appserver_roles:type_name -> mistbe.v1.AppserverRole
-	34, // 17: mistbe.v1.ListChannelsRequest.name:type_name -> google.protobuf.StringValue
-	34, // 18: mistbe.v1.ListChannelsRequest.appserver_id:type_name -> google.protobuf.StringValue
-	4,  // 19: mistbe.v1.CreateChannelResponse.channel:type_name -> mistbe.v1.Channel
-	4,  // 20: mistbe.v1.GetByIdChannelResponse.channel:type_name -> mistbe.v1.Channel
-	4,  // 21: mistbe.v1.ListChannelsResponse.channels:type_name -> mistbe.v1.Channel
-	5,  // 22: mistbe.v1.MistBEService.CreateAppserver:input_type -> mistbe.v1.CreateAppserverRequest
-	6,  // 23: mistbe.v1.MistBEService.GetByIdAppserver:input_type -> mistbe.v1.GetByIdAppserverRequest
-	7,  // 24: mistbe.v1.MistBEService.ListAppservers:input_type -> mistbe.v1.ListAppserversRequest
-	8,  // 25: mistbe.v1.MistBEService.DeleteAppserver:input_type -> mistbe.v1.DeleteAppserverRequest
-	13, // 26: mistbe.v1.MistBEService.CreateAppserverSub:input_type -> mistbe.v1.CreateAppserverSubRequest
-	14, // 27: mistbe.v1.MistBEService.GetUserAppserverSubs:input_type -> mistbe.v1.GetUserAppserverSubsRequest
-	15, // 28: mistbe.v1.MistBEService.DeleteAppserverSub:input_type -> mistbe.v1.DeleteAppserverSubRequest
-	19, // 29: mistbe.v1.MistBEService.CreateAppserverRole:input_type -> mistbe.v1.CreateAppserverRoleRequest
-	20, // 30: mistbe.v1.MistBEService.GetAllAppserverRoles:input_type -> mistbe.v1.GetAllAppserverRolesRequest
-	21, // 31: mistbe.v1.MistBEService.DeleteAppserverRole:input_type -> mistbe.v1.DeleteAppserverRoleRequest
-	25, // 32: mistbe.v1.MistBEService.CreateChannel:input_type -> mistbe.v1.CreateChannelRequest
-	26, // 33: mistbe.v1.MistBEService.GetByIdChannel:input_type -> mistbe.v1.GetByIdChannelRequest
-	27, // 34: mistbe.v1.MistBEService.ListChannels:input_type -> mistbe.v1.ListChannelsRequest
-	28, // 35: mistbe.v1.MistBEService.DeleteChannel:input_type -> mistbe.v1.DeleteChannelRequest
-	9,  // 36: mistbe.v1.MistBEService.CreateAppserver:output_type -> mistbe.v1.CreateAppserverResponse
-	10, // 37: mistbe.v1.MistBEService.GetByIdAppserver:output_type -> mistbe.v1.GetByIdAppserverResponse
-	11, // 38: mistbe.v1.MistBEService.ListAppservers:output_type -> mistbe.v1.ListAppserversResponse
-	12, // 39: mistbe.v1.MistBEService.DeleteAppserver:output_type -> mistbe.v1.DeleteAppserverResponse
-	16, // 40: mistbe.v1.MistBEService.CreateAppserverSub:output_type -> mistbe.v1.CreateAppserverSubResponse
-	17, // 41: mistbe.v1.MistBEService.GetUserAppserverSubs:output_type -> mistbe.v1.GetUserAppserverSubsResponse
-	18, // 42: mistbe.v1.MistBEService.DeleteAppserverSub:output_type -> mistbe.v1.DeleteAppserverSubResponse
-	22, // 43: mistbe.v1.MistBEService.CreateAppserverRole:output_type -> mistbe.v1.CreateAppserverRoleResponse
-	23, // 44: mistbe.v1.MistBEService.GetAllAppserverRoles:output_type -> mistbe.v1.GetAllAppserverRolesResponse
-	24, // 45: mistbe.v1.MistBEService.DeleteAppserverRole:output_type -> mistbe.v1.DeleteAppserverRoleResponse
-	29, // 46: mistbe.v1.MistBEService.CreateChannel:output_type -> mistbe.v1.CreateChannelResponse
-	30, // 47: mistbe.v1.MistBEService.GetByIdChannel:output_type -> mistbe.v1.GetByIdChannelResponse
-	31, // 48: mistbe.v1.MistBEService.ListChannels:output_type -> mistbe.v1.ListChannelsResponse
-	32, // 49: mistbe.v1.MistBEService.DeleteChannel:output_type -> mistbe.v1.DeleteChannelResponse
+var file_server_v1_server_proto_depIdxs = []int32{
+	33, // 0: server.v1.Appserver.created_at:type_name -> google.protobuf.Timestamp
+	33, // 1: server.v1.Appserver.updated_at:type_name -> google.protobuf.Timestamp
+	33, // 2: server.v1.AppserverSub.created_at:type_name -> google.protobuf.Timestamp
+	33, // 3: server.v1.AppserverSub.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 4: server.v1.AppserverAndSub.appserver:type_name -> server.v1.Appserver
+	33, // 5: server.v1.AppserverRole.created_at:type_name -> google.protobuf.Timestamp
+	33, // 6: server.v1.AppserverRole.updated_at:type_name -> google.protobuf.Timestamp
+	33, // 7: server.v1.Channel.created_at:type_name -> google.protobuf.Timestamp
+	33, // 8: server.v1.Channel.updated_at:type_name -> google.protobuf.Timestamp
+	34, // 9: server.v1.ListAppserversRequest.name:type_name -> google.protobuf.StringValue
+	0,  // 10: server.v1.CreateAppserverResponse.appserver:type_name -> server.v1.Appserver
+	0,  // 11: server.v1.GetByIdAppserverResponse.appserver:type_name -> server.v1.Appserver
+	0,  // 12: server.v1.ListAppserversResponse.appservers:type_name -> server.v1.Appserver
+	1,  // 13: server.v1.CreateAppserverSubResponse.appserver_sub:type_name -> server.v1.AppserverSub
+	2,  // 14: server.v1.GetUserAppserverSubsResponse.appservers:type_name -> server.v1.AppserverAndSub
+	3,  // 15: server.v1.CreateAppserverRoleResponse.appserver_role:type_name -> server.v1.AppserverRole
+	3,  // 16: server.v1.GetAllAppserverRolesResponse.appserver_roles:type_name -> server.v1.AppserverRole
+	34, // 17: server.v1.ListChannelsRequest.name:type_name -> google.protobuf.StringValue
+	34, // 18: server.v1.ListChannelsRequest.appserver_id:type_name -> google.protobuf.StringValue
+	4,  // 19: server.v1.CreateChannelResponse.channel:type_name -> server.v1.Channel
+	4,  // 20: server.v1.GetByIdChannelResponse.channel:type_name -> server.v1.Channel
+	4,  // 21: server.v1.ListChannelsResponse.channels:type_name -> server.v1.Channel
+	5,  // 22: server.v1.ServerService.CreateAppserver:input_type -> server.v1.CreateAppserverRequest
+	6,  // 23: server.v1.ServerService.GetByIdAppserver:input_type -> server.v1.GetByIdAppserverRequest
+	7,  // 24: server.v1.ServerService.ListAppservers:input_type -> server.v1.ListAppserversRequest
+	8,  // 25: server.v1.ServerService.DeleteAppserver:input_type -> server.v1.DeleteAppserverRequest
+	13, // 26: server.v1.ServerService.CreateAppserverSub:input_type -> server.v1.CreateAppserverSubRequest
+	14, // 27: server.v1.ServerService.GetUserAppserverSubs:input_type -> server.v1.GetUserAppserverSubsRequest
+	15, // 28: server.v1.ServerService.DeleteAppserverSub:input_type -> server.v1.DeleteAppserverSubRequest
+	19, // 29: server.v1.ServerService.CreateAppserverRole:input_type -> server.v1.CreateAppserverRoleRequest
+	20, // 30: server.v1.ServerService.GetAllAppserverRoles:input_type -> server.v1.GetAllAppserverRolesRequest
+	21, // 31: server.v1.ServerService.DeleteAppserverRole:input_type -> server.v1.DeleteAppserverRoleRequest
+	25, // 32: server.v1.ServerService.CreateChannel:input_type -> server.v1.CreateChannelRequest
+	26, // 33: server.v1.ServerService.GetByIdChannel:input_type -> server.v1.GetByIdChannelRequest
+	27, // 34: server.v1.ServerService.ListChannels:input_type -> server.v1.ListChannelsRequest
+	28, // 35: server.v1.ServerService.DeleteChannel:input_type -> server.v1.DeleteChannelRequest
+	9,  // 36: server.v1.ServerService.CreateAppserver:output_type -> server.v1.CreateAppserverResponse
+	10, // 37: server.v1.ServerService.GetByIdAppserver:output_type -> server.v1.GetByIdAppserverResponse
+	11, // 38: server.v1.ServerService.ListAppservers:output_type -> server.v1.ListAppserversResponse
+	12, // 39: server.v1.ServerService.DeleteAppserver:output_type -> server.v1.DeleteAppserverResponse
+	16, // 40: server.v1.ServerService.CreateAppserverSub:output_type -> server.v1.CreateAppserverSubResponse
+	17, // 41: server.v1.ServerService.GetUserAppserverSubs:output_type -> server.v1.GetUserAppserverSubsResponse
+	18, // 42: server.v1.ServerService.DeleteAppserverSub:output_type -> server.v1.DeleteAppserverSubResponse
+	22, // 43: server.v1.ServerService.CreateAppserverRole:output_type -> server.v1.CreateAppserverRoleResponse
+	23, // 44: server.v1.ServerService.GetAllAppserverRoles:output_type -> server.v1.GetAllAppserverRolesResponse
+	24, // 45: server.v1.ServerService.DeleteAppserverRole:output_type -> server.v1.DeleteAppserverRoleResponse
+	29, // 46: server.v1.ServerService.CreateChannel:output_type -> server.v1.CreateChannelResponse
+	30, // 47: server.v1.ServerService.GetByIdChannel:output_type -> server.v1.GetByIdChannelResponse
+	31, // 48: server.v1.ServerService.ListChannels:output_type -> server.v1.ListChannelsResponse
+	32, // 49: server.v1.ServerService.DeleteChannel:output_type -> server.v1.DeleteChannelResponse
 	36, // [36:50] is the sub-list for method output_type
 	22, // [22:36] is the sub-list for method input_type
 	22, // [22:22] is the sub-list for extension type_name
@@ -1954,27 +1954,27 @@ var file_mistbe_v1_mistbe_proto_depIdxs = []int32{
 	0,  // [0:22] is the sub-list for field type_name
 }
 
-func init() { file_mistbe_v1_mistbe_proto_init() }
-func file_mistbe_v1_mistbe_proto_init() {
-	if File_mistbe_v1_mistbe_proto != nil {
+func init() { file_server_v1_server_proto_init() }
+func file_server_v1_server_proto_init() {
+	if File_server_v1_server_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_mistbe_v1_mistbe_proto_rawDesc,
+			RawDescriptor: file_server_v1_server_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_mistbe_v1_mistbe_proto_goTypes,
-		DependencyIndexes: file_mistbe_v1_mistbe_proto_depIdxs,
-		MessageInfos:      file_mistbe_v1_mistbe_proto_msgTypes,
+		GoTypes:           file_server_v1_server_proto_goTypes,
+		DependencyIndexes: file_server_v1_server_proto_depIdxs,
+		MessageInfos:      file_server_v1_server_proto_msgTypes,
 	}.Build()
-	File_mistbe_v1_mistbe_proto = out.File
-	file_mistbe_v1_mistbe_proto_rawDesc = nil
-	file_mistbe_v1_mistbe_proto_goTypes = nil
-	file_mistbe_v1_mistbe_proto_depIdxs = nil
+	File_server_v1_server_proto = out.File
+	file_server_v1_server_proto_rawDesc = nil
+	file_server_v1_server_proto_goTypes = nil
+	file_server_v1_server_proto_depIdxs = nil
 }

@@ -3,7 +3,7 @@ package rpcs
 import (
 	"testing"
 
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ func TestListChannels(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.ListChannels(
-			ctx, &pb_mistbe.ListChannelsRequest{Name: wrapperspb.String("random")},
+			ctx, &pb_servers.ListChannelsRequest{Name: wrapperspb.String("random")},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -37,7 +37,7 @@ func TestListChannels(t *testing.T) {
 		testChannel(t, nil)
 
 		// ACT
-		response, err := TestClient.ListChannels(ctx, &pb_mistbe.ListChannelsRequest{})
+		response, err := TestClient.ListChannels(ctx, &pb_servers.ListChannelsRequest{})
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -54,7 +54,7 @@ func TestListChannels(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.ListChannels(
-			ctx, &pb_mistbe.ListChannelsRequest{AppserverId: wrapperspb.String(channelToFilterBy.AppserverID.String())},
+			ctx, &pb_servers.ListChannelsRequest{AppserverId: wrapperspb.String(channelToFilterBy.AppserverID.String())},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -74,7 +74,7 @@ func TestGetByIdChannel(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetByIdChannel(
-			ctx, &pb_mistbe.GetByIdChannelRequest{Id: channel.ID.String()},
+			ctx, &pb_servers.GetByIdChannelRequest{Id: channel.ID.String()},
 		)
 
 		if err != nil {
@@ -91,7 +91,7 @@ func TestGetByIdChannel(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetByIdChannel(
-			ctx, &pb_mistbe.GetByIdChannelRequest{Id: uuid.NewString()},
+			ctx, &pb_servers.GetByIdChannelRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -108,7 +108,7 @@ func TestGetByIdChannel(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.GetByIdChannel(
-			ctx, &pb_mistbe.GetByIdChannelRequest{Id: "foo"},
+			ctx, &pb_servers.GetByIdChannelRequest{Id: "foo"},
 		)
 		s, ok := status.FromError(err)
 
@@ -129,7 +129,7 @@ func TestCreateChannel(t *testing.T) {
 
 		// ACT
 		response, err := TestClient.CreateChannel(
-			ctx, &pb_mistbe.CreateChannelRequest{Name: "new channel", AppserverId: appserver.ID.String()})
+			ctx, &pb_servers.CreateChannelRequest{Name: "new channel", AppserverId: appserver.ID.String()})
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -143,7 +143,7 @@ func TestCreateChannel(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestClient.CreateChannel(ctx, &pb_mistbe.CreateChannelRequest{})
+		response, err := TestClient.CreateChannel(ctx, &pb_servers.CreateChannelRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -162,7 +162,7 @@ func TestDeleteChannel(t *testing.T) {
 		channel := testChannel(t, nil)
 
 		// ACT
-		response, err := TestClient.DeleteChannel(ctx, &pb_mistbe.DeleteChannelRequest{Id: channel.ID.String()})
+		response, err := TestClient.DeleteChannel(ctx, &pb_servers.DeleteChannelRequest{Id: channel.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -174,7 +174,7 @@ func TestDeleteChannel(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestClient.DeleteChannel(ctx, &pb_mistbe.DeleteChannelRequest{Id: uuid.NewString()})
+		response, err := TestClient.DeleteChannel(ctx, &pb_servers.DeleteChannelRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

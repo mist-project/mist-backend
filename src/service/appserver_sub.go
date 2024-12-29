@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 )
 
@@ -23,8 +23,8 @@ func NewAppserverSubService(dbcPool *pgxpool.Pool, ctx context.Context) *Appserv
 	return &AppserverSubService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *AppserverSubService) PgTypeToPb(appserverSub *qx.AppserverSub) *pb_mistbe.AppserverSub {
-	return &pb_mistbe.AppserverSub{
+func (service *AppserverSubService) PgTypeToPb(appserverSub *qx.AppserverSub) *pb_servers.AppserverSub {
+	return &pb_servers.AppserverSub{
 		Id:          appserverSub.ID.String(),
 		AppserverId: appserverSub.AppserverID.String(),
 		CreatedAt:   timestamppb.New(appserverSub.CreatedAt.Time),
@@ -32,14 +32,14 @@ func (service *AppserverSubService) PgTypeToPb(appserverSub *qx.AppserverSub) *p
 	}
 }
 
-func (service *AppserverSubService) PgUserSubRowToPb(results *qx.GetUserAppserverSubsRow) *pb_mistbe.AppserverAndSub {
-	appserver := &pb_mistbe.Appserver{
+func (service *AppserverSubService) PgUserSubRowToPb(results *qx.GetUserAppserverSubsRow) *pb_servers.AppserverAndSub {
+	appserver := &pb_servers.Appserver{
 		Id:        results.ID.String(),
 		Name:      results.Name,
 		CreatedAt: timestamppb.New(results.CreatedAt.Time),
 		UpdatedAt: timestamppb.New(results.UpdatedAt.Time),
 	}
-	return &pb_mistbe.AppserverAndSub{
+	return &pb_servers.AppserverAndSub{
 		Appserver: appserver,
 		SubId:     results.AppserverSubID.String(),
 	}

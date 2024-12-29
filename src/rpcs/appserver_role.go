@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"mist/src/middleware"
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 	"mist/src/service"
 )
 
 func (s *Grpcserver) CreateAppserverRole(
-	ctx context.Context, req *pb_mistbe.CreateAppserverRoleRequest,
-) (*pb_mistbe.CreateAppserverRoleResponse, error) {
+	ctx context.Context, req *pb_servers.CreateAppserverRoleRequest,
+) (*pb_servers.CreateAppserverRoleResponse, error) {
 	asRoleService := service.NewAppserverRoleService(s.DbcPool, ctx)
 	appserverSub, err := asRoleService.Create(req.GetAppserverId(), req.Name)
 
@@ -20,22 +20,22 @@ func (s *Grpcserver) CreateAppserverRole(
 	}
 
 	// Return response
-	return &pb_mistbe.CreateAppserverRoleResponse{
+	return &pb_servers.CreateAppserverRoleResponse{
 		AppserverRole: asRoleService.PgTypeToPb(appserverSub),
 	}, nil
 }
 
 func (s *Grpcserver) GetAllAppserverRoles(
-	ctx context.Context, req *pb_mistbe.GetAllAppserverRolesRequest,
-) (*pb_mistbe.GetAllAppserverRolesResponse, error) {
+	ctx context.Context, req *pb_servers.GetAllAppserverRolesRequest,
+) (*pb_servers.GetAllAppserverRolesResponse, error) {
 	// Initialize the service for AppserveRole
 	asRoleService := service.NewAppserverRoleService(s.DbcPool, ctx)
 
 	results, _ := asRoleService.ListAppserverRoles(req.GetAppserverId())
 
 	// Construct the response
-	response := &pb_mistbe.GetAllAppserverRolesResponse{
-		AppserverRoles: make([]*pb_mistbe.AppserverRole, 0, len(results)),
+	response := &pb_servers.GetAllAppserverRolesResponse{
+		AppserverRoles: make([]*pb_servers.AppserverRole, 0, len(results)),
 	}
 
 	// Convert list of AppserveRoles to protobuf
@@ -47,8 +47,8 @@ func (s *Grpcserver) GetAllAppserverRoles(
 }
 
 func (s *Grpcserver) DeleteAppserverRole(
-	ctx context.Context, req *pb_mistbe.DeleteAppserverRoleRequest,
-) (*pb_mistbe.DeleteAppserverRoleResponse, error) {
+	ctx context.Context, req *pb_servers.DeleteAppserverRoleRequest,
+) (*pb_servers.DeleteAppserverRoleResponse, error) {
 	// Initialize the service for AppserveRole
 	asRoleService := service.NewAppserverRoleService(s.DbcPool, ctx)
 	jwtClaims, _ := middleware.GetJWTClaims(ctx)
@@ -62,5 +62,5 @@ func (s *Grpcserver) DeleteAppserverRole(
 	}
 
 	// Return success response
-	return &pb_mistbe.DeleteAppserverRoleResponse{}, nil
+	return &pb_servers.DeleteAppserverRoleResponse{}, nil
 }

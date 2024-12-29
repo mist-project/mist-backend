@@ -3,11 +3,11 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-package mistbe.v1;
-option go_package = "/mistbe";
+package server.v1;
+option go_package = "/server";
 
 // The greeting service definition.
-service MistBEService {
+service ServerService {
   // ----- APPSERVER ----
   rpc CreateAppserver(CreateAppserverRequest)
       returns (CreateAppserverResponse) {}

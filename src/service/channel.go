@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 )
 
@@ -25,8 +25,8 @@ func NewChannelService(dbcPool *pgxpool.Pool, ctx context.Context) *ChannelServi
 	return &ChannelService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *ChannelService) PgTypeToPb(channel *qx.Channel) *pb_mistbe.Channel {
-	return &pb_mistbe.Channel{
+func (service *ChannelService) PgTypeToPb(channel *qx.Channel) *pb_servers.Channel {
+	return &pb_servers.Channel{
 		Id:          channel.ID.String(),
 		Name:        channel.Name,
 		AppserverId: channel.AppserverID.String(),

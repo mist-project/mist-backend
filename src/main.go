@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 
 	"mist/src/middleware"
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 	"mist/src/rpcs"
 )
 
@@ -26,7 +26,7 @@ func InitializeServer() {
 
 	s := grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_mistbe.RegisterMistBEServiceServer(s, &rpcs.Grpcserver{DbcPool: dbcPool})
+	pb_servers.RegisterServerServiceServer(s, &rpcs.Grpcserver{DbcPool: dbcPool})
 
 	log.Printf("server listening at %v", lis.Addr())
 

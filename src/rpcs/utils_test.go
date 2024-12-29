@@ -22,12 +22,12 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"mist/src/middleware"
-	pb_mistbe "mist/src/protos/mistbe/v1"
+	pb_servers "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 )
 
 var testServer *grpc.Server
-var TestClient pb_mistbe.MistBEServiceClient
+var TestClient pb_servers.ServerServiceClient
 var testClientConn *grpc.ClientConn
 
 var dbcPool *pgxpool.Pool
@@ -89,7 +89,7 @@ func setupTestGrpcserverAndClient() {
 
 	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_mistbe.RegisterMistBEServiceServer(testServer, &Grpcserver{DbcPool: dbcPool})
+	pb_servers.RegisterServerServiceServer(testServer, &Grpcserver{DbcPool: dbcPool})
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {
@@ -102,7 +102,7 @@ func setupTestGrpcserverAndClient() {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	TestClient = pb_mistbe.NewMistBEServiceClient(testClientConn)
+	TestClient = pb_servers.NewServerServiceClient(testClientConn)
 }
 
 func rpcTestCleanup() {

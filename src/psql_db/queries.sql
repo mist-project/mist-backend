@@ -17,7 +17,7 @@ WHERE
 INSERT INTO appserver (
   name,
   owner_id
-) values (
+) VALUES (
   $1,
   $2
 )
@@ -51,7 +51,7 @@ WHERE
 INSERT INTO appserver_sub (
   appserver_id,
   owner_id
-) values (
+) VALUES (
   $1,
   $2
 )
@@ -62,6 +62,27 @@ DELETE
 FROM appserver_sub
 WHERE id=$1;
 
+----- APP SERVER ROLES -----
+-- name: GetAppserverRoles :many
+SELECT *
+FROM appserver_role
+WHERE appserver_id=$1;
+
+-- name: CreateAppserverRole :one
+INSERT INTO appserver_role (
+  appserver_id,
+  name
+) VALUES (
+  $1,
+  $2
+)
+RETURNING *;
+
+-- name: DeleteAppserverRole :execrows
+DELETE
+FROM appserver_role as ar
+USING appserver as a 
+WHERE a.id=ar.appserver_id AND ar.id=$1 AND a.owner_id=$2;
 
 ----- CHANNEL QUERIES -----
 -- name: GetChannel :one
@@ -82,7 +103,7 @@ WHERE
 INSERT INTO channel (
   name,
   appserver_id
-) values (
+) VALUES (
   $1,
   $2
 )

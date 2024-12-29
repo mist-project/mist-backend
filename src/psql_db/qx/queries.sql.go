@@ -17,7 +17,7 @@ const createAppserver = `-- name: CreateAppserver :one
 INSERT INTO appserver (
   name,
   owner_id
-) values (
+) VALUES (
   $1,
   $2
 )
@@ -43,11 +43,40 @@ func (q *Queries) CreateAppserver(ctx context.Context, arg CreateAppserverParams
 	return i, err
 }
 
+const createAppserverRole = `-- name: CreateAppserverRole :one
+INSERT INTO appserver_role (
+  appserver_id,
+  name
+) VALUES (
+  $1,
+  $2
+)
+RETURNING id, appserver_id, name, created_at, updated_at
+`
+
+type CreateAppserverRoleParams struct {
+	AppserverID uuid.UUID
+	Name        string
+}
+
+func (q *Queries) CreateAppserverRole(ctx context.Context, arg CreateAppserverRoleParams) (AppserverRole, error) {
+	row := q.db.QueryRow(ctx, createAppserverRole, arg.AppserverID, arg.Name)
+	var i AppserverRole
+	err := row.Scan(
+		&i.ID,
+		&i.AppserverID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createAppserverSub = `-- name: CreateAppserverSub :one
 INSERT INTO appserver_sub (
   appserver_id,
   owner_id
-) values (
+) VALUES (
   $1,
   $2
 )
@@ -76,7 +105,7 @@ const createChannel = `-- name: CreateChannel :one
 INSERT INTO channel (
   name,
   appserver_id
-) values (
+) VALUES (
   $1,
   $2
 )
@@ -114,6 +143,26 @@ type DeleteAppserverParams struct {
 
 func (q *Queries) DeleteAppserver(ctx context.Context, arg DeleteAppserverParams) (int64, error) {
 	result, err := q.db.Exec(ctx, deleteAppserver, arg.ID, arg.OwnerID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteAppserverRole = `-- name: DeleteAppserverRole :execrows
+DELETE
+FROM appserver_role as ar
+USING appserver as a 
+WHERE a.id=ar.appserver_id AND ar.id=$1 AND a.owner_id=$2
+`
+
+type DeleteAppserverRoleParams struct {
+	ID      uuid.UUID
+	OwnerID uuid.UUID
+}
+
+func (q *Queries) DeleteAppserverRole(ctx context.Context, arg DeleteAppserverRoleParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAppserverRole, arg.ID, arg.OwnerID)
 	if err != nil {
 		return 0, err
 	}
@@ -167,6 +216,39 @@ func (q *Queries) GetAppserver(ctx context.Context, id uuid.UUID) (Appserver, er
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getAppserverRoles = `-- name: GetAppserverRoles :many
+SELECT id, appserver_id, name, created_at, updated_at
+FROM appserver_role
+WHERE appserver_id=$1
+`
+
+// --- APP SERVER ROLES -----
+func (q *Queries) GetAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error) {
+	rows, err := q.db.Query(ctx, getAppserverRoles, appserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AppserverRole
+	for rows.Next() {
+		var i AppserverRole
+		if err := rows.Scan(
+			&i.ID,
+			&i.AppserverID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAppserverSub = `-- name: GetAppserverSub :one

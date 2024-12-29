@@ -151,7 +151,7 @@ func setup(t *testing.T, cleanup func()) context.Context {
 
 func teardown(ctx context.Context) {
 	// Cleans all the table's data after each test (used in setup) function
-	tables := []string{"appserver", "channel", "appserver_sub"}
+	tables := []string{"appserver", "channel", "appserver_sub", "appserver_role"}
 	for _, table := range tables {
 		query := fmt.Sprintf(`TRUNCATE TABLE %s RESTART IDENTITY CASCADE;`, table)
 		_, err := dbcPool.Exec(ctx, query)
@@ -212,7 +212,7 @@ func testAppserver(t *testing.T, userId string, appserver *qx.Appserver) *qx.App
 
 	} else {
 		// Default values
-		name = fmt.Sprintf("%s - %s", faker.Word(), uuid.NewString())
+		name = faker.Word()
 	}
 
 	as, err := qx.New(dbcPool).CreateAppserver(context.Background(), qx.CreateAppserverParams{
@@ -250,6 +250,29 @@ func testAppserverSub(t *testing.T, userId string, appserverSub *qx.AppserverSub
 	return &asSub
 }
 
+func testAppserverRole(t *testing.T, userId string, appserverRole *qx.AppserverRole) *qx.AppserverRole {
+	// Define attributes
+	var appserverId uuid.UUID
+	var name string
+	if appserverRole != nil {
+		// Custom values
+		appserverId = appserverRole.AppserverID
+		name = appserverRole.Name
+	} else {
+		appserverId = testAppserver(t, userId, nil).ID
+		name = faker.Word()
+	}
+
+	asRole, err := qx.New(dbcPool).CreateAppserverRole(context.Background(), qx.CreateAppserverRoleParams{
+		AppserverID: appserverId, Name: name,
+	})
+
+	if err != nil {
+		t.Fatalf("Unable to create appserverRole. Error: %v", err)
+	}
+	return &asRole
+}
+
 func testChannel(t *testing.T, channel *qx.Channel) *qx.Channel {
 	// Define attributes
 	var appserverId uuid.UUID
@@ -261,7 +284,7 @@ func testChannel(t *testing.T, channel *qx.Channel) *qx.Channel {
 		appserverId = channel.ID
 	} else {
 		// Default values
-		name = fmt.Sprintf("%s - %s", faker.Word(), uuid.NewString())
+		name = faker.Word()
 		appserverId = testAppserver(t, uuid.NewString(), nil).ID
 
 	}

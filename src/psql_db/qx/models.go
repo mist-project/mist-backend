@@ -17,6 +17,22 @@ type Appserver struct {
 	UpdatedAt pgtype.Timestamp
 }
 
+type AppserverRole struct {
+	ID          uuid.UUID
+	AppserverID uuid.UUID
+	Name        string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
+type AppserverRoleSub struct {
+	ID              uuid.UUID
+	AppserverRoleID uuid.UUID
+	AppserverSubID  uuid.UUID
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+}
+
 type AppserverSub struct {
 	ID          uuid.UUID
 	AppserverID uuid.UUID

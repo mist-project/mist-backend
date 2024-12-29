@@ -25,6 +25,14 @@ service MistBEService {
   rpc DeleteAppserverSub(DeleteAppserverSubRequest)
       returns (DeleteAppserverSubResponse) {}
 
+  // ----- APPSERVER ROLE -----
+  rpc CreateAppserverRole(CreateAppserverRoleRequest)
+      returns (CreateAppserverRoleResponse) {}
+  rpc GetAllAppserverRoles(GetAllAppserverRolesRequest)
+      returns (GetAllAppserverRolesResponse) {}
+  rpc DeleteAppserverRole(DeleteAppserverRoleRequest)
+      returns (DeleteAppserverRoleResponse) {}
+
   // ----- CHANNEL ----
   rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse);
   rpc GetByIdChannel(GetByIdChannelRequest) returns (GetByIdChannelResponse);
@@ -50,6 +58,14 @@ message AppserverSub {
 message AppserverAndSub {
   string sub_id = 1;
   Appserver appserver = 2;
+}
+
+message AppserverRole {
+  string id = 1;
+  string name = 2;
+  string appserver_id = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
 }
 
 message Channel {
@@ -82,6 +98,20 @@ message GetUserAppserverSubsResponse {
   repeated AppserverAndSub appservers = 1;
 }
 message DeleteAppserverSubResponse {}
+
+// ----- AppserverRole -----
+message CreateAppserverRoleRequest {
+  string appserver_id = 1;
+  string name = 2;
+}
+message GetAllAppserverRolesRequest { string appserver_id = 1; }
+message DeleteAppserverRoleRequest { string id = 1; }
+
+message CreateAppserverRoleResponse { AppserverRole appserver_role = 1; }
+message GetAllAppserverRolesResponse {
+  repeated AppserverRole appserver_roles = 1;
+}
+message DeleteAppserverRoleResponse {}
 
 // ----- Channel -----
 message CreateChannelRequest {

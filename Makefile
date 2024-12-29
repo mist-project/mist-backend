@@ -90,7 +90,7 @@ lint:
 	golangci-lint run --disable-all -E errcheck
 
 lint-proto:
-	buf lint
+	@buf lint
 
 # ----- SHORTCUTS -----
 psql:

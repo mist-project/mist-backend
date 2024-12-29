@@ -26,6 +26,9 @@ const (
 	MistBEService_CreateAppserverSub_FullMethodName   = "/mistbe.v1.MistBEService/CreateAppserverSub"
 	MistBEService_GetUserAppserverSubs_FullMethodName = "/mistbe.v1.MistBEService/GetUserAppserverSubs"
 	MistBEService_DeleteAppserverSub_FullMethodName   = "/mistbe.v1.MistBEService/DeleteAppserverSub"
+	MistBEService_CreateAppserverRole_FullMethodName  = "/mistbe.v1.MistBEService/CreateAppserverRole"
+	MistBEService_GetAllAppserverRoles_FullMethodName = "/mistbe.v1.MistBEService/GetAllAppserverRoles"
+	MistBEService_DeleteAppserverRole_FullMethodName  = "/mistbe.v1.MistBEService/DeleteAppserverRole"
 	MistBEService_CreateChannel_FullMethodName        = "/mistbe.v1.MistBEService/CreateChannel"
 	MistBEService_GetByIdChannel_FullMethodName       = "/mistbe.v1.MistBEService/GetByIdChannel"
 	MistBEService_ListChannels_FullMethodName         = "/mistbe.v1.MistBEService/ListChannels"
@@ -47,6 +50,10 @@ type MistBEServiceClient interface {
 	CreateAppserverSub(ctx context.Context, in *CreateAppserverSubRequest, opts ...grpc.CallOption) (*CreateAppserverSubResponse, error)
 	GetUserAppserverSubs(ctx context.Context, in *GetUserAppserverSubsRequest, opts ...grpc.CallOption) (*GetUserAppserverSubsResponse, error)
 	DeleteAppserverSub(ctx context.Context, in *DeleteAppserverSubRequest, opts ...grpc.CallOption) (*DeleteAppserverSubResponse, error)
+	// ----- APPSERVER ROLE -----
+	CreateAppserverRole(ctx context.Context, in *CreateAppserverRoleRequest, opts ...grpc.CallOption) (*CreateAppserverRoleResponse, error)
+	GetAllAppserverRoles(ctx context.Context, in *GetAllAppserverRolesRequest, opts ...grpc.CallOption) (*GetAllAppserverRolesResponse, error)
+	DeleteAppserverRole(ctx context.Context, in *DeleteAppserverRoleRequest, opts ...grpc.CallOption) (*DeleteAppserverRoleResponse, error)
 	// ----- CHANNEL ----
 	CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error)
 	GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error)
@@ -132,6 +139,36 @@ func (c *mistBEServiceClient) DeleteAppserverSub(ctx context.Context, in *Delete
 	return out, nil
 }
 
+func (c *mistBEServiceClient) CreateAppserverRole(ctx context.Context, in *CreateAppserverRoleRequest, opts ...grpc.CallOption) (*CreateAppserverRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateAppserverRoleResponse)
+	err := c.cc.Invoke(ctx, MistBEService_CreateAppserverRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) GetAllAppserverRoles(ctx context.Context, in *GetAllAppserverRolesRequest, opts ...grpc.CallOption) (*GetAllAppserverRolesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAllAppserverRolesResponse)
+	err := c.cc.Invoke(ctx, MistBEService_GetAllAppserverRoles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mistBEServiceClient) DeleteAppserverRole(ctx context.Context, in *DeleteAppserverRoleRequest, opts ...grpc.CallOption) (*DeleteAppserverRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteAppserverRoleResponse)
+	err := c.cc.Invoke(ctx, MistBEService_DeleteAppserverRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *mistBEServiceClient) CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateChannelResponse)
@@ -187,6 +224,10 @@ type MistBEServiceServer interface {
 	CreateAppserverSub(context.Context, *CreateAppserverSubRequest) (*CreateAppserverSubResponse, error)
 	GetUserAppserverSubs(context.Context, *GetUserAppserverSubsRequest) (*GetUserAppserverSubsResponse, error)
 	DeleteAppserverSub(context.Context, *DeleteAppserverSubRequest) (*DeleteAppserverSubResponse, error)
+	// ----- APPSERVER ROLE -----
+	CreateAppserverRole(context.Context, *CreateAppserverRoleRequest) (*CreateAppserverRoleResponse, error)
+	GetAllAppserverRoles(context.Context, *GetAllAppserverRolesRequest) (*GetAllAppserverRolesResponse, error)
+	DeleteAppserverRole(context.Context, *DeleteAppserverRoleRequest) (*DeleteAppserverRoleResponse, error)
 	// ----- CHANNEL ----
 	CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error)
 	GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error)
@@ -222,6 +263,15 @@ func (UnimplementedMistBEServiceServer) GetUserAppserverSubs(context.Context, *G
 }
 func (UnimplementedMistBEServiceServer) DeleteAppserverSub(context.Context, *DeleteAppserverSubRequest) (*DeleteAppserverSubResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserverSub not implemented")
+}
+func (UnimplementedMistBEServiceServer) CreateAppserverRole(context.Context, *CreateAppserverRoleRequest) (*CreateAppserverRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAppserverRole not implemented")
+}
+func (UnimplementedMistBEServiceServer) GetAllAppserverRoles(context.Context, *GetAllAppserverRolesRequest) (*GetAllAppserverRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllAppserverRoles not implemented")
+}
+func (UnimplementedMistBEServiceServer) DeleteAppserverRole(context.Context, *DeleteAppserverRoleRequest) (*DeleteAppserverRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserverRole not implemented")
 }
 func (UnimplementedMistBEServiceServer) CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateChannel not implemented")
@@ -382,6 +432,60 @@ func _MistBEService_DeleteAppserverSub_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MistBEService_CreateAppserverRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAppserverRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).CreateAppserverRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_CreateAppserverRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).CreateAppserverRole(ctx, req.(*CreateAppserverRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MistBEService_GetAllAppserverRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllAppserverRolesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).GetAllAppserverRoles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_GetAllAppserverRoles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).GetAllAppserverRoles(ctx, req.(*GetAllAppserverRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MistBEService_DeleteAppserverRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAppserverRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MistBEServiceServer).DeleteAppserverRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MistBEService_DeleteAppserverRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MistBEServiceServer).DeleteAppserverRole(ctx, req.(*DeleteAppserverRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MistBEService_CreateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateChannelRequest)
 	if err := dec(in); err != nil {
@@ -488,6 +592,18 @@ var MistBEService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteAppserverSub",
 			Handler:    _MistBEService_DeleteAppserverSub_Handler,
+		},
+		{
+			MethodName: "CreateAppserverRole",
+			Handler:    _MistBEService_CreateAppserverRole_Handler,
+		},
+		{
+			MethodName: "GetAllAppserverRoles",
+			Handler:    _MistBEService_GetAllAppserverRoles_Handler,
+		},
+		{
+			MethodName: "DeleteAppserverRole",
+			Handler:    _MistBEService_DeleteAppserverRole_Handler,
 		},
 		{
 			MethodName: "CreateChannel",

@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"mist/src/middleware"
-	pb_servers "mist/src/protos/server/v1"
+	pb_server "mist/src/protos/server/v1"
 	"mist/src/service"
 )
 
-func (s *Grpcserver) CreateAppserver(
-	ctx context.Context, req *pb_servers.CreateAppserverRequest,
-) (*pb_servers.CreateAppserverResponse, error) {
+func (s *AppserverGRPCService) CreateAppserver(
+	ctx context.Context, req *pb_server.CreateAppserverRequest,
+) (*pb_server.CreateAppserverResponse, error) {
 	appserverService := service.NewAppserverService(s.DbcPool, ctx)
 	jwtClaims, _ := middleware.GetJWTClaims(ctx)
 
@@ -22,14 +22,14 @@ func (s *Grpcserver) CreateAppserver(
 
 	service.NewAppserverSubService(s.DbcPool, ctx).Create(appserver.ID.String(), jwtClaims.UserID)
 
-	return &pb_servers.CreateAppserverResponse{
+	return &pb_server.CreateAppserverResponse{
 		Appserver: appserverService.PgTypeToPb(appserver),
 	}, nil
 }
 
-func (s *Grpcserver) GetByIdAppserver(
-	ctx context.Context, req *pb_servers.GetByIdAppserverRequest,
-) (*pb_servers.GetByIdAppserverResponse, error) {
+func (s *AppserverGRPCService) GetByIdAppserver(
+	ctx context.Context, req *pb_server.GetByIdAppserverRequest,
+) (*pb_server.GetByIdAppserverResponse, error) {
 	appserverService := service.NewAppserverService(s.DbcPool, ctx)
 	appserver, err := appserverService.GetById(req.GetId())
 
@@ -37,20 +37,20 @@ func (s *Grpcserver) GetByIdAppserver(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_servers.GetByIdAppserverResponse{Appserver: appserverService.PgTypeToPb(appserver)}, nil
+	return &pb_server.GetByIdAppserverResponse{Appserver: appserverService.PgTypeToPb(appserver)}, nil
 }
 
-func (s *Grpcserver) ListAppservers(
-	ctx context.Context, req *pb_servers.ListAppserversRequest,
-) (*pb_servers.ListAppserversResponse, error) {
+func (s *AppserverGRPCService) ListAppservers(
+	ctx context.Context, req *pb_server.ListAppserversRequest,
+) (*pb_server.ListAppserversResponse, error) {
 	appserverService := service.NewAppserverService(s.DbcPool, ctx)
 	// TODO: Figure out what can go wrong to add error handler
 	appservers, _ := appserverService.List(req.GetName())
 
-	response := &pb_servers.ListAppserversResponse{}
+	response := &pb_server.ListAppserversResponse{}
 
 	// Resize the array
-	response.Appservers = make([]*pb_servers.Appserver, 0, len(appservers))
+	response.Appservers = make([]*pb_server.Appserver, 0, len(appservers))
 
 	for _, appserver := range appservers {
 		response.Appservers = append(response.Appservers, appserverService.PgTypeToPb(&appserver))
@@ -59,9 +59,9 @@ func (s *Grpcserver) ListAppservers(
 	return response, nil
 }
 
-func (s *Grpcserver) DeleteAppserver(
-	ctx context.Context, req *pb_servers.DeleteAppserverRequest,
-) (*pb_servers.DeleteAppserverResponse, error) {
+func (s *AppserverGRPCService) DeleteAppserver(
+	ctx context.Context, req *pb_server.DeleteAppserverRequest,
+) (*pb_server.DeleteAppserverResponse, error) {
 
 	jwtClaims, _ := middleware.GetJWTClaims(ctx)
 
@@ -71,5 +71,5 @@ func (s *Grpcserver) DeleteAppserver(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_servers.DeleteAppserverResponse{}, nil
+	return &pb_server.DeleteAppserverResponse{}, nil
 }

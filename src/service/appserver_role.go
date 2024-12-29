@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_servers "mist/src/protos/server/v1"
+	pb_server "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 )
 
@@ -23,8 +23,8 @@ func NewAppserverRoleService(dbcPool *pgxpool.Pool, ctx context.Context) *Appser
 	return &AppserverRoleService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *AppserverRoleService) PgTypeToPb(appserverRole *qx.AppserverRole) *pb_servers.AppserverRole {
-	return &pb_servers.AppserverRole{
+func (service *AppserverRoleService) PgTypeToPb(appserverRole *qx.AppserverRole) *pb_server.AppserverRole {
+	return &pb_server.AppserverRole{
 		Id:          appserverRole.ID.String(),
 		AppserverId: appserverRole.AppserverID.String(),
 		Name:        appserverRole.Name,

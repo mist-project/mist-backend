@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_servers "mist/src/protos/server/v1"
+	pb_server "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 )
 
@@ -25,8 +25,8 @@ func NewAppserverService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverS
 	return &AppserverService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *AppserverService) PgTypeToPb(appserver *qx.Appserver) *pb_servers.Appserver {
-	return &pb_servers.Appserver{
+func (service *AppserverService) PgTypeToPb(appserver *qx.Appserver) *pb_server.Appserver {
+	return &pb_server.Appserver{
 		Id:        appserver.ID.String(),
 		Name:      appserver.Name,
 		CreatedAt: timestamppb.New(appserver.CreatedAt.Time),

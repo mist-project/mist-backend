@@ -3,13 +3,13 @@ package rpcs
 import (
 	"context"
 
-	pb_servers "mist/src/protos/server/v1"
+	pb_channel "mist/src/protos/channel/v1"
 	"mist/src/service"
 )
 
-func (s *Grpcserver) CreateChannel(
-	ctx context.Context, req *pb_servers.CreateChannelRequest,
-) (*pb_servers.CreateChannelResponse, error) {
+func (s *ChannelGRPCService) CreateChannel(
+	ctx context.Context, req *pb_channel.CreateChannelRequest,
+) (*pb_channel.CreateChannelResponse, error) {
 	channelService := service.NewChannelService(s.DbcPool, ctx)
 	channel, err := channelService.Create(req.GetName(), req.GetAppserverId())
 
@@ -17,14 +17,14 @@ func (s *Grpcserver) CreateChannel(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_servers.CreateChannelResponse{
+	return &pb_channel.CreateChannelResponse{
 		Channel: channelService.PgTypeToPb(channel),
 	}, nil
 }
 
-func (s *Grpcserver) GetByIdChannel(
-	ctx context.Context, req *pb_servers.GetByIdChannelRequest,
-) (*pb_servers.GetByIdChannelResponse, error) {
+func (s *ChannelGRPCService) GetByIdChannel(
+	ctx context.Context, req *pb_channel.GetByIdChannelRequest,
+) (*pb_channel.GetByIdChannelResponse, error) {
 	channelService := service.NewChannelService(s.DbcPool, ctx)
 	channel, err := channelService.GetById(req.GetId())
 
@@ -32,20 +32,20 @@ func (s *Grpcserver) GetByIdChannel(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_servers.GetByIdChannelResponse{Channel: channelService.PgTypeToPb(channel)}, nil
+	return &pb_channel.GetByIdChannelResponse{Channel: channelService.PgTypeToPb(channel)}, nil
 }
 
-func (s *Grpcserver) ListChannels(
-	ctx context.Context, req *pb_servers.ListChannelsRequest,
-) (*pb_servers.ListChannelsResponse, error) {
+func (s *ChannelGRPCService) ListChannels(
+	ctx context.Context, req *pb_channel.ListChannelsRequest,
+) (*pb_channel.ListChannelsResponse, error) {
 	channelService := service.NewChannelService(s.DbcPool, ctx)
 	// TODO: Handle potential errors that can happen here
 	channels, _ := channelService.List(req.GetName(), req.GetAppserverId())
 
-	response := &pb_servers.ListChannelsResponse{}
+	response := &pb_channel.ListChannelsResponse{}
 
 	// Resize the array to the correct size
-	response.Channels = make([]*pb_servers.Channel, 0, len(channels))
+	response.Channels = make([]*pb_channel.Channel, 0, len(channels))
 
 	for _, channel := range channels {
 		response.Channels = append(response.Channels, channelService.PgTypeToPb(&channel))
@@ -54,9 +54,9 @@ func (s *Grpcserver) ListChannels(
 	return response, nil
 }
 
-func (s *Grpcserver) DeleteChannel(
-	ctx context.Context, req *pb_servers.DeleteChannelRequest,
-) (*pb_servers.DeleteChannelResponse, error) {
+func (s *ChannelGRPCService) DeleteChannel(
+	ctx context.Context, req *pb_channel.DeleteChannelRequest,
+) (*pb_channel.DeleteChannelResponse, error) {
 
 	err := service.NewChannelService(s.DbcPool, ctx).Delete(req.GetId())
 
@@ -64,5 +64,5 @@ func (s *Grpcserver) DeleteChannel(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_servers.DeleteChannelResponse{}, nil
+	return &pb_channel.DeleteChannelResponse{}, nil
 }

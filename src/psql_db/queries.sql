@@ -8,10 +8,8 @@ LIMIT 1;
 -- name: ListAppservers :many
 SELECT *
 FROM appserver
-WHERE
-  name=COALESCE(sqlc.narg('name'), name)
-  AND
-  1=0; -- This query might be removed. Hence the 1=0. So it returns no data.
+WHERE name=COALESCE(sqlc.narg('name'), name)
+  AND 1=0; -- This query might be removed. Hence the 1=0. So it returns no data.
 
 -- name: CreateAppserver :one
 INSERT INTO appserver (
@@ -24,9 +22,9 @@ INSERT INTO appserver (
 RETURNING *;
 
 -- name: DeleteAppserver :execrows
-DELETE
-FROM appserver
-WHERE id=$1 AND owner_id=$2;
+DELETE FROM appserver
+WHERE id=$1
+  AND owner_id=$2;
 
 ----- APPSERVER SUB QUERIES -----
 -- name: GetAppserverSub :one
@@ -44,8 +42,7 @@ SELECT
   aps.updated_at  
 FROM appserver_sub as apssub
 JOIN appserver as aps ON apssub.appserver_id=aps.id
-WHERE
-  apssub.owner_id=$1;
+WHERE apssub.owner_id=$1;
 
 -- name: CreateAppserverSub :one
 INSERT INTO appserver_sub (
@@ -58,8 +55,7 @@ INSERT INTO appserver_sub (
 RETURNING *;
 
 -- name: DeleteAppserverSub :execrows
-DELETE
-FROM appserver_sub
+DELETE FROM appserver_sub
 WHERE id=$1;
 
 ----- APP SERVER ROLES -----
@@ -79,10 +75,30 @@ INSERT INTO appserver_role (
 RETURNING *;
 
 -- name: DeleteAppserverRole :execrows
-DELETE
-FROM appserver_role as ar
+DELETE FROM appserver_role as ar
 USING appserver as a 
-WHERE a.id=ar.appserver_id AND ar.id=$1 AND a.owner_id=$2;
+WHERE a.id=ar.appserver_id
+  AND ar.id=$1
+  AND a.owner_id=$2;
+
+----- APP SERVER ROLE SUBS -----
+-- name: CreateAppserverRoleSub :one
+INSERT INTO appserver_role_sub (
+  appserver_sub_id,
+  appserver_role_id
+) VALUES (
+  $1,
+  $2
+)
+RETURNING *;
+
+-- name: DeleteAppserverRoleSub :execrows
+DELETE FROM appserver_role_sub as ars
+USING appserver as a, appserver_role as ar
+WHERE a.id=ar.appserver_id
+  AND ar.id=ars.appserver_role_id
+  AND ars.id=$1
+  AND a.owner_id=$2;
 
 ----- CHANNEL QUERIES -----
 -- name: GetChannel :one
@@ -94,10 +110,8 @@ LIMIT 1;
 -- name: ListChannels :many
 SELECT *
 FROM channel
-WHERE
-  (name=COALESCE(sqlc.narg('name'), name))
-  AND
-  (appserver_id=COALESCE(sqlc.narg('appserver_id'), appserver_id));
+WHERE name=COALESCE(sqlc.narg('name'), name)
+  AND appserver_id=COALESCE(sqlc.narg('appserver_id'), appserver_id);
 
 -- name: CreateChannel :one
 INSERT INTO channel (
@@ -110,6 +124,5 @@ INSERT INTO channel (
 RETURNING *;
 
 -- name: DeleteChannel :execrows
-DELETE
-FROM channel
+DELETE FROM channel
 WHERE id=$1;

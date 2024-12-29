@@ -22,12 +22,14 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"mist/src/middleware"
-	pb_servers "mist/src/protos/server/v1"
+	pb_channel "mist/src/protos/channel/v1"
+	pb_server "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 )
 
 var testServer *grpc.Server
-var TestClient pb_servers.ServerServiceClient
+var TestAppserverClient pb_server.ServerServiceClient
+var TestChannelClient pb_channel.ChannelServiceClient
 var testClientConn *grpc.ClientConn
 
 var dbcPool *pgxpool.Pool
@@ -40,7 +42,7 @@ var ctxUserKey = "userRequestId"
 func TestMain(m *testing.M) {
 	// ---- SETUP -----
 	runTestDbMigrations()
-	setupTestGrpcserverAndClient()
+	setupTestAppserverGRPCServiceAndClient()
 
 	// ----- EXECUTION -----
 	exitValue := m.Run()
@@ -77,7 +79,7 @@ func runTestDbMigrations() {
 	})
 }
 
-func setupTestGrpcserverAndClient() {
+func setupTestAppserverGRPCServiceAndClient() {
 	// Creates a grpc server and client to run tests on
 	var err error
 	dbcPool, err = pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
@@ -89,7 +91,8 @@ func setupTestGrpcserverAndClient() {
 
 	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_servers.RegisterServerServiceServer(testServer, &Grpcserver{DbcPool: dbcPool})
+	pb_server.RegisterServerServiceServer(testServer, &AppserverGRPCService{DbcPool: dbcPool})
+	pb_channel.RegisterChannelServiceServer(testServer, &ChannelGRPCService{DbcPool: dbcPool})
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {
@@ -102,7 +105,9 @@ func setupTestGrpcserverAndClient() {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	TestClient = pb_servers.NewServerServiceClient(testClientConn)
+	TestAppserverClient = pb_server.NewServerServiceClient(testClientConn)
+	TestChannelClient = pb_channel.NewChannelServiceClient(testClientConn)
+
 }
 
 func rpcTestCleanup() {
@@ -271,6 +276,39 @@ func testAppserverRole(t *testing.T, userId string, appserverRole *qx.AppserverR
 		t.Fatalf("Unable to create appserverRole. Error: %v", err)
 	}
 	return &asRole
+}
+
+func testAppserverRoleSub(t *testing.T, userId string, appserverRoleSub *qx.AppserverRoleSub) *qx.AppserverRoleSub {
+	// Define attributes
+	var appserverRoleId uuid.UUID
+	var appserverSubId uuid.UUID
+
+	ownerId, err := uuid.Parse(userId)
+
+	if err != nil {
+		t.Fatalf("unable to create appserverSub. Error %v", err)
+	}
+
+	if appserverRoleSub != nil {
+		// Custom values
+		appserverRoleId = appserverRoleSub.AppserverRoleID
+		appserverSubId = appserverRoleSub.AppserverSubID
+	} else {
+		appserverRole := testAppserverRole(t, userId, nil)
+		appserverRoleId = appserverRole.ID
+		appserverSubId = testAppserverSub(
+			t, userId, &qx.AppserverSub{AppserverID: appserverRole.AppserverID, OwnerID: ownerId},
+		).ID
+	}
+
+	asrSub, err := qx.New(dbcPool).CreateAppserverRoleSub(context.Background(), qx.CreateAppserverRoleSubParams{
+		AppserverRoleID: appserverRoleId, AppserverSubID: appserverSubId,
+	})
+
+	if err != nil {
+		t.Fatalf("Unable to create appserverRole. Error: %v", err)
+	}
+	return &asrSub
 }
 
 func testChannel(t *testing.T, channel *qx.Channel) *qx.Channel {

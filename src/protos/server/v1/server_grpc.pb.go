@@ -19,27 +19,23 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServerService_CreateAppserver_FullMethodName      = "/server.v1.ServerService/CreateAppserver"
-	ServerService_GetByIdAppserver_FullMethodName     = "/server.v1.ServerService/GetByIdAppserver"
-	ServerService_ListAppservers_FullMethodName       = "/server.v1.ServerService/ListAppservers"
-	ServerService_DeleteAppserver_FullMethodName      = "/server.v1.ServerService/DeleteAppserver"
-	ServerService_CreateAppserverSub_FullMethodName   = "/server.v1.ServerService/CreateAppserverSub"
-	ServerService_GetUserAppserverSubs_FullMethodName = "/server.v1.ServerService/GetUserAppserverSubs"
-	ServerService_DeleteAppserverSub_FullMethodName   = "/server.v1.ServerService/DeleteAppserverSub"
-	ServerService_CreateAppserverRole_FullMethodName  = "/server.v1.ServerService/CreateAppserverRole"
-	ServerService_GetAllAppserverRoles_FullMethodName = "/server.v1.ServerService/GetAllAppserverRoles"
-	ServerService_DeleteAppserverRole_FullMethodName  = "/server.v1.ServerService/DeleteAppserverRole"
-	ServerService_CreateChannel_FullMethodName        = "/server.v1.ServerService/CreateChannel"
-	ServerService_GetByIdChannel_FullMethodName       = "/server.v1.ServerService/GetByIdChannel"
-	ServerService_ListChannels_FullMethodName         = "/server.v1.ServerService/ListChannels"
-	ServerService_DeleteChannel_FullMethodName        = "/server.v1.ServerService/DeleteChannel"
+	ServerService_CreateAppserver_FullMethodName        = "/server.v1.ServerService/CreateAppserver"
+	ServerService_GetByIdAppserver_FullMethodName       = "/server.v1.ServerService/GetByIdAppserver"
+	ServerService_ListAppservers_FullMethodName         = "/server.v1.ServerService/ListAppservers"
+	ServerService_DeleteAppserver_FullMethodName        = "/server.v1.ServerService/DeleteAppserver"
+	ServerService_CreateAppserverSub_FullMethodName     = "/server.v1.ServerService/CreateAppserverSub"
+	ServerService_GetUserAppserverSubs_FullMethodName   = "/server.v1.ServerService/GetUserAppserverSubs"
+	ServerService_DeleteAppserverSub_FullMethodName     = "/server.v1.ServerService/DeleteAppserverSub"
+	ServerService_CreateAppserverRole_FullMethodName    = "/server.v1.ServerService/CreateAppserverRole"
+	ServerService_GetAllAppserverRoles_FullMethodName   = "/server.v1.ServerService/GetAllAppserverRoles"
+	ServerService_DeleteAppserverRole_FullMethodName    = "/server.v1.ServerService/DeleteAppserverRole"
+	ServerService_CreateAppserverRoleSub_FullMethodName = "/server.v1.ServerService/CreateAppserverRoleSub"
+	ServerService_DeleteAppserverRoleSub_FullMethodName = "/server.v1.ServerService/DeleteAppserverRoleSub"
 )
 
 // ServerServiceClient is the client API for ServerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// The greeting service definition.
 type ServerServiceClient interface {
 	// ----- APPSERVER ----
 	CreateAppserver(ctx context.Context, in *CreateAppserverRequest, opts ...grpc.CallOption) (*CreateAppserverResponse, error)
@@ -54,11 +50,9 @@ type ServerServiceClient interface {
 	CreateAppserverRole(ctx context.Context, in *CreateAppserverRoleRequest, opts ...grpc.CallOption) (*CreateAppserverRoleResponse, error)
 	GetAllAppserverRoles(ctx context.Context, in *GetAllAppserverRolesRequest, opts ...grpc.CallOption) (*GetAllAppserverRolesResponse, error)
 	DeleteAppserverRole(ctx context.Context, in *DeleteAppserverRoleRequest, opts ...grpc.CallOption) (*DeleteAppserverRoleResponse, error)
-	// ----- CHANNEL ----
-	CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error)
-	GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error)
-	ListChannels(ctx context.Context, in *ListChannelsRequest, opts ...grpc.CallOption) (*ListChannelsResponse, error)
-	DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error)
+	// ----- APPSERVER ROLE SUB -----
+	CreateAppserverRoleSub(ctx context.Context, in *CreateAppserverRoleSubRequest, opts ...grpc.CallOption) (*CreateAppserverRoleSubResponse, error)
+	DeleteAppserverRoleSub(ctx context.Context, in *DeleteAppserverRoleSubRequest, opts ...grpc.CallOption) (*DeleteAppserverRoleSubResponse, error)
 }
 
 type serverServiceClient struct {
@@ -169,40 +163,20 @@ func (c *serverServiceClient) DeleteAppserverRole(ctx context.Context, in *Delet
 	return out, nil
 }
 
-func (c *serverServiceClient) CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error) {
+func (c *serverServiceClient) CreateAppserverRoleSub(ctx context.Context, in *CreateAppserverRoleSubRequest, opts ...grpc.CallOption) (*CreateAppserverRoleSubResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateChannelResponse)
-	err := c.cc.Invoke(ctx, ServerService_CreateChannel_FullMethodName, in, out, cOpts...)
+	out := new(CreateAppserverRoleSubResponse)
+	err := c.cc.Invoke(ctx, ServerService_CreateAppserverRoleSub_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serverServiceClient) GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error) {
+func (c *serverServiceClient) DeleteAppserverRoleSub(ctx context.Context, in *DeleteAppserverRoleSubRequest, opts ...grpc.CallOption) (*DeleteAppserverRoleSubResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetByIdChannelResponse)
-	err := c.cc.Invoke(ctx, ServerService_GetByIdChannel_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *serverServiceClient) ListChannels(ctx context.Context, in *ListChannelsRequest, opts ...grpc.CallOption) (*ListChannelsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListChannelsResponse)
-	err := c.cc.Invoke(ctx, ServerService_ListChannels_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *serverServiceClient) DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteChannelResponse)
-	err := c.cc.Invoke(ctx, ServerService_DeleteChannel_FullMethodName, in, out, cOpts...)
+	out := new(DeleteAppserverRoleSubResponse)
+	err := c.cc.Invoke(ctx, ServerService_DeleteAppserverRoleSub_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -212,8 +186,6 @@ func (c *serverServiceClient) DeleteChannel(ctx context.Context, in *DeleteChann
 // ServerServiceServer is the server API for ServerService service.
 // All implementations must embed UnimplementedServerServiceServer
 // for forward compatibility.
-//
-// The greeting service definition.
 type ServerServiceServer interface {
 	// ----- APPSERVER ----
 	CreateAppserver(context.Context, *CreateAppserverRequest) (*CreateAppserverResponse, error)
@@ -228,11 +200,9 @@ type ServerServiceServer interface {
 	CreateAppserverRole(context.Context, *CreateAppserverRoleRequest) (*CreateAppserverRoleResponse, error)
 	GetAllAppserverRoles(context.Context, *GetAllAppserverRolesRequest) (*GetAllAppserverRolesResponse, error)
 	DeleteAppserverRole(context.Context, *DeleteAppserverRoleRequest) (*DeleteAppserverRoleResponse, error)
-	// ----- CHANNEL ----
-	CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error)
-	GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error)
-	ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error)
-	DeleteChannel(context.Context, *DeleteChannelRequest) (*DeleteChannelResponse, error)
+	// ----- APPSERVER ROLE SUB -----
+	CreateAppserverRoleSub(context.Context, *CreateAppserverRoleSubRequest) (*CreateAppserverRoleSubResponse, error)
+	DeleteAppserverRoleSub(context.Context, *DeleteAppserverRoleSubRequest) (*DeleteAppserverRoleSubResponse, error)
 	mustEmbedUnimplementedServerServiceServer()
 }
 
@@ -273,17 +243,11 @@ func (UnimplementedServerServiceServer) GetAllAppserverRoles(context.Context, *G
 func (UnimplementedServerServiceServer) DeleteAppserverRole(context.Context, *DeleteAppserverRoleRequest) (*DeleteAppserverRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserverRole not implemented")
 }
-func (UnimplementedServerServiceServer) CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateChannel not implemented")
+func (UnimplementedServerServiceServer) CreateAppserverRoleSub(context.Context, *CreateAppserverRoleSubRequest) (*CreateAppserverRoleSubResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAppserverRoleSub not implemented")
 }
-func (UnimplementedServerServiceServer) GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetByIdChannel not implemented")
-}
-func (UnimplementedServerServiceServer) ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListChannels not implemented")
-}
-func (UnimplementedServerServiceServer) DeleteChannel(context.Context, *DeleteChannelRequest) (*DeleteChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteChannel not implemented")
+func (UnimplementedServerServiceServer) DeleteAppserverRoleSub(context.Context, *DeleteAppserverRoleSubRequest) (*DeleteAppserverRoleSubResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserverRoleSub not implemented")
 }
 func (UnimplementedServerServiceServer) mustEmbedUnimplementedServerServiceServer() {}
 func (UnimplementedServerServiceServer) testEmbeddedByValue()                       {}
@@ -486,74 +450,38 @@ func _ServerService_DeleteAppserverRole_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_CreateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateChannelRequest)
+func _ServerService_CreateAppserverRoleSub_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAppserverRoleSubRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).CreateChannel(ctx, in)
+		return srv.(ServerServiceServer).CreateAppserverRoleSub(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_CreateChannel_FullMethodName,
+		FullMethod: ServerService_CreateAppserverRoleSub_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).CreateChannel(ctx, req.(*CreateChannelRequest))
+		return srv.(ServerServiceServer).CreateAppserverRoleSub(ctx, req.(*CreateAppserverRoleSubRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_GetByIdChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetByIdChannelRequest)
+func _ServerService_DeleteAppserverRoleSub_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAppserverRoleSubRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).GetByIdChannel(ctx, in)
+		return srv.(ServerServiceServer).DeleteAppserverRoleSub(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_GetByIdChannel_FullMethodName,
+		FullMethod: ServerService_DeleteAppserverRoleSub_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).GetByIdChannel(ctx, req.(*GetByIdChannelRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ServerService_ListChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListChannelsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServerServiceServer).ListChannels(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServerService_ListChannels_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).ListChannels(ctx, req.(*ListChannelsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ServerService_DeleteChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteChannelRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServerServiceServer).DeleteChannel(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ServerService_DeleteChannel_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).DeleteChannel(ctx, req.(*DeleteChannelRequest))
+		return srv.(ServerServiceServer).DeleteAppserverRoleSub(ctx, req.(*DeleteAppserverRoleSubRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -606,20 +534,12 @@ var ServerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServerService_DeleteAppserverRole_Handler,
 		},
 		{
-			MethodName: "CreateChannel",
-			Handler:    _ServerService_CreateChannel_Handler,
+			MethodName: "CreateAppserverRoleSub",
+			Handler:    _ServerService_CreateAppserverRoleSub_Handler,
 		},
 		{
-			MethodName: "GetByIdChannel",
-			Handler:    _ServerService_GetByIdChannel_Handler,
-		},
-		{
-			MethodName: "ListChannels",
-			Handler:    _ServerService_ListChannels_Handler,
-		},
-		{
-			MethodName: "DeleteChannel",
-			Handler:    _ServerService_DeleteChannel_Handler,
+			MethodName: "DeleteAppserverRoleSub",
+			Handler:    _ServerService_DeleteAppserverRoleSub_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

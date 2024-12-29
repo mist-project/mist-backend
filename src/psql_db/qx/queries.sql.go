@@ -72,6 +72,36 @@ func (q *Queries) CreateAppserverRole(ctx context.Context, arg CreateAppserverRo
 	return i, err
 }
 
+const createAppserverRoleSub = `-- name: CreateAppserverRoleSub :one
+INSERT INTO appserver_role_sub (
+  appserver_sub_id,
+  appserver_role_id
+) VALUES (
+  $1,
+  $2
+)
+RETURNING id, appserver_role_id, appserver_sub_id, created_at, updated_at
+`
+
+type CreateAppserverRoleSubParams struct {
+	AppserverSubID  uuid.UUID
+	AppserverRoleID uuid.UUID
+}
+
+// --- APP SERVER ROLE SUBS -----
+func (q *Queries) CreateAppserverRoleSub(ctx context.Context, arg CreateAppserverRoleSubParams) (AppserverRoleSub, error) {
+	row := q.db.QueryRow(ctx, createAppserverRoleSub, arg.AppserverSubID, arg.AppserverRoleID)
+	var i AppserverRoleSub
+	err := row.Scan(
+		&i.ID,
+		&i.AppserverRoleID,
+		&i.AppserverSubID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createAppserverSub = `-- name: CreateAppserverSub :one
 INSERT INTO appserver_sub (
   appserver_id,
@@ -131,9 +161,9 @@ func (q *Queries) CreateChannel(ctx context.Context, arg CreateChannelParams) (C
 }
 
 const deleteAppserver = `-- name: DeleteAppserver :execrows
-DELETE
-FROM appserver
-WHERE id=$1 AND owner_id=$2
+DELETE FROM appserver
+WHERE id=$1
+  AND owner_id=$2
 `
 
 type DeleteAppserverParams struct {
@@ -150,10 +180,11 @@ func (q *Queries) DeleteAppserver(ctx context.Context, arg DeleteAppserverParams
 }
 
 const deleteAppserverRole = `-- name: DeleteAppserverRole :execrows
-DELETE
-FROM appserver_role as ar
+DELETE FROM appserver_role as ar
 USING appserver as a 
-WHERE a.id=ar.appserver_id AND ar.id=$1 AND a.owner_id=$2
+WHERE a.id=ar.appserver_id
+  AND ar.id=$1
+  AND a.owner_id=$2
 `
 
 type DeleteAppserverRoleParams struct {
@@ -169,9 +200,30 @@ func (q *Queries) DeleteAppserverRole(ctx context.Context, arg DeleteAppserverRo
 	return result.RowsAffected(), nil
 }
 
+const deleteAppserverRoleSub = `-- name: DeleteAppserverRoleSub :execrows
+DELETE FROM appserver_role_sub as ars
+USING appserver as a, appserver_role as ar
+WHERE a.id=ar.appserver_id
+  AND ar.id=ars.appserver_role_id
+  AND ars.id=$1
+  AND a.owner_id=$2
+`
+
+type DeleteAppserverRoleSubParams struct {
+	ID      uuid.UUID
+	OwnerID uuid.UUID
+}
+
+func (q *Queries) DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserverRoleSubParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAppserverRoleSub, arg.ID, arg.OwnerID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteAppserverSub = `-- name: DeleteAppserverSub :execrows
-DELETE
-FROM appserver_sub
+DELETE FROM appserver_sub
 WHERE id=$1
 `
 
@@ -184,8 +236,7 @@ func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, 
 }
 
 const deleteChannel = `-- name: DeleteChannel :execrows
-DELETE
-FROM channel
+DELETE FROM channel
 WHERE id=$1
 `
 
@@ -302,8 +353,7 @@ SELECT
   aps.updated_at  
 FROM appserver_sub as apssub
 JOIN appserver as aps ON apssub.appserver_id=aps.id
-WHERE
-  apssub.owner_id=$1
+WHERE apssub.owner_id=$1
 `
 
 type GetUserAppserverSubsRow struct {
@@ -343,10 +393,8 @@ func (q *Queries) GetUserAppserverSubs(ctx context.Context, ownerID uuid.UUID) (
 const listAppservers = `-- name: ListAppservers :many
 SELECT id, name, owner_id, created_at, updated_at
 FROM appserver
-WHERE
-  name=COALESCE($1, name)
-  AND
-  1=0
+WHERE name=COALESCE($1, name)
+  AND 1=0
 `
 
 func (q *Queries) ListAppservers(ctx context.Context, name pgtype.Text) ([]Appserver, error) {
@@ -378,10 +426,8 @@ func (q *Queries) ListAppservers(ctx context.Context, name pgtype.Text) ([]Appse
 const listChannels = `-- name: ListChannels :many
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel
-WHERE
-  (name=COALESCE($1, name))
-  AND
-  (appserver_id=COALESCE($2, appserver_id))
+WHERE name=COALESCE($1, name)
+  AND appserver_id=COALESCE($2, appserver_id)
 `
 
 type ListChannelsParams struct {

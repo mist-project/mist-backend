@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package channel.v1;
+option go_package = "/channel";
+
+service ChannelService {
+  // ----- CHANNEL ----
+  rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse);
+  rpc GetByIdChannel(GetByIdChannelRequest) returns (GetByIdChannelResponse);
+  rpc ListChannels(ListChannelsRequest) returns (ListChannelsResponse);
+  rpc DeleteChannel(DeleteChannelRequest) returns (DeleteChannelResponse);
+}
+
+// RESOURCES
+
+message Channel {
+  string id = 1;
+  string name = 2;
+  string appserver_id = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+// ----- Channel -----
+message CreateChannelRequest {
+  string name = 1;
+  string appserver_id = 2;
+}
+message GetByIdChannelRequest { string id = 1; }
+message ListChannelsRequest {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue appserver_id = 2;
+}
+message DeleteChannelRequest { string id = 1; }
+
+message CreateChannelResponse { Channel channel = 1; }
+message GetByIdChannelResponse { Channel channel = 1; }
+message ListChannelsResponse { repeated Channel channels = 1; }
+message DeleteChannelResponse {}

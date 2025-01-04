@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	pb_server "mist/src/protos/v1/server"
+	pb_server "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
 )
 

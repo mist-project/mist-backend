@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"mist/src/middleware"
-	pb_server "mist/src/protos/v1/server"
+	pb_server "mist/src/protos/server/v1"
 	"mist/src/service"
 )
 

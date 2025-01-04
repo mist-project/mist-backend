@@ -3,7 +3,7 @@ package rpcs
 import (
 	"testing"
 
-	pb_channel "mist/src/protos/v1/channel"
+	pb_channel "mist/src/protos/channel/v1"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

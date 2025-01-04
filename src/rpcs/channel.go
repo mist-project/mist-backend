@@ -3,7 +3,7 @@ package rpcs
 import (
 	"context"
 
-	pb_channel "mist/src/protos/v1/channel"
+	pb_channel "mist/src/protos/channel/v1"
 	"mist/src/service"
 )
 

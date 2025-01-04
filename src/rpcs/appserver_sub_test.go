@@ -3,7 +3,7 @@ package rpcs
 import (
 	"testing"
 
-	pb_server "mist/src/protos/v1/server"
+	pb_server "mist/src/protos/server/v1"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

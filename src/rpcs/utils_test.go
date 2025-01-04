@@ -22,8 +22,8 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"mist/src/middleware"
-	pb_channel "mist/src/protos/channel/v1"
-	pb_server "mist/src/protos/server/v1"
+	pb_channel "mist/src/protos/v1/channel"
+	pb_server "mist/src/protos/v1/server"
 	"mist/src/psql_db/qx"
 )
 
@@ -135,7 +135,7 @@ func setup(t *testing.T, cleanup func()) context.Context {
 		cleanup()
 		cancel()
 	})
-	tokenStr := CreateJWTToken(
+	tokenStr := createJwtToken(
 		t,
 		&CreateTokenParams{
 			iss:       os.Getenv("MIST_API_JWT_ISSUER"),
@@ -176,7 +176,7 @@ type CreateTokenParams struct {
 	userId    string
 }
 
-func CreateJWTToken(t *testing.T, params *CreateTokenParams) string {
+func createJwtToken(t *testing.T, params *CreateTokenParams) string {
 	// Define secret key for signing the token
 
 	// Define JWT claims

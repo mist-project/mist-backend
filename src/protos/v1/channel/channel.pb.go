@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.0
 // 	protoc        (unknown)
-// source: channel/v1/channel.proto
+// source: v1/channel/channel.proto
 
 package channel
 

@@ -75,7 +75,7 @@ dump-schema:
 
 
 # ----- TESTS -----
-tests: generate-queries test-service test-middleware
+tests t: generate-queries test-service test-middleware
 
 test-service:
 	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)
@@ -85,6 +85,7 @@ test-middleware:
 	@echo -----------------------------------------
 	@go test mist/src/middleware -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
+
 # ----- FORMAT -----
 lint:
 	golangci-lint run --disable-all -E errcheck

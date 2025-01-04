@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_server "mist/src/protos/server/v1"
+	pb_server "mist/src/protos/v1/server"
 	"mist/src/psql_db/qx"
 )
 

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.0
 // 	protoc        (unknown)
-// source: server/v1/server.proto
+// source: v1/server/server.proto
 
 package server
 

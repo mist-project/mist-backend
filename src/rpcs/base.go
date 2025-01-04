@@ -3,8 +3,8 @@ package rpcs
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	pb_channel "mist/src/protos/channel/v1"
-	pb_server "mist/src/protos/server/v1"
+	pb_channel "mist/src/protos/v1/channel"
+	pb_server "mist/src/protos/v1/server"
 )
 
 type AppserverGRPCService struct {

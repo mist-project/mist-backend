@@ -14,7 +14,8 @@ type CreateTokenParams struct {
 	userId    string
 }
 
-func CreateJWTToken(t *testing.T, params *CreateTokenParams) string {
+
+func createJwtToken(t *testing.T, params *CreateTokenParams) string {
 	// Define secret key for signing the token
 
 	// Define JWT claims

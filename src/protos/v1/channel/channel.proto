@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-package channel.v1;
+package v1.channel;
 option go_package = "/channel";
 
 service ChannelService {

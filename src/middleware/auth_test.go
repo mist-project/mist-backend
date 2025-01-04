@@ -18,10 +18,10 @@ type DummyRequest struct{}
 var mockHandler = func(ctx context.Context, req interface{}) (interface{}, error) { return req, nil }
 
 func TestAuthJwtInterceptor(t *testing.T) {
-	t.Run("valid token", func(t *testing.T) {
+	t.Run("valid_token", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := CreateJWTToken(t,
+		tokenStr := createJwtToken(t,
 			&CreateTokenParams{
 				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
@@ -37,10 +37,10 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid audience", func(t *testing.T) {
+	t.Run("invalid_audience", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := CreateJWTToken(t,
+		tokenStr := createJwtToken(t,
 			&CreateTokenParams{
 				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 				aud:       []string{"invalid-audience"},
@@ -58,10 +58,10 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid audience claim")
 	})
 
-	t.Run("invalid issuer", func(t *testing.T) {
+	t.Run("invalid_issuer", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := CreateJWTToken(t,
+		tokenStr := createJwtToken(t,
 			&CreateTokenParams{
 				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
 				secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
@@ -78,10 +78,10 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid issuer claim")
 	})
 
-	t.Run("invalid secret key", func(t *testing.T) {
+	t.Run("invalid_secret_key", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := CreateJWTToken(t,
+		tokenStr := createJwtToken(t,
 			&CreateTokenParams{
 				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
@@ -99,7 +99,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Contains(t, err.Error(), "error parsing token")
 	})
 
-	t.Run("invalid token format", func(t *testing.T) {
+	t.Run("invalid_token_format", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
 		headers := metadata.Pairs("authorization", "Bearer bad_token")
@@ -113,7 +113,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Contains(t, err.Error(), "token is malformed")
 	})
 
-	t.Run("missing authorization header", func(t *testing.T) {
+	t.Run("missing_authorization_header", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
 		headers := metadata.Pairs()
@@ -127,7 +127,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Contains(t, err.Error(), "missing authorization header")
 	})
 
-	t.Run("invalid authorization bearer header", func(t *testing.T) {
+	t.Run("invalid_authorization_bearer_header", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
 		headers := metadata.Pairs("authorization", "token invalid")
@@ -141,7 +141,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid token")
 	})
 
-	t.Run("invalid claims format for audience", func(t *testing.T) {
+	t.Run("invalid_claims_format_for_audience", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
 
@@ -166,7 +166,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid audience claim")
 	})
 
-	t.Run("missing header errors", func(t *testing.T) {
+	t.Run("missing_header_errors", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
 

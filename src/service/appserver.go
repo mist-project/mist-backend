@@ -84,14 +84,18 @@ func (service *AppserverService) GetById(id string) (*qx.Appserver, error) {
 	return &appserver, nil
 }
 
-func (service *AppserverService) List(name *wrappers.StringValue) ([]qx.Appserver, error) {
+func (service *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]qx.Appserver, error) {
 	// To query remember do to: {"name": {"value": "boo"}}
 	var formatName = pgtype.Text{Valid: false}
 	if name != nil {
 		formatName.Valid = true
 		formatName.String = name.Value
 	}
-	appservers, err := qx.New(service.dbcPool).ListAppservers(service.ctx, formatName)
+
+	parsedOwnerUuid, _ := uuid.Parse(ownerId)
+	appservers, err := qx.New(service.dbcPool).ListUserAppservers(
+		service.ctx, qx.ListUserAppserversParams{Name: formatName, OwnerID: parsedOwnerUuid},
+	)
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))

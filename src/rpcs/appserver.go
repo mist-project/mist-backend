@@ -44,8 +44,10 @@ func (s *AppserverGRPCService) ListAppservers(
 	ctx context.Context, req *pb_server.ListAppserversRequest,
 ) (*pb_server.ListAppserversResponse, error) {
 	appserverService := service.NewAppserverService(s.DbcPool, ctx)
+	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+
 	// TODO: Figure out what can go wrong to add error handler
-	appservers, _ := appserverService.List(req.GetName())
+	appservers, _ := appserverService.List(req.GetName(), jwtClaims.UserID)
 
 	response := &pb_server.ListAppserversResponse{}
 

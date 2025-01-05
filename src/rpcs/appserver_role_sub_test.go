@@ -1,7 +1,6 @@
 package rpcs
 
 import (
-	"fmt"
 	"testing"
 
 	pb_server "mist/src/protos/server/v1"
@@ -65,7 +64,7 @@ func TestDeleteAppserveRolesSub(t *testing.T) {
 
 		// ACT
 		response, err := TestAppserverClient.DeleteAppserverRoleSub(ctx, &pb_server.DeleteAppserverRoleSubRequest{Id: asrSub.ID.String()})
-		fmt.Printf("err %v\n", err)
+
 		// ASSERT
 		assert.NotNil(t, response)
 		assert.Nil(t, err)

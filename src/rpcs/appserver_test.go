@@ -46,14 +46,14 @@ func TestListAppServer(t *testing.T) {
 		}
 
 		// ASSERT
-		assert.Equal(t, 0, len(response.GetAppservers()))
+		assert.Equal(t, 2, len(response.GetAppservers()))
 	})
 
 	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 		userId := ctx.Value(ctxUserKey).(string)
-		testAppserver(t, userId, nil)
+		testAppserver(t, uuid.NewString(), nil)
 		testAppserver(t, userId, &qx.Appserver{Name: "another one"})
 
 		// ACT
@@ -65,7 +65,7 @@ func TestListAppServer(t *testing.T) {
 		}
 
 		// ASSERT
-		assert.Equal(t, 0, len(response.GetAppservers()))
+		assert.Equal(t, 1, len(response.GetAppservers()))
 	})
 }
 

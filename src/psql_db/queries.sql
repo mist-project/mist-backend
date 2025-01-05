@@ -5,11 +5,11 @@ FROM appserver
 WHERE id=$1
 LIMIT 1;
 
--- name: ListAppservers :many
+-- name: ListUserAppservers :many
 SELECT *
 FROM appserver
 WHERE name=COALESCE(sqlc.narg('name'), name)
-  AND 1=0; -- This query might be removed. Hence the 1=0. So it returns no data.
+  AND owner_id = $1; -- This query might be removed. Hence the 1=0. So it returns no data.
 
 -- name: CreateAppserver :one
 INSERT INTO appserver (

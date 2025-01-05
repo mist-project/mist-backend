@@ -1,4 +1,4 @@
-package rpcs
+package rpcs_test
 
 import (
 	"testing"

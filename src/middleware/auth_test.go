@@ -1,8 +1,9 @@
-package middleware
+package middleware_test
 
 import (
 	"context"
 	"fmt"
+	"mist/src/middleware"
 	"os"
 	"testing"
 	"time"
@@ -31,7 +32,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.Nil(t, err)
@@ -51,7 +52,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -71,7 +72,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -92,7 +93,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -106,7 +107,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -120,7 +121,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -134,7 +135,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -159,7 +160,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err = AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err = middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -171,7 +172,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx := context.Background()
 
 		// ACT
-		_, err := AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -182,7 +183,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 func TestGetJWTClaims(t *testing.T) {
 	t.Run("can_successfully_get_claims_from_context", func(t *testing.T) {
 		// ARRANGE
-		claims := &CustomJWTClaims{
+		claims := &middleware.CustomJWTClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:   "dummy issuer",
 				Audience: jwt.ClaimStrings{"oo aud"},
@@ -193,10 +194,10 @@ func TestGetJWTClaims(t *testing.T) {
 			UserID: uuid.NewString(),
 		}
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, JwtClaimsContextKey, claims)
+		ctx = context.WithValue(ctx, middleware.JwtClaimsContextKey, claims)
 
 		// ACT
-		ctxClaims, err := GetJWTClaims(ctx)
+		ctxClaims, err := middleware.GetJWTClaims(ctx)
 
 		// ASSERT
 		assert.NotNil(t, ctxClaims)
@@ -206,10 +207,10 @@ func TestGetJWTClaims(t *testing.T) {
 	t.Run("invalid_claims_return_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, JwtClaimsContextKey, "boom")
+		ctx = context.WithValue(ctx, middleware.JwtClaimsContextKey, "boom")
 
 		// ACT
-		ctxClaims, err := GetJWTClaims(ctx)
+		ctxClaims, err := middleware.GetJWTClaims(ctx)
 
 		// ASSERT
 		assert.Nil(t, ctxClaims)

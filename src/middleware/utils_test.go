@@ -1,6 +1,7 @@
-package middleware
+package middleware_test
 
 import (
+	"mist/src/middleware"
 	"testing"
 	"time"
 
@@ -14,12 +15,11 @@ type CreateTokenParams struct {
 	userId    string
 }
 
-
 func createJwtToken(t *testing.T, params *CreateTokenParams) string {
 	// Define secret key for signing the token
 
 	// Define JWT claims
-	claims := &CustomJWTClaims{
+	claims := &middleware.CustomJWTClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:   params.iss,
 			Audience: params.aud,

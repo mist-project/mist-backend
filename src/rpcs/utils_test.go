@@ -1,4 +1,4 @@
-package rpcs
+package rpcs_test
 
 import (
 	"context"
@@ -25,6 +25,7 @@ import (
 	pb_channel "mist/src/protos/channel/v1"
 	pb_server "mist/src/protos/server/v1"
 	"mist/src/psql_db/qx"
+	"mist/src/rpcs"
 )
 
 var testServer *grpc.Server
@@ -91,8 +92,8 @@ func setupTestAppserverGRPCServiceAndClient() {
 
 	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_server.RegisterServerServiceServer(testServer, &AppserverGRPCService{DbcPool: dbcPool})
-	pb_channel.RegisterChannelServiceServer(testServer, &ChannelGRPCService{DbcPool: dbcPool})
+	pb_server.RegisterServerServiceServer(testServer, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
+	pb_channel.RegisterChannelServiceServer(testServer, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {

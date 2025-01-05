@@ -390,39 +390,6 @@ func (q *Queries) GetUserAppserverSubs(ctx context.Context, ownerID uuid.UUID) (
 	return items, nil
 }
 
-const listAppservers = `-- name: ListAppservers :many
-SELECT id, name, owner_id, created_at, updated_at
-FROM appserver
-WHERE name=COALESCE($1, name)
-  AND 1=0
-`
-
-func (q *Queries) ListAppservers(ctx context.Context, name pgtype.Text) ([]Appserver, error) {
-	rows, err := q.db.Query(ctx, listAppservers, name)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Appserver
-	for rows.Next() {
-		var i Appserver
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.OwnerID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listChannels = `-- name: ListChannels :many
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel
@@ -448,6 +415,44 @@ func (q *Queries) ListChannels(ctx context.Context, arg ListChannelsParams) ([]C
 			&i.ID,
 			&i.Name,
 			&i.AppserverID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserAppservers = `-- name: ListUserAppservers :many
+SELECT id, name, owner_id, created_at, updated_at
+FROM appserver
+WHERE name=COALESCE($2, name)
+  AND owner_id = $1
+`
+
+type ListUserAppserversParams struct {
+	OwnerID uuid.UUID
+	Name    pgtype.Text
+}
+
+func (q *Queries) ListUserAppservers(ctx context.Context, arg ListUserAppserversParams) ([]Appserver, error) {
+	rows, err := q.db.Query(ctx, listUserAppservers, arg.OwnerID, arg.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Appserver
+	for rows.Next() {
+		var i Appserver
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.OwnerID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

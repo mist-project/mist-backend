@@ -58,8 +58,8 @@ func (service *AppserverService) Create(name string, userId string) (*qx.Appserv
 	}
 
 	appserver, err := qx.New(service.dbcPool).CreateAppserver(service.ctx, qx.CreateAppserverParams{
-		Name:    name,
-		OwnerID: parsedUserId,
+		Name:      name,
+		AppUserID: parsedUserId,
 	})
 	return &appserver, err
 }
@@ -94,7 +94,7 @@ func (service *AppserverService) List(name *wrappers.StringValue, ownerId string
 
 	parsedOwnerUuid, _ := uuid.Parse(ownerId)
 	appservers, err := qx.New(service.dbcPool).ListUserAppservers(
-		service.ctx, qx.ListUserAppserversParams{Name: formatName, OwnerID: parsedOwnerUuid},
+		service.ctx, qx.ListUserAppserversParams{Name: formatName, AppUserID: parsedOwnerUuid},
 	)
 
 	if err != nil {
@@ -113,7 +113,7 @@ func (service *AppserverService) Delete(id string, ownerId string) error {
 	parsedOwnerUuid, _ := uuid.Parse(ownerId)
 
 	deletedRows, err := qx.New(service.dbcPool).DeleteAppserver(
-		service.ctx, qx.DeleteAppserverParams{ID: parsedUuid, OwnerID: parsedOwnerUuid})
+		service.ctx, qx.DeleteAppserverParams{ID: parsedUuid, AppUserID: parsedOwnerUuid})
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	} else if deletedRows == 0 {

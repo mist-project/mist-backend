@@ -2,6 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS appserver_role_sub (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    app_user_id UUID NOT NULL,
     appserver_role_id UUID NOT NULL,
     appserver_sub_id UUID NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),

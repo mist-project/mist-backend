@@ -22,7 +22,7 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 		userId := ctx.Value(ctxUserKey).(string)
 		ownerId, _ := uuid.Parse(userId)
 		asRole := testAppserverRole(t, userId, nil)
-		asSub := testAppserverSub(t, userId, &qx.AppserverSub{AppserverID: asRole.AppserverID, OwnerID: ownerId})
+		asSub := testAppserverSub(t, userId, &qx.AppserverSub{AppserverID: asRole.AppserverID, AppUserID: ownerId})
 		// asrSub := testAppserverRoleSub(t, userId, &qx.AppserverRoleSub{AppserverRoleID: asRole.ID, AppserverSubID: asSub.ID})
 
 		// ACT

@@ -52,7 +52,7 @@ func (service *AppserverSubService) Create(appserverId string, ownerId string) (
 	}
 
 	if ownerId == "" {
-		validationErrors = AddValidationError("owner_id", validationErrors)
+		validationErrors = AddValidationError("app_user_id", validationErrors)
 	}
 
 	if len(validationErrors) > 0 {
@@ -72,7 +72,7 @@ func (service *AppserverSubService) Create(appserverId string, ownerId string) (
 	appserverSub, err := qx.New(service.dbcPool).CreateAppserverSub(
 		service.ctx, qx.CreateAppserverSubParams{
 			AppserverID: parsedAppserverId,
-			OwnerID:     parsedUserId,
+			AppUserID:   parsedUserId,
 		},
 	)
 	return &appserverSub, err

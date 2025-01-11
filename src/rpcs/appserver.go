@@ -13,7 +13,6 @@ func (s *AppserverGRPCService) CreateAppserver(
 ) (*pb_server.CreateAppserverResponse, error) {
 	appserverService := service.NewAppserverService(s.DbcPool, ctx)
 	jwtClaims, _ := middleware.GetJWTClaims(ctx)
-
 	appserver, err := service.NewAppserverService(s.DbcPool, ctx).Create(req.GetName(), jwtClaims.UserID)
 
 	if err != nil {

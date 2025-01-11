@@ -30,7 +30,7 @@ func (service *AppserverRoleSubService) PgTypeToPb(appserverRole *qx.AppserverRo
 	}
 }
 
-func (service *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId string) (*qx.AppserverRoleSub, error) {
+func (service *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId string, appUserId string) (*qx.AppserverRoleSub, error) {
 	validationErrors := []string{}
 	if appserverRoleId == "" {
 		validationErrors = AddValidationError("appserver_role_id", validationErrors)
@@ -54,10 +54,16 @@ func (service *AppserverRoleSubService) Create(appserverRoleId string, appserver
 		return nil, err
 	}
 
+	parsedAppUserId, err := uuid.Parse(appUserId)
+	if err != nil {
+		return nil, err
+	}
+
 	appserverRole, err := qx.New(service.dbcPool).CreateAppserverRoleSub(
 		service.ctx, qx.CreateAppserverRoleSubParams{
 			AppserverSubID:  parsedAppserverSubId,
 			AppserverRoleID: parsedAppserverRoleId,
+			AppUserID:       parsedAppUserId,
 		},
 	)
 	return &appserverRole, err
@@ -77,7 +83,7 @@ func (service *AppserverRoleSubService) DeleteRoleSub(id string, ownerId string)
 	}
 
 	deletedRows, err := qx.New(service.dbcPool).DeleteAppserverRoleSub(service.ctx, qx.DeleteAppserverRoleSubParams{
-		ID: parsedUuid, OwnerID: parsedOwnerUuid,
+		ID: parsedUuid, AppUserID: parsedOwnerUuid,
 	})
 
 	if err != nil {

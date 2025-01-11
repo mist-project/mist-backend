@@ -12,7 +12,10 @@ func (s *AppserverGRPCService) CreateAppserverRoleSub(
 	ctx context.Context, req *pb_server.CreateAppserverRoleSubRequest,
 ) (*pb_server.CreateAppserverRoleSubResponse, error) {
 	asrSubService := service.NewAppserverRoleSubService(s.DbcPool, ctx)
-	appserverSub, err := asrSubService.Create(req.GetAppserverRoleId(), req.GetAppserverSubId())
+	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+
+	// TODO: Figure out what can go wrong to add error handler
+	appserverSub, err := asrSubService.Create(req.GetAppserverRoleId(), req.GetAppserverSubId(), jwtClaims.UserID)
 
 	// Error handling
 	if err != nil {

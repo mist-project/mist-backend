@@ -36,6 +36,7 @@ func TestListAppServer(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 		userId := ctx.Value(ctxUserKey).(string)
+
 		testAppserver(t, userId, nil)
 		testAppserver(t, userId, &qx.Appserver{Name: "another one"})
 
@@ -132,7 +133,8 @@ func TestCreateAppsever(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 		userId := ctx.Value(ctxUserKey).(string)
-
+		parsedUserId, err := uuid.Parse(userId)
+		testAppUser(t, &qx.AppUser{ID: parsedUserId, Username: "foo"})
 		// ACT
 		response, err := TestAppserverClient.CreateAppserver(ctx, &pb_server.CreateAppserverRequest{Name: "someone"})
 

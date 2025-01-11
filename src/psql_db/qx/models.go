@@ -9,10 +9,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AppUser struct {
+	ID        uuid.UUID
+	Username  string
+	Online    bool
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
 type Appserver struct {
 	ID        uuid.UUID
 	Name      string
-	OwnerID   uuid.UUID
+	AppUserID uuid.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
@@ -27,6 +35,7 @@ type AppserverRole struct {
 
 type AppserverRoleSub struct {
 	ID              uuid.UUID
+	AppUserID       uuid.UUID
 	AppserverRoleID uuid.UUID
 	AppserverSubID  uuid.UUID
 	CreatedAt       pgtype.Timestamp
@@ -36,7 +45,7 @@ type AppserverRoleSub struct {
 type AppserverSub struct {
 	ID          uuid.UUID
 	AppserverID uuid.UUID
-	OwnerID     uuid.UUID
+	AppUserID   uuid.UUID
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 }

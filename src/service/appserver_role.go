@@ -93,7 +93,7 @@ func (service *AppserverRoleService) DeleteByAppserver(id string, ownerId string
 	}
 
 	deletedRows, err := qx.New(service.dbcPool).DeleteAppserverRole(service.ctx, qx.DeleteAppserverRoleParams{
-		ID: parsedUuid, OwnerID: parsedOwnerUuid,
+		ID: parsedUuid, AppUserID: parsedOwnerUuid,
 	})
 
 	if err != nil {

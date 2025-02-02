@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.0
 // 	protoc        (unknown)
-// source: channel/v1/channel.proto
+// source: v1/channel/channel.proto
 
 package channel
 
@@ -35,7 +35,7 @@ type Channel struct {
 
 func (x *Channel) Reset() {
 	*x = Channel{}
-	mi := &file_channel_v1_channel_proto_msgTypes[0]
+	mi := &file_v1_channel_channel_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +47,7 @@ func (x *Channel) String() string {
 func (*Channel) ProtoMessage() {}
 
 func (x *Channel) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[0]
+	mi := &file_v1_channel_channel_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +60,7 @@ func (x *Channel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Channel.ProtoReflect.Descriptor instead.
 func (*Channel) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{0}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Channel) GetId() string {
@@ -109,7 +109,7 @@ type CreateChannelRequest struct {
 
 func (x *CreateChannelRequest) Reset() {
 	*x = CreateChannelRequest{}
-	mi := &file_channel_v1_channel_proto_msgTypes[1]
+	mi := &file_v1_channel_channel_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -121,7 +121,7 @@ func (x *CreateChannelRequest) String() string {
 func (*CreateChannelRequest) ProtoMessage() {}
 
 func (x *CreateChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[1]
+	mi := &file_v1_channel_channel_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -134,7 +134,7 @@ func (x *CreateChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateChannelRequest.ProtoReflect.Descriptor instead.
 func (*CreateChannelRequest) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{1}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CreateChannelRequest) GetName() string {
@@ -160,7 +160,7 @@ type GetByIdChannelRequest struct {
 
 func (x *GetByIdChannelRequest) Reset() {
 	*x = GetByIdChannelRequest{}
-	mi := &file_channel_v1_channel_proto_msgTypes[2]
+	mi := &file_v1_channel_channel_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -172,7 +172,7 @@ func (x *GetByIdChannelRequest) String() string {
 func (*GetByIdChannelRequest) ProtoMessage() {}
 
 func (x *GetByIdChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[2]
+	mi := &file_v1_channel_channel_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -185,7 +185,7 @@ func (x *GetByIdChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdChannelRequest.ProtoReflect.Descriptor instead.
 func (*GetByIdChannelRequest) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{2}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetByIdChannelRequest) GetId() string {
@@ -205,7 +205,7 @@ type ListChannelsRequest struct {
 
 func (x *ListChannelsRequest) Reset() {
 	*x = ListChannelsRequest{}
-	mi := &file_channel_v1_channel_proto_msgTypes[3]
+	mi := &file_v1_channel_channel_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -217,7 +217,7 @@ func (x *ListChannelsRequest) String() string {
 func (*ListChannelsRequest) ProtoMessage() {}
 
 func (x *ListChannelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[3]
+	mi := &file_v1_channel_channel_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -230,7 +230,7 @@ func (x *ListChannelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChannelsRequest.ProtoReflect.Descriptor instead.
 func (*ListChannelsRequest) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{3}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListChannelsRequest) GetName() *wrapperspb.StringValue {
@@ -256,7 +256,7 @@ type DeleteChannelRequest struct {
 
 func (x *DeleteChannelRequest) Reset() {
 	*x = DeleteChannelRequest{}
-	mi := &file_channel_v1_channel_proto_msgTypes[4]
+	mi := &file_v1_channel_channel_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -268,7 +268,7 @@ func (x *DeleteChannelRequest) String() string {
 func (*DeleteChannelRequest) ProtoMessage() {}
 
 func (x *DeleteChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[4]
+	mi := &file_v1_channel_channel_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -281,7 +281,7 @@ func (x *DeleteChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteChannelRequest.ProtoReflect.Descriptor instead.
 func (*DeleteChannelRequest) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{4}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DeleteChannelRequest) GetId() string {
@@ -300,7 +300,7 @@ type CreateChannelResponse struct {
 
 func (x *CreateChannelResponse) Reset() {
 	*x = CreateChannelResponse{}
-	mi := &file_channel_v1_channel_proto_msgTypes[5]
+	mi := &file_v1_channel_channel_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -312,7 +312,7 @@ func (x *CreateChannelResponse) String() string {
 func (*CreateChannelResponse) ProtoMessage() {}
 
 func (x *CreateChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[5]
+	mi := &file_v1_channel_channel_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -325,7 +325,7 @@ func (x *CreateChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateChannelResponse.ProtoReflect.Descriptor instead.
 func (*CreateChannelResponse) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{5}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateChannelResponse) GetChannel() *Channel {
@@ -344,7 +344,7 @@ type GetByIdChannelResponse struct {
 
 func (x *GetByIdChannelResponse) Reset() {
 	*x = GetByIdChannelResponse{}
-	mi := &file_channel_v1_channel_proto_msgTypes[6]
+	mi := &file_v1_channel_channel_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -356,7 +356,7 @@ func (x *GetByIdChannelResponse) String() string {
 func (*GetByIdChannelResponse) ProtoMessage() {}
 
 func (x *GetByIdChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[6]
+	mi := &file_v1_channel_channel_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -369,7 +369,7 @@ func (x *GetByIdChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdChannelResponse.ProtoReflect.Descriptor instead.
 func (*GetByIdChannelResponse) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{6}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetByIdChannelResponse) GetChannel() *Channel {
@@ -388,7 +388,7 @@ type ListChannelsResponse struct {
 
 func (x *ListChannelsResponse) Reset() {
 	*x = ListChannelsResponse{}
-	mi := &file_channel_v1_channel_proto_msgTypes[7]
+	mi := &file_v1_channel_channel_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -400,7 +400,7 @@ func (x *ListChannelsResponse) String() string {
 func (*ListChannelsResponse) ProtoMessage() {}
 
 func (x *ListChannelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[7]
+	mi := &file_v1_channel_channel_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -413,7 +413,7 @@ func (x *ListChannelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChannelsResponse.ProtoReflect.Descriptor instead.
 func (*ListChannelsResponse) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{7}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListChannelsResponse) GetChannels() []*Channel {
@@ -431,7 +431,7 @@ type DeleteChannelResponse struct {
 
 func (x *DeleteChannelResponse) Reset() {
 	*x = DeleteChannelResponse{}
-	mi := &file_channel_v1_channel_proto_msgTypes[8]
+	mi := &file_v1_channel_channel_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -443,7 +443,7 @@ func (x *DeleteChannelResponse) String() string {
 func (*DeleteChannelResponse) ProtoMessage() {}
 
 func (x *DeleteChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_channel_v1_channel_proto_msgTypes[8]
+	mi := &file_v1_channel_channel_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -456,13 +456,13 @@ func (x *DeleteChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteChannelResponse.ProtoReflect.Descriptor instead.
 func (*DeleteChannelResponse) Descriptor() ([]byte, []int) {
-	return file_channel_v1_channel_proto_rawDescGZIP(), []int{8}
+	return file_v1_channel_channel_proto_rawDescGZIP(), []int{8}
 }
 
-var File_channel_v1_channel_proto protoreflect.FileDescriptor
+var File_v1_channel_channel_proto protoreflect.FileDescriptor
 
-var file_channel_v1_channel_proto_rawDesc = []byte{
-	0x0a, 0x18, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x2f, 0x76, 0x31, 0x2f, 0x63, 0x68, 0x61,
+var file_v1_channel_channel_proto_rawDesc = []byte{
+	0x0a, 0x18, 0x76, 0x31, 0x2f, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x2f, 0x63, 0x68, 0x61,
 	0x6e, 0x6e, 0x65, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x76, 0x31, 0x2e, 0x63,
 	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
@@ -542,19 +542,19 @@ var file_channel_v1_channel_proto_rawDesc = []byte{
 }
 
 var (
-	file_channel_v1_channel_proto_rawDescOnce sync.Once
-	file_channel_v1_channel_proto_rawDescData = file_channel_v1_channel_proto_rawDesc
+	file_v1_channel_channel_proto_rawDescOnce sync.Once
+	file_v1_channel_channel_proto_rawDescData = file_v1_channel_channel_proto_rawDesc
 )
 
-func file_channel_v1_channel_proto_rawDescGZIP() []byte {
-	file_channel_v1_channel_proto_rawDescOnce.Do(func() {
-		file_channel_v1_channel_proto_rawDescData = protoimpl.X.CompressGZIP(file_channel_v1_channel_proto_rawDescData)
+func file_v1_channel_channel_proto_rawDescGZIP() []byte {
+	file_v1_channel_channel_proto_rawDescOnce.Do(func() {
+		file_v1_channel_channel_proto_rawDescData = protoimpl.X.CompressGZIP(file_v1_channel_channel_proto_rawDescData)
 	})
-	return file_channel_v1_channel_proto_rawDescData
+	return file_v1_channel_channel_proto_rawDescData
 }
 
-var file_channel_v1_channel_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_channel_v1_channel_proto_goTypes = []any{
+var file_v1_channel_channel_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_v1_channel_channel_proto_goTypes = []any{
 	(*Channel)(nil),                // 0: v1.channel.Channel
 	(*CreateChannelRequest)(nil),   // 1: v1.channel.CreateChannelRequest
 	(*GetByIdChannelRequest)(nil),  // 2: v1.channel.GetByIdChannelRequest
@@ -567,7 +567,7 @@ var file_channel_v1_channel_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil),  // 9: google.protobuf.Timestamp
 	(*wrapperspb.StringValue)(nil), // 10: google.protobuf.StringValue
 }
-var file_channel_v1_channel_proto_depIdxs = []int32{
+var file_v1_channel_channel_proto_depIdxs = []int32{
 	9,  // 0: v1.channel.Channel.created_at:type_name -> google.protobuf.Timestamp
 	9,  // 1: v1.channel.Channel.updated_at:type_name -> google.protobuf.Timestamp
 	10, // 2: v1.channel.ListChannelsRequest.name:type_name -> google.protobuf.StringValue
@@ -590,27 +590,27 @@ var file_channel_v1_channel_proto_depIdxs = []int32{
 	0,  // [0:7] is the sub-list for field type_name
 }
 
-func init() { file_channel_v1_channel_proto_init() }
-func file_channel_v1_channel_proto_init() {
-	if File_channel_v1_channel_proto != nil {
+func init() { file_v1_channel_channel_proto_init() }
+func file_v1_channel_channel_proto_init() {
+	if File_v1_channel_channel_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_channel_v1_channel_proto_rawDesc,
+			RawDescriptor: file_v1_channel_channel_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_channel_v1_channel_proto_goTypes,
-		DependencyIndexes: file_channel_v1_channel_proto_depIdxs,
-		MessageInfos:      file_channel_v1_channel_proto_msgTypes,
+		GoTypes:           file_v1_channel_channel_proto_goTypes,
+		DependencyIndexes: file_v1_channel_channel_proto_depIdxs,
+		MessageInfos:      file_v1_channel_channel_proto_msgTypes,
 	}.Build()
-	File_channel_v1_channel_proto = out.File
-	file_channel_v1_channel_proto_rawDesc = nil
-	file_channel_v1_channel_proto_goTypes = nil
-	file_channel_v1_channel_proto_depIdxs = nil
+	File_v1_channel_channel_proto = out.File
+	file_v1_channel_channel_proto_rawDesc = nil
+	file_v1_channel_channel_proto_goTypes = nil
+	file_v1_channel_channel_proto_depIdxs = nil
 }

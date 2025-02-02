@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	pb_channel "mist/src/protos/channel/v1"
+	pb_channel "mist/src/protos/v1/channel"
 )
 
 // ----- RPC Channels -----

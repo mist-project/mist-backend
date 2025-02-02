@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	pb_server "mist/src/protos/server/v1"
+	pb_server "mist/src/protos/v1/server"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )

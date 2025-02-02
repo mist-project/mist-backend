@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_channel "mist/src/protos/channel/v1"
+	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
 )
 

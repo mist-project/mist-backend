@@ -22,8 +22,8 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"mist/src/middleware"
-	pb_channel "mist/src/protos/channel/v1"
-	pb_server "mist/src/protos/server/v1"
+	pb_channel "mist/src/protos/v1/channel"
+	pb_server "mist/src/protos/v1/server"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )

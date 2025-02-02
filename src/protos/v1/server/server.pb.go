@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.0
 // 	protoc        (unknown)
-// source: server/v1/server.proto
+// source: v1/server/server.proto
 
 package server
 
@@ -35,7 +35,7 @@ type Appserver struct {
 
 func (x *Appserver) Reset() {
 	*x = Appserver{}
-	mi := &file_server_v1_server_proto_msgTypes[0]
+	mi := &file_v1_server_server_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +47,7 @@ func (x *Appserver) String() string {
 func (*Appserver) ProtoMessage() {}
 
 func (x *Appserver) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[0]
+	mi := &file_v1_server_server_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +60,7 @@ func (x *Appserver) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Appserver.ProtoReflect.Descriptor instead.
 func (*Appserver) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{0}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Appserver) GetId() string {
@@ -103,7 +103,7 @@ type AppserverSub struct {
 
 func (x *AppserverSub) Reset() {
 	*x = AppserverSub{}
-	mi := &file_server_v1_server_proto_msgTypes[1]
+	mi := &file_v1_server_server_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -115,7 +115,7 @@ func (x *AppserverSub) String() string {
 func (*AppserverSub) ProtoMessage() {}
 
 func (x *AppserverSub) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[1]
+	mi := &file_v1_server_server_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -128,7 +128,7 @@ func (x *AppserverSub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppserverSub.ProtoReflect.Descriptor instead.
 func (*AppserverSub) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{1}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AppserverSub) GetId() string {
@@ -169,7 +169,7 @@ type AppserverAndSub struct {
 
 func (x *AppserverAndSub) Reset() {
 	*x = AppserverAndSub{}
-	mi := &file_server_v1_server_proto_msgTypes[2]
+	mi := &file_v1_server_server_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -181,7 +181,7 @@ func (x *AppserverAndSub) String() string {
 func (*AppserverAndSub) ProtoMessage() {}
 
 func (x *AppserverAndSub) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[2]
+	mi := &file_v1_server_server_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -194,7 +194,7 @@ func (x *AppserverAndSub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppserverAndSub.ProtoReflect.Descriptor instead.
 func (*AppserverAndSub) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{2}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *AppserverAndSub) GetSubId() string {
@@ -224,7 +224,7 @@ type AppserverRole struct {
 
 func (x *AppserverRole) Reset() {
 	*x = AppserverRole{}
-	mi := &file_server_v1_server_proto_msgTypes[3]
+	mi := &file_v1_server_server_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -236,7 +236,7 @@ func (x *AppserverRole) String() string {
 func (*AppserverRole) ProtoMessage() {}
 
 func (x *AppserverRole) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[3]
+	mi := &file_v1_server_server_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -249,7 +249,7 @@ func (x *AppserverRole) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppserverRole.ProtoReflect.Descriptor instead.
 func (*AppserverRole) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{3}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *AppserverRole) GetId() string {
@@ -298,7 +298,7 @@ type AppserverRoleSub struct {
 
 func (x *AppserverRoleSub) Reset() {
 	*x = AppserverRoleSub{}
-	mi := &file_server_v1_server_proto_msgTypes[4]
+	mi := &file_v1_server_server_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -310,7 +310,7 @@ func (x *AppserverRoleSub) String() string {
 func (*AppserverRoleSub) ProtoMessage() {}
 
 func (x *AppserverRoleSub) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[4]
+	mi := &file_v1_server_server_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -323,7 +323,7 @@ func (x *AppserverRoleSub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppserverRoleSub.ProtoReflect.Descriptor instead.
 func (*AppserverRoleSub) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{4}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AppserverRoleSub) GetId() string {
@@ -360,7 +360,7 @@ type Channel struct {
 
 func (x *Channel) Reset() {
 	*x = Channel{}
-	mi := &file_server_v1_server_proto_msgTypes[5]
+	mi := &file_v1_server_server_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -372,7 +372,7 @@ func (x *Channel) String() string {
 func (*Channel) ProtoMessage() {}
 
 func (x *Channel) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[5]
+	mi := &file_v1_server_server_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -385,7 +385,7 @@ func (x *Channel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Channel.ProtoReflect.Descriptor instead.
 func (*Channel) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{5}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Channel) GetId() string {
@@ -434,7 +434,7 @@ type CreateAppserverRequest struct {
 
 func (x *CreateAppserverRequest) Reset() {
 	*x = CreateAppserverRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[6]
+	mi := &file_v1_server_server_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -446,7 +446,7 @@ func (x *CreateAppserverRequest) String() string {
 func (*CreateAppserverRequest) ProtoMessage() {}
 
 func (x *CreateAppserverRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[6]
+	mi := &file_v1_server_server_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -459,7 +459,7 @@ func (x *CreateAppserverRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{6}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateAppserverRequest) GetName() string {
@@ -478,7 +478,7 @@ type GetByIdAppserverRequest struct {
 
 func (x *GetByIdAppserverRequest) Reset() {
 	*x = GetByIdAppserverRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[7]
+	mi := &file_v1_server_server_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -490,7 +490,7 @@ func (x *GetByIdAppserverRequest) String() string {
 func (*GetByIdAppserverRequest) ProtoMessage() {}
 
 func (x *GetByIdAppserverRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[7]
+	mi := &file_v1_server_server_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -503,7 +503,7 @@ func (x *GetByIdAppserverRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdAppserverRequest.ProtoReflect.Descriptor instead.
 func (*GetByIdAppserverRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{7}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetByIdAppserverRequest) GetId() string {
@@ -522,7 +522,7 @@ type ListAppserversRequest struct {
 
 func (x *ListAppserversRequest) Reset() {
 	*x = ListAppserversRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[8]
+	mi := &file_v1_server_server_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -534,7 +534,7 @@ func (x *ListAppserversRequest) String() string {
 func (*ListAppserversRequest) ProtoMessage() {}
 
 func (x *ListAppserversRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[8]
+	mi := &file_v1_server_server_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -547,7 +547,7 @@ func (x *ListAppserversRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAppserversRequest.ProtoReflect.Descriptor instead.
 func (*ListAppserversRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{8}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListAppserversRequest) GetName() *wrapperspb.StringValue {
@@ -566,7 +566,7 @@ type DeleteAppserverRequest struct {
 
 func (x *DeleteAppserverRequest) Reset() {
 	*x = DeleteAppserverRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[9]
+	mi := &file_v1_server_server_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -578,7 +578,7 @@ func (x *DeleteAppserverRequest) String() string {
 func (*DeleteAppserverRequest) ProtoMessage() {}
 
 func (x *DeleteAppserverRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[9]
+	mi := &file_v1_server_server_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -591,7 +591,7 @@ func (x *DeleteAppserverRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{9}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteAppserverRequest) GetId() string {
@@ -610,7 +610,7 @@ type CreateAppserverResponse struct {
 
 func (x *CreateAppserverResponse) Reset() {
 	*x = CreateAppserverResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[10]
+	mi := &file_v1_server_server_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -622,7 +622,7 @@ func (x *CreateAppserverResponse) String() string {
 func (*CreateAppserverResponse) ProtoMessage() {}
 
 func (x *CreateAppserverResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[10]
+	mi := &file_v1_server_server_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -635,7 +635,7 @@ func (x *CreateAppserverResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppserverResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{10}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateAppserverResponse) GetAppserver() *Appserver {
@@ -654,7 +654,7 @@ type GetByIdAppserverResponse struct {
 
 func (x *GetByIdAppserverResponse) Reset() {
 	*x = GetByIdAppserverResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[11]
+	mi := &file_v1_server_server_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -666,7 +666,7 @@ func (x *GetByIdAppserverResponse) String() string {
 func (*GetByIdAppserverResponse) ProtoMessage() {}
 
 func (x *GetByIdAppserverResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[11]
+	mi := &file_v1_server_server_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -679,7 +679,7 @@ func (x *GetByIdAppserverResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByIdAppserverResponse.ProtoReflect.Descriptor instead.
 func (*GetByIdAppserverResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{11}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetByIdAppserverResponse) GetAppserver() *Appserver {
@@ -698,7 +698,7 @@ type ListAppserversResponse struct {
 
 func (x *ListAppserversResponse) Reset() {
 	*x = ListAppserversResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[12]
+	mi := &file_v1_server_server_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -710,7 +710,7 @@ func (x *ListAppserversResponse) String() string {
 func (*ListAppserversResponse) ProtoMessage() {}
 
 func (x *ListAppserversResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[12]
+	mi := &file_v1_server_server_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -723,7 +723,7 @@ func (x *ListAppserversResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAppserversResponse.ProtoReflect.Descriptor instead.
 func (*ListAppserversResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{12}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListAppserversResponse) GetAppservers() []*Appserver {
@@ -741,7 +741,7 @@ type DeleteAppserverResponse struct {
 
 func (x *DeleteAppserverResponse) Reset() {
 	*x = DeleteAppserverResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[13]
+	mi := &file_v1_server_server_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -753,7 +753,7 @@ func (x *DeleteAppserverResponse) String() string {
 func (*DeleteAppserverResponse) ProtoMessage() {}
 
 func (x *DeleteAppserverResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[13]
+	mi := &file_v1_server_server_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -766,7 +766,7 @@ func (x *DeleteAppserverResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{13}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{13}
 }
 
 // ----- AppserverSub -----
@@ -779,7 +779,7 @@ type CreateAppserverSubRequest struct {
 
 func (x *CreateAppserverSubRequest) Reset() {
 	*x = CreateAppserverSubRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[14]
+	mi := &file_v1_server_server_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -791,7 +791,7 @@ func (x *CreateAppserverSubRequest) String() string {
 func (*CreateAppserverSubRequest) ProtoMessage() {}
 
 func (x *CreateAppserverSubRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[14]
+	mi := &file_v1_server_server_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -804,7 +804,7 @@ func (x *CreateAppserverSubRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverSubRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppserverSubRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{14}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateAppserverSubRequest) GetAppserverId() string {
@@ -822,7 +822,7 @@ type GetUserAppserverSubsRequest struct {
 
 func (x *GetUserAppserverSubsRequest) Reset() {
 	*x = GetUserAppserverSubsRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[15]
+	mi := &file_v1_server_server_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -834,7 +834,7 @@ func (x *GetUserAppserverSubsRequest) String() string {
 func (*GetUserAppserverSubsRequest) ProtoMessage() {}
 
 func (x *GetUserAppserverSubsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[15]
+	mi := &file_v1_server_server_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -847,7 +847,7 @@ func (x *GetUserAppserverSubsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserAppserverSubsRequest.ProtoReflect.Descriptor instead.
 func (*GetUserAppserverSubsRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{15}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{15}
 }
 
 type DeleteAppserverSubRequest struct {
@@ -859,7 +859,7 @@ type DeleteAppserverSubRequest struct {
 
 func (x *DeleteAppserverSubRequest) Reset() {
 	*x = DeleteAppserverSubRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[16]
+	mi := &file_v1_server_server_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -871,7 +871,7 @@ func (x *DeleteAppserverSubRequest) String() string {
 func (*DeleteAppserverSubRequest) ProtoMessage() {}
 
 func (x *DeleteAppserverSubRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[16]
+	mi := &file_v1_server_server_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -884,7 +884,7 @@ func (x *DeleteAppserverSubRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverSubRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverSubRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{16}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *DeleteAppserverSubRequest) GetId() string {
@@ -903,7 +903,7 @@ type CreateAppserverSubResponse struct {
 
 func (x *CreateAppserverSubResponse) Reset() {
 	*x = CreateAppserverSubResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[17]
+	mi := &file_v1_server_server_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +915,7 @@ func (x *CreateAppserverSubResponse) String() string {
 func (*CreateAppserverSubResponse) ProtoMessage() {}
 
 func (x *CreateAppserverSubResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[17]
+	mi := &file_v1_server_server_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +928,7 @@ func (x *CreateAppserverSubResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverSubResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppserverSubResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{17}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *CreateAppserverSubResponse) GetAppserverSub() *AppserverSub {
@@ -947,7 +947,7 @@ type GetUserAppserverSubsResponse struct {
 
 func (x *GetUserAppserverSubsResponse) Reset() {
 	*x = GetUserAppserverSubsResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[18]
+	mi := &file_v1_server_server_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -959,7 +959,7 @@ func (x *GetUserAppserverSubsResponse) String() string {
 func (*GetUserAppserverSubsResponse) ProtoMessage() {}
 
 func (x *GetUserAppserverSubsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[18]
+	mi := &file_v1_server_server_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -972,7 +972,7 @@ func (x *GetUserAppserverSubsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserAppserverSubsResponse.ProtoReflect.Descriptor instead.
 func (*GetUserAppserverSubsResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{18}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetUserAppserverSubsResponse) GetAppservers() []*AppserverAndSub {
@@ -990,7 +990,7 @@ type DeleteAppserverSubResponse struct {
 
 func (x *DeleteAppserverSubResponse) Reset() {
 	*x = DeleteAppserverSubResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[19]
+	mi := &file_v1_server_server_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1002,7 +1002,7 @@ func (x *DeleteAppserverSubResponse) String() string {
 func (*DeleteAppserverSubResponse) ProtoMessage() {}
 
 func (x *DeleteAppserverSubResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[19]
+	mi := &file_v1_server_server_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1015,7 +1015,7 @@ func (x *DeleteAppserverSubResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverSubResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverSubResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{19}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{19}
 }
 
 // ----- AppserverRole -----
@@ -1029,7 +1029,7 @@ type CreateAppserverRoleRequest struct {
 
 func (x *CreateAppserverRoleRequest) Reset() {
 	*x = CreateAppserverRoleRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[20]
+	mi := &file_v1_server_server_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1041,7 +1041,7 @@ func (x *CreateAppserverRoleRequest) String() string {
 func (*CreateAppserverRoleRequest) ProtoMessage() {}
 
 func (x *CreateAppserverRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[20]
+	mi := &file_v1_server_server_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1054,7 +1054,7 @@ func (x *CreateAppserverRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRoleRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRoleRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{20}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CreateAppserverRoleRequest) GetAppserverId() string {
@@ -1080,7 +1080,7 @@ type GetAllAppserverRolesRequest struct {
 
 func (x *GetAllAppserverRolesRequest) Reset() {
 	*x = GetAllAppserverRolesRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[21]
+	mi := &file_v1_server_server_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1092,7 +1092,7 @@ func (x *GetAllAppserverRolesRequest) String() string {
 func (*GetAllAppserverRolesRequest) ProtoMessage() {}
 
 func (x *GetAllAppserverRolesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[21]
+	mi := &file_v1_server_server_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1105,7 +1105,7 @@ func (x *GetAllAppserverRolesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllAppserverRolesRequest.ProtoReflect.Descriptor instead.
 func (*GetAllAppserverRolesRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{21}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *GetAllAppserverRolesRequest) GetAppserverId() string {
@@ -1124,7 +1124,7 @@ type DeleteAppserverRoleRequest struct {
 
 func (x *DeleteAppserverRoleRequest) Reset() {
 	*x = DeleteAppserverRoleRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[22]
+	mi := &file_v1_server_server_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1136,7 +1136,7 @@ func (x *DeleteAppserverRoleRequest) String() string {
 func (*DeleteAppserverRoleRequest) ProtoMessage() {}
 
 func (x *DeleteAppserverRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[22]
+	mi := &file_v1_server_server_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1149,7 +1149,7 @@ func (x *DeleteAppserverRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRoleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRoleRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{22}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *DeleteAppserverRoleRequest) GetId() string {
@@ -1168,7 +1168,7 @@ type CreateAppserverRoleResponse struct {
 
 func (x *CreateAppserverRoleResponse) Reset() {
 	*x = CreateAppserverRoleResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[23]
+	mi := &file_v1_server_server_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1180,7 +1180,7 @@ func (x *CreateAppserverRoleResponse) String() string {
 func (*CreateAppserverRoleResponse) ProtoMessage() {}
 
 func (x *CreateAppserverRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[23]
+	mi := &file_v1_server_server_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1193,7 +1193,7 @@ func (x *CreateAppserverRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRoleResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRoleResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{23}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *CreateAppserverRoleResponse) GetAppserverRole() *AppserverRole {
@@ -1212,7 +1212,7 @@ type GetAllAppserverRolesResponse struct {
 
 func (x *GetAllAppserverRolesResponse) Reset() {
 	*x = GetAllAppserverRolesResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[24]
+	mi := &file_v1_server_server_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1224,7 +1224,7 @@ func (x *GetAllAppserverRolesResponse) String() string {
 func (*GetAllAppserverRolesResponse) ProtoMessage() {}
 
 func (x *GetAllAppserverRolesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[24]
+	mi := &file_v1_server_server_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1237,7 +1237,7 @@ func (x *GetAllAppserverRolesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllAppserverRolesResponse.ProtoReflect.Descriptor instead.
 func (*GetAllAppserverRolesResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{24}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetAllAppserverRolesResponse) GetAppserverRoles() []*AppserverRole {
@@ -1255,7 +1255,7 @@ type DeleteAppserverRoleResponse struct {
 
 func (x *DeleteAppserverRoleResponse) Reset() {
 	*x = DeleteAppserverRoleResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[25]
+	mi := &file_v1_server_server_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1267,7 +1267,7 @@ func (x *DeleteAppserverRoleResponse) String() string {
 func (*DeleteAppserverRoleResponse) ProtoMessage() {}
 
 func (x *DeleteAppserverRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[25]
+	mi := &file_v1_server_server_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1280,7 +1280,7 @@ func (x *DeleteAppserverRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRoleResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRoleResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{25}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{25}
 }
 
 // ----- AppserverRole -----
@@ -1294,7 +1294,7 @@ type CreateAppserverRoleSubRequest struct {
 
 func (x *CreateAppserverRoleSubRequest) Reset() {
 	*x = CreateAppserverRoleSubRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[26]
+	mi := &file_v1_server_server_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1306,7 +1306,7 @@ func (x *CreateAppserverRoleSubRequest) String() string {
 func (*CreateAppserverRoleSubRequest) ProtoMessage() {}
 
 func (x *CreateAppserverRoleSubRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[26]
+	mi := &file_v1_server_server_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1319,7 +1319,7 @@ func (x *CreateAppserverRoleSubRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRoleSubRequest.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRoleSubRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{26}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *CreateAppserverRoleSubRequest) GetAppserverRoleId() string {
@@ -1345,7 +1345,7 @@ type DeleteAppserverRoleSubRequest struct {
 
 func (x *DeleteAppserverRoleSubRequest) Reset() {
 	*x = DeleteAppserverRoleSubRequest{}
-	mi := &file_server_v1_server_proto_msgTypes[27]
+	mi := &file_v1_server_server_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1357,7 +1357,7 @@ func (x *DeleteAppserverRoleSubRequest) String() string {
 func (*DeleteAppserverRoleSubRequest) ProtoMessage() {}
 
 func (x *DeleteAppserverRoleSubRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[27]
+	mi := &file_v1_server_server_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1370,7 +1370,7 @@ func (x *DeleteAppserverRoleSubRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRoleSubRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRoleSubRequest) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{27}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *DeleteAppserverRoleSubRequest) GetId() string {
@@ -1389,7 +1389,7 @@ type CreateAppserverRoleSubResponse struct {
 
 func (x *CreateAppserverRoleSubResponse) Reset() {
 	*x = CreateAppserverRoleSubResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[28]
+	mi := &file_v1_server_server_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1401,7 +1401,7 @@ func (x *CreateAppserverRoleSubResponse) String() string {
 func (*CreateAppserverRoleSubResponse) ProtoMessage() {}
 
 func (x *CreateAppserverRoleSubResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[28]
+	mi := &file_v1_server_server_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1414,7 +1414,7 @@ func (x *CreateAppserverRoleSubResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAppserverRoleSubResponse.ProtoReflect.Descriptor instead.
 func (*CreateAppserverRoleSubResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{28}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *CreateAppserverRoleSubResponse) GetAppserverRoleSub() *AppserverRoleSub {
@@ -1432,7 +1432,7 @@ type DeleteAppserverRoleSubResponse struct {
 
 func (x *DeleteAppserverRoleSubResponse) Reset() {
 	*x = DeleteAppserverRoleSubResponse{}
-	mi := &file_server_v1_server_proto_msgTypes[29]
+	mi := &file_v1_server_server_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1444,7 +1444,7 @@ func (x *DeleteAppserverRoleSubResponse) String() string {
 func (*DeleteAppserverRoleSubResponse) ProtoMessage() {}
 
 func (x *DeleteAppserverRoleSubResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_server_v1_server_proto_msgTypes[29]
+	mi := &file_v1_server_server_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1457,13 +1457,13 @@ func (x *DeleteAppserverRoleSubResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAppserverRoleSubResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAppserverRoleSubResponse) Descriptor() ([]byte, []int) {
-	return file_server_v1_server_proto_rawDescGZIP(), []int{29}
+	return file_v1_server_server_proto_rawDescGZIP(), []int{29}
 }
 
-var File_server_v1_server_proto protoreflect.FileDescriptor
+var File_v1_server_server_proto protoreflect.FileDescriptor
 
-var file_server_v1_server_proto_rawDesc = []byte{
-	0x0a, 0x16, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x76, 0x31, 0x2f, 0x73, 0x65, 0x72, 0x76,
+var file_v1_server_server_proto_rawDesc = []byte{
+	0x0a, 0x16, 0x76, 0x31, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x73, 0x65, 0x72, 0x76,
 	0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x76, 0x31, 0x2e, 0x73, 0x65, 0x72,
 	0x76, 0x65, 0x72, 0x1a, 0x1f, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70,
@@ -1710,19 +1710,19 @@ var file_server_v1_server_proto_rawDesc = []byte{
 }
 
 var (
-	file_server_v1_server_proto_rawDescOnce sync.Once
-	file_server_v1_server_proto_rawDescData = file_server_v1_server_proto_rawDesc
+	file_v1_server_server_proto_rawDescOnce sync.Once
+	file_v1_server_server_proto_rawDescData = file_v1_server_server_proto_rawDesc
 )
 
-func file_server_v1_server_proto_rawDescGZIP() []byte {
-	file_server_v1_server_proto_rawDescOnce.Do(func() {
-		file_server_v1_server_proto_rawDescData = protoimpl.X.CompressGZIP(file_server_v1_server_proto_rawDescData)
+func file_v1_server_server_proto_rawDescGZIP() []byte {
+	file_v1_server_server_proto_rawDescOnce.Do(func() {
+		file_v1_server_server_proto_rawDescData = protoimpl.X.CompressGZIP(file_v1_server_server_proto_rawDescData)
 	})
-	return file_server_v1_server_proto_rawDescData
+	return file_v1_server_server_proto_rawDescData
 }
 
-var file_server_v1_server_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
-var file_server_v1_server_proto_goTypes = []any{
+var file_v1_server_server_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_v1_server_server_proto_goTypes = []any{
 	(*Appserver)(nil),                      // 0: v1.server.Appserver
 	(*AppserverSub)(nil),                   // 1: v1.server.AppserverSub
 	(*AppserverAndSub)(nil),                // 2: v1.server.AppserverAndSub
@@ -1756,7 +1756,7 @@ var file_server_v1_server_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil),          // 30: google.protobuf.Timestamp
 	(*wrapperspb.StringValue)(nil),         // 31: google.protobuf.StringValue
 }
-var file_server_v1_server_proto_depIdxs = []int32{
+var file_v1_server_server_proto_depIdxs = []int32{
 	30, // 0: v1.server.Appserver.created_at:type_name -> google.protobuf.Timestamp
 	30, // 1: v1.server.Appserver.updated_at:type_name -> google.protobuf.Timestamp
 	30, // 2: v1.server.AppserverSub.created_at:type_name -> google.protobuf.Timestamp
@@ -1806,27 +1806,27 @@ var file_server_v1_server_proto_depIdxs = []int32{
 	0,  // [0:18] is the sub-list for field type_name
 }
 
-func init() { file_server_v1_server_proto_init() }
-func file_server_v1_server_proto_init() {
-	if File_server_v1_server_proto != nil {
+func init() { file_v1_server_server_proto_init() }
+func file_v1_server_server_proto_init() {
+	if File_v1_server_server_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_server_v1_server_proto_rawDesc,
+			RawDescriptor: file_v1_server_server_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_server_v1_server_proto_goTypes,
-		DependencyIndexes: file_server_v1_server_proto_depIdxs,
-		MessageInfos:      file_server_v1_server_proto_msgTypes,
+		GoTypes:           file_v1_server_server_proto_goTypes,
+		DependencyIndexes: file_v1_server_server_proto_depIdxs,
+		MessageInfos:      file_v1_server_server_proto_msgTypes,
 	}.Build()
-	File_server_v1_server_proto = out.File
-	file_server_v1_server_proto_rawDesc = nil
-	file_server_v1_server_proto_goTypes = nil
-	file_server_v1_server_proto_depIdxs = nil
+	File_v1_server_server_proto = out.File
+	file_v1_server_server_proto_rawDesc = nil
+	file_v1_server_server_proto_goTypes = nil
+	file_v1_server_server_proto_depIdxs = nil
 }

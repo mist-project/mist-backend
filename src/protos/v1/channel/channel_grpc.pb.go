@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             (unknown)
-// source: channel/v1/channel.proto
+// source: v1/channel/channel.proto
 
 package channel
 
@@ -233,5 +233,5 @@ var ChannelService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "channel/v1/channel.proto",
+	Metadata: "v1/channel/channel.proto",
 }

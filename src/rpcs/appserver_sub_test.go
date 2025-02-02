@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb_server "mist/src/protos/server/v1"
+	pb_server "mist/src/protos/v1/server"
 )
 
 // ----- RPC AppserverSub -----

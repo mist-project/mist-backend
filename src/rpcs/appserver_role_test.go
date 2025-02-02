@@ -3,13 +3,13 @@ package rpcs_test
 import (
 	"testing"
 
-	pb_server "mist/src/protos/server/v1"
-	"mist/src/psql_db/qx"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pb_server "mist/src/protos/server/v1"
+	"mist/src/psql_db/qx"
 )
 
 // ----- RPC AppserveRole -----
@@ -100,10 +100,11 @@ func TestDeleteAppserveRoles(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 		userId := ctx.Value(ctxUserKey).(string)
-		appserverRole := testAppserverRole(t, userId, nil)
+		aRole := testAppserverRole(t, userId, nil)
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRole(ctx, &pb_server.DeleteAppserverRoleRequest{Id: appserverRole.ID.String()})
+		response, err := TestAppserverClient.DeleteAppserverRole(
+			ctx, &pb_server.DeleteAppserverRoleRequest{Id: aRole.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -113,10 +114,11 @@ func TestDeleteAppserveRoles(t *testing.T) {
 	t.Run("cannot_be_deleted_by_non_owner", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserverRole := testAppserverRole(t, uuid.NewString(), nil)
+		aRole := testAppserverRole(t, uuid.NewString(), nil)
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRole(ctx, &pb_server.DeleteAppserverRoleRequest{Id: appserverRole.ID.String()})
+		response, err := TestAppserverClient.DeleteAppserverRole(
+			ctx, &pb_server.DeleteAppserverRoleRequest{Id: aRole.ID.String()})
 
 		// ASSERT
 		assert.Nil(t, response)

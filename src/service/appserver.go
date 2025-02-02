@@ -25,30 +25,30 @@ func NewAppserverService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverS
 	return &AppserverService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *AppserverService) PgTypeToPb(appserver *qx.Appserver) *pb_server.Appserver {
+func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_server.Appserver {
 	return &pb_server.Appserver{
-		Id:        appserver.ID.String(),
-		Name:      appserver.Name,
-		CreatedAt: timestamppb.New(appserver.CreatedAt.Time),
+		Id:        a.ID.String(),
+		Name:      a.Name,
+		CreatedAt: timestamppb.New(a.CreatedAt.Time),
 	}
 }
 
-func (service *AppserverService) Create(name string, userId string) (*qx.Appserver, error) {
-	// Keeping the validationErrors variable as a way to show the pattern I'd like to follow (using a list of
+func (s *AppserverService) Create(name string, userId string) (*qx.Appserver, error) {
+	// Keeping the validationErr variable as a way to show the pattern I'd like to follow (using a list of
 	// validation errors to then send them)
 	// Note: might change the pattern to use some sort of validation package. This might be duable by changing the
 	// parameter in this method for example, to a struct type that can be validated. (Similar concept of python's
 	// Pydantic object validation)
-	validationErrors := []string{}
+	validationErr := []string{}
 	if name == "" {
-		validationErrors = AddValidationError("name", validationErrors)
+		validationErr = AddValidationError("name", validationErr)
 	}
 
 	if userId == "" {
-		validationErrors = AddValidationError("user_id", validationErrors)
+		validationErr = AddValidationError("user_id", validationErr)
 	}
 
-	if len(validationErrors) > 0 {
+	if len(validationErr) > 0 {
 		return nil, errors.New(fmt.Sprintf("(%d): missing name attribute", ValidationError))
 	}
 
@@ -57,21 +57,22 @@ func (service *AppserverService) Create(name string, userId string) (*qx.Appserv
 		return nil, errors.New(fmt.Sprintf("(%d): %v", ValidationError, err))
 	}
 
-	appserver, err := qx.New(service.dbcPool).CreateAppserver(service.ctx, qx.CreateAppserverParams{
+	as, err := qx.New(s.dbcPool).CreateAppserver(s.ctx, qx.CreateAppserverParams{
 		Name:      name,
 		AppUserID: parsedUserId,
 	})
-	return &appserver, err
+
+	return &as, err
 }
 
-func (service *AppserverService) GetById(id string) (*qx.Appserver, error) {
+func (s *AppserverService) GetById(id string) (*qx.Appserver, error) {
 	parsedUuid, err := uuid.Parse(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	appserver, err := qx.New(service.dbcPool).GetAppserver(service.ctx, parsedUuid)
+	as, err := qx.New(s.dbcPool).GetAppserver(s.ctx, parsedUuid)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
@@ -81,20 +82,21 @@ func (service *AppserverService) GetById(id string) (*qx.Appserver, error) {
 		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
-	return &appserver, nil
+	return &as, nil
 }
 
-func (service *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]qx.Appserver, error) {
+func (s *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]qx.Appserver, error) {
 	// To query remember do to: {"name": {"value": "boo"}}
-	var formatName = pgtype.Text{Valid: false}
+	var fName = pgtype.Text{Valid: false}
+
 	if name != nil {
-		formatName.Valid = true
-		formatName.String = name.Value
+		fName.Valid = true
+		fName.String = name.Value
 	}
 
 	parsedOwnerUuid, _ := uuid.Parse(ownerId)
-	appservers, err := qx.New(service.dbcPool).ListUserAppservers(
-		service.ctx, qx.ListUserAppserversParams{Name: formatName, AppUserID: parsedOwnerUuid},
+	appservers, err := qx.New(s.dbcPool).ListUserAppservers(
+		s.ctx, qx.ListUserAppserversParams{Name: fName, AppUserID: parsedOwnerUuid},
 	)
 
 	if err != nil {
@@ -104,20 +106,23 @@ func (service *AppserverService) List(name *wrappers.StringValue, ownerId string
 	return appservers, nil
 }
 
-func (service *AppserverService) Delete(id string, ownerId string) error {
+func (s *AppserverService) Delete(id string, ownerId string) error {
 	parsedUuid, err := uuid.Parse(id)
+
 	if err != nil {
 		return err
 	}
 
 	parsedOwnerUuid, _ := uuid.Parse(ownerId)
 
-	deletedRows, err := qx.New(service.dbcPool).DeleteAppserver(
-		service.ctx, qx.DeleteAppserverParams{ID: parsedUuid, AppUserID: parsedOwnerUuid})
+	deleted, err := qx.New(s.dbcPool).DeleteAppserver(
+		s.ctx, qx.DeleteAppserverParams{ID: parsedUuid, AppUserID: parsedOwnerUuid})
+
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
-	} else if deletedRows == 0 {
+	} else if deleted == 0 {
 		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
+
 	return err
 }

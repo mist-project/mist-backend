@@ -3,12 +3,12 @@ package rpcs_test
 import (
 	"testing"
 
-	pb_server "mist/src/protos/server/v1"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pb_server "mist/src/protos/server/v1"
 )
 
 // ----- RPC AppserverSub -----
@@ -80,6 +80,7 @@ func TestCreateAppserverSub(t *testing.T) {
 		response, err := TestAppserverClient.CreateAppserverSub(ctx, &pb_server.CreateAppserverSubRequest{
 			AppserverId: appserver.ID.String(),
 		})
+
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}

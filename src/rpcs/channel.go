@@ -10,37 +10,41 @@ import (
 func (s *ChannelGRPCService) CreateChannel(
 	ctx context.Context, req *pb_channel.CreateChannelRequest,
 ) (*pb_channel.CreateChannelResponse, error) {
-	channelService := service.NewChannelService(s.DbcPool, ctx)
-	channel, err := channelService.Create(req.GetName(), req.GetAppserverId())
+
+	cs := service.NewChannelService(s.DbcPool, ctx)
+	channel, err := cs.Create(req.GetName(), req.GetAppserverId())
 
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
 
 	return &pb_channel.CreateChannelResponse{
-		Channel: channelService.PgTypeToPb(channel),
+		Channel: cs.PgTypeToPb(channel),
 	}, nil
+
 }
 
 func (s *ChannelGRPCService) GetByIdChannel(
 	ctx context.Context, req *pb_channel.GetByIdChannelRequest,
 ) (*pb_channel.GetByIdChannelResponse, error) {
-	channelService := service.NewChannelService(s.DbcPool, ctx)
-	channel, err := channelService.GetById(req.GetId())
+
+	cs := service.NewChannelService(s.DbcPool, ctx)
+	channel, err := cs.GetById(req.GetId())
 
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_channel.GetByIdChannelResponse{Channel: channelService.PgTypeToPb(channel)}, nil
+	return &pb_channel.GetByIdChannelResponse{Channel: cs.PgTypeToPb(channel)}, nil
 }
 
 func (s *ChannelGRPCService) ListChannels(
 	ctx context.Context, req *pb_channel.ListChannelsRequest,
 ) (*pb_channel.ListChannelsResponse, error) {
-	channelService := service.NewChannelService(s.DbcPool, ctx)
+
+	cs := service.NewChannelService(s.DbcPool, ctx)
 	// TODO: Handle potential errors that can happen here
-	channels, _ := channelService.List(req.GetName(), req.GetAppserverId())
+	channels, _ := cs.List(req.GetName(), req.GetAppserverId())
 
 	response := &pb_channel.ListChannelsResponse{}
 
@@ -48,7 +52,7 @@ func (s *ChannelGRPCService) ListChannels(
 	response.Channels = make([]*pb_channel.Channel, 0, len(channels))
 
 	for _, channel := range channels {
-		response.Channels = append(response.Channels, channelService.PgTypeToPb(&channel))
+		response.Channels = append(response.Channels, cs.PgTypeToPb(&channel))
 	}
 
 	return response, nil
@@ -58,9 +62,7 @@ func (s *ChannelGRPCService) DeleteChannel(
 	ctx context.Context, req *pb_channel.DeleteChannelRequest,
 ) (*pb_channel.DeleteChannelResponse, error) {
 
-	err := service.NewChannelService(s.DbcPool, ctx).Delete(req.GetId())
-
-	if err != nil {
+	if err := service.NewChannelService(s.DbcPool, ctx).Delete(req.GetId()); err != nil {
 		return nil, ErrorHandler(err)
 	}
 

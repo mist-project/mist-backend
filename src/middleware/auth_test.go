@@ -22,13 +22,13 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("valid_token", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := createJwtToken(t,
+		token := createJwtToken(t,
 			&CreateTokenParams{
 				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
 				secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
 			})
-		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", tokenStr))
+		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
@@ -41,14 +41,14 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("invalid_audience", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := createJwtToken(t,
+		token := createJwtToken(t,
 			&CreateTokenParams{
 				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 				aud:       []string{"invalid-audience"},
 				secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
 			})
 
-		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", tokenStr))
+		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
@@ -62,13 +62,13 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("invalid_issuer", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := createJwtToken(t,
+		token := createJwtToken(t,
 			&CreateTokenParams{
 				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
 				secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
 			})
 
-		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", tokenStr))
+		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
@@ -82,14 +82,14 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("invalid_secret_key", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		tokenStr := createJwtToken(t,
+		token := createJwtToken(t,
 			&CreateTokenParams{
 				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
 				secretKey: "wrong-secret-key",
 			})
 
-		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", tokenStr))
+		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
@@ -153,10 +153,10 @@ func TestAuthJwtInterceptor(t *testing.T) {
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		}
 
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		tokenStr, err := token.SignedString([]byte(os.Getenv("MIST_API_JWT_SECRET_KEY")))
+		tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		token, err := tok.SignedString([]byte(os.Getenv("MIST_API_JWT_SECRET_KEY")))
 
-		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", tokenStr))
+		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
@@ -183,7 +183,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 func TestGetJWTClaims(t *testing.T) {
 	t.Run("can_successfully_get_claims_from_context", func(t *testing.T) {
 		// ARRANGE
-		claims := &middleware.CustomJWTClaims{
+		c := &middleware.CustomJWTClaims{
 			RegisteredClaims: jwt.RegisteredClaims{
 				Issuer:   "dummy issuer",
 				Audience: jwt.ClaimStrings{"oo aud"},
@@ -194,7 +194,7 @@ func TestGetJWTClaims(t *testing.T) {
 			UserID: uuid.NewString(),
 		}
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, middleware.JwtClaimsContextKey, claims)
+		ctx = context.WithValue(ctx, middleware.JwtClaimsK, c)
 
 		// ACT
 		ctxClaims, err := middleware.GetJWTClaims(ctx)
@@ -207,7 +207,7 @@ func TestGetJWTClaims(t *testing.T) {
 	t.Run("invalid_claims_return_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, middleware.JwtClaimsContextKey, "boom")
+		ctx = context.WithValue(ctx, middleware.JwtClaimsK, "boom")
 
 		// ACT
 		ctxClaims, err := middleware.GetJWTClaims(ctx)

@@ -11,12 +11,13 @@ import (
 func (s *AppserverGRPCService) CreateAppserverSub(
 	ctx context.Context, req *pb_server.CreateAppserverSubRequest,
 ) (*pb_server.CreateAppserverSubResponse, error) {
+
 	// Initialize the service for AppserverSub
-	appserverSubService := service.NewAppserverSubService(s.DbcPool, ctx)
+	ass := service.NewAppserverSubService(s.DbcPool, ctx)
 
-	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+	claims, _ := middleware.GetJWTClaims(ctx)
 
-	appserverSub, err := appserverSubService.Create(req.GetAppserverId(), jwtClaims.UserID)
+	appserverSub, err := ass.Create(req.GetAppserverId(), claims.UserID)
 
 	// Error handling
 	if err != nil {
@@ -25,20 +26,21 @@ func (s *AppserverGRPCService) CreateAppserverSub(
 
 	// Return response
 	return &pb_server.CreateAppserverSubResponse{
-		AppserverSub: appserverSubService.PgTypeToPb(appserverSub),
+		AppserverSub: ass.PgTypeToPb(appserverSub),
 	}, nil
 }
 
 func (s *AppserverGRPCService) GetUserAppserverSubs(
 	ctx context.Context, req *pb_server.GetUserAppserverSubsRequest,
 ) (*pb_server.GetUserAppserverSubsResponse, error) {
-	// Initialize the service for AppserverSub
-	appserverSubService := service.NewAppserverSubService(s.DbcPool, ctx)
 
-	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+	// Initialize the service for AppserverSub
+	ass := service.NewAppserverSubService(s.DbcPool, ctx)
+
+	claims, _ := middleware.GetJWTClaims(ctx)
 
 	// TODO: Handle potential errors that can happen here
-	results, _ := appserverSubService.ListUserAppserverAndSub(jwtClaims.UserID)
+	results, _ := ass.ListUserAppserverAndSub(claims.UserID)
 
 	// Construct the response
 	response := &pb_server.GetUserAppserverSubsResponse{
@@ -47,7 +49,7 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 
 	// Convert list of AppserverSubs to protobuf
 	for _, result := range results {
-		response.Appservers = append(response.Appservers, appserverSubService.PgUserSubRowToPb(&result))
+		response.Appservers = append(response.Appservers, ass.PgUserSubRowToPb(&result))
 	}
 
 	return response, nil
@@ -56,11 +58,12 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 func (s *AppserverGRPCService) DeleteAppserverSub(
 	ctx context.Context, req *pb_server.DeleteAppserverSubRequest,
 ) (*pb_server.DeleteAppserverSubResponse, error) {
+
 	// Initialize the service for AppserverSub
-	appserverSubService := service.NewAppserverSubService(s.DbcPool, ctx)
+	ass := service.NewAppserverSubService(s.DbcPool, ctx)
 
 	// Call delete service method
-	err := appserverSubService.DeleteByAppserver(req.GetId())
+	err := ass.DeleteByAppserver(req.GetId())
 
 	// Error handling
 	if err != nil {

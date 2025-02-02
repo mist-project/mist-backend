@@ -25,27 +25,28 @@ func NewChannelService(dbcPool *pgxpool.Pool, ctx context.Context) *ChannelServi
 	return &ChannelService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *ChannelService) PgTypeToPb(channel *qx.Channel) *pb_channel.Channel {
+func (s *ChannelService) PgTypeToPb(c *qx.Channel) *pb_channel.Channel {
 	return &pb_channel.Channel{
-		Id:          channel.ID.String(),
-		Name:        channel.Name,
-		AppserverId: channel.AppserverID.String(),
-		CreatedAt:   timestamppb.New(channel.CreatedAt.Time),
+		Id:          c.ID.String(),
+		Name:        c.Name,
+		AppserverId: c.AppserverID.String(),
+		CreatedAt:   timestamppb.New(c.CreatedAt.Time),
 	}
 }
 
-func (service *ChannelService) Create(name string, appserverId string) (*qx.Channel, error) {
-	validationErrors := []string{}
+func (s *ChannelService) Create(name string, appserverId string) (*qx.Channel, error) {
+	validationErr := []string{}
+
 	if name == "" {
-		validationErrors = AddValidationError("name", validationErrors)
+		validationErr = AddValidationError("name", validationErr)
 	}
 
 	if appserverId == "" {
-		validationErrors = AddValidationError("appserver_id", validationErrors)
+		validationErr = AddValidationError("appserver_id", validationErr)
 	}
 
-	if len(validationErrors) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErrors, ",")))
+	if len(validationErr) > 0 {
+		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ",")))
 	}
 
 	parsedUuid, err := uuid.Parse(appserverId)
@@ -54,20 +55,20 @@ func (service *ChannelService) Create(name string, appserverId string) (*qx.Chan
 		return nil, err
 	}
 
-	channel, err := qx.New(service.dbcPool).CreateChannel(
-		service.ctx, qx.CreateChannelParams{Name: name, AppserverID: parsedUuid},
+	channel, err := qx.New(s.dbcPool).CreateChannel(
+		s.ctx, qx.CreateChannelParams{Name: name, AppserverID: parsedUuid},
 	)
 	return &channel, err
 }
 
-func (service *ChannelService) GetById(id string) (*qx.Channel, error) {
+func (s *ChannelService) GetById(id string) (*qx.Channel, error) {
 	parsedUuid, err := uuid.Parse(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	channel, err := qx.New(service.dbcPool).GetChannel(service.ctx, parsedUuid)
+	channel, err := qx.New(s.dbcPool).GetChannel(s.ctx, parsedUuid)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
@@ -80,12 +81,15 @@ func (service *ChannelService) GetById(id string) (*qx.Channel, error) {
 	return &channel, nil
 }
 
-func (service *ChannelService) List(name *wrappers.StringValue, appserverId *wrappers.StringValue) ([]qx.Channel, error) {
+func (s *ChannelService) List(name *wrappers.StringValue, appserverId *wrappers.StringValue) ([]qx.Channel, error) {
 	// To query, remember to format the parameters
-	var formatName pgtype.Text
-	var formatAppserverId pgtype.UUID
+	var (
+		fName pgtype.Text
+		fAId  pgtype.UUID
+	)
+
 	if name != nil {
-		formatName = pgtype.Text{Valid: true, String: name.Value}
+		fName = pgtype.Text{Valid: true, String: name.Value}
 	}
 
 	if appserverId != nil {
@@ -93,13 +97,13 @@ func (service *ChannelService) List(name *wrappers.StringValue, appserverId *wra
 		if err != nil {
 			return nil, err
 		}
-		formatAppserverId = pgtype.UUID{Valid: true, Bytes: parsedUuid}
+		fAId = pgtype.UUID{Valid: true, Bytes: parsedUuid}
 	} else {
-		formatAppserverId = pgtype.UUID{Valid: false}
+		fAId = pgtype.UUID{Valid: false}
 	}
 
-	channels, err := qx.New(service.dbcPool).ListChannels(
-		service.ctx, qx.ListChannelsParams{Name: formatName, AppserverID: formatAppserverId},
+	channels, err := qx.New(s.dbcPool).ListChannels(
+		s.ctx, qx.ListChannelsParams{Name: fName, AppserverID: fAId},
 	)
 
 	if err != nil {
@@ -109,18 +113,20 @@ func (service *ChannelService) List(name *wrappers.StringValue, appserverId *wra
 	return channels, nil
 }
 
-func (service *ChannelService) Delete(id string) error {
+func (s *ChannelService) Delete(id string) error {
 	parsedUuid, err := uuid.Parse(id)
 
 	if err != nil {
 		return err
 	}
 
-	deletedRows, err := qx.New(service.dbcPool).DeleteChannel(service.ctx, parsedUuid)
+	deleted, err := qx.New(s.dbcPool).DeleteChannel(s.ctx, parsedUuid)
+
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
-	} else if deletedRows == 0 {
+	} else if deleted == 0 {
 		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
+
 	return err
 }

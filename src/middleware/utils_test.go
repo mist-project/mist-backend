@@ -1,11 +1,12 @@
 package middleware_test
 
 import (
-	"mist/src/middleware"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"mist/src/middleware"
 )
 
 type CreateTokenParams struct {

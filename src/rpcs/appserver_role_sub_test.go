@@ -3,16 +3,14 @@ package rpcs_test
 import (
 	"testing"
 
-	pb_server "mist/src/protos/server/v1"
-	"mist/src/psql_db/qx"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
 
-// ----- RPC AppserveRole -----
+	pb_server "mist/src/protos/server/v1"
+	"mist/src/psql_db/qx"
+)
 
 // ----- RPC CreateAppserveRoleSub -----
 func TestCreateAppserveRoleSub(t *testing.T) {
@@ -23,7 +21,6 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 		ownerId, _ := uuid.Parse(userId)
 		asRole := testAppserverRole(t, userId, nil)
 		asSub := testAppserverSub(t, userId, &qx.AppserverSub{AppserverID: asRole.AppserverID, AppUserID: ownerId})
-		// asrSub := testAppserverRoleSub(t, userId, &qx.AppserverRoleSub{AppserverRoleID: asRole.ID, AppserverSubID: asSub.ID})
 
 		// ACT
 		response, err := TestAppserverClient.CreateAppserverRoleSub(ctx, &pb_server.CreateAppserverRoleSubRequest{

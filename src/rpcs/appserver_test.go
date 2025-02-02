@@ -135,6 +135,7 @@ func TestCreateAppsever(t *testing.T) {
 		userId := ctx.Value(ctxUserKey).(string)
 		parsedUserId, err := uuid.Parse(userId)
 		testAppUser(t, &qx.AppUser{ID: parsedUserId, Username: "foo"})
+
 		// ACT
 		response, err := TestAppserverClient.CreateAppserver(ctx, &pb_server.CreateAppserverRequest{Name: "someone"})
 
@@ -173,17 +174,17 @@ func TestDeleteAppserver(t *testing.T) {
 		userId := ctx.Value(ctxUserKey).(string)
 		appserver := testAppserver(t, userId, nil)
 		testAppserverSub(t, userId, &qx.AppserverSub{AppserverID: appserver.ID})
-		serverSubsService := service.NewAppserverSubService(dbcPool, ctx)
+		ass := service.NewAppserverSubService(dbcPool, ctx)
 
 		// ASSERT
-		serverSubs, _ := serverSubsService.ListUserAppserverAndSub(userId)
+		serverSubs, _ := ass.ListUserAppserverAndSub(userId)
 		assert.Equal(t, 1, len(serverSubs))
 
 		// ACT
 		response, err := TestAppserverClient.DeleteAppserver(ctx, &pb_server.DeleteAppserverRequest{Id: appserver.ID.String()})
 
 		// ASSERT
-		serverSubs, _ = serverSubsService.ListUserAppserverAndSub(userId)
+		serverSubs, _ = ass.ListUserAppserverAndSub(userId)
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(serverSubs))

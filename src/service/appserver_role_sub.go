@@ -22,54 +22,57 @@ func NewAppserverRoleSubService(dbcPool *pgxpool.Pool, ctx context.Context) *App
 	return &AppserverRoleSubService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *AppserverRoleSubService) PgTypeToPb(appserverRole *qx.AppserverRoleSub) *pb_server.AppserverRoleSub {
+func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_server.AppserverRoleSub {
 	return &pb_server.AppserverRoleSub{
-		Id:              appserverRole.ID.String(),
-		AppserverRoleId: appserverRole.AppserverRoleID.String(),
-		AppserverSubId:  appserverRole.AppserverSubID.String(),
+		Id:              arSub.ID.String(),
+		AppserverRoleId: arSub.AppserverRoleID.String(),
+		AppserverSubId:  arSub.AppserverSubID.String(),
 	}
 }
 
-func (service *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId string, appUserId string) (*qx.AppserverRoleSub, error) {
-	validationErrors := []string{}
+func (s *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId string, appUserId string) (*qx.AppserverRoleSub, error) {
+	validationErr := []string{}
+
 	if appserverRoleId == "" {
-		validationErrors = AddValidationError("appserver_role_id", validationErrors)
+		validationErr = AddValidationError("appserver_role_id", validationErr)
 	}
 
 	if appserverSubId == "" {
-		validationErrors = AddValidationError("appserver_sub_id", validationErrors)
+		validationErr = AddValidationError("appserver_sub_id", validationErr)
 	}
 
-	if len(validationErrors) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErrors, ", ")))
+	if len(validationErr) > 0 {
+		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ", ")))
 	}
 
-	parsedAppserverRoleId, err := uuid.Parse(appserverRoleId)
+	pARId, err := uuid.Parse(appserverRoleId)
+
 	if err != nil {
 		return nil, err
 	}
 
-	parsedAppserverSubId, err := uuid.Parse(appserverSubId)
+	pASId, err := uuid.Parse(appserverSubId)
 	if err != nil {
 		return nil, err
 	}
 
-	parsedAppUserId, err := uuid.Parse(appUserId)
+	pAUId, err := uuid.Parse(appUserId)
 	if err != nil {
 		return nil, err
 	}
 
-	appserverRole, err := qx.New(service.dbcPool).CreateAppserverRoleSub(
-		service.ctx, qx.CreateAppserverRoleSubParams{
-			AppserverSubID:  parsedAppserverSubId,
-			AppserverRoleID: parsedAppserverRoleId,
-			AppUserID:       parsedAppUserId,
+	appserverRole, err := qx.New(s.dbcPool).CreateAppserverRoleSub(
+		s.ctx, qx.CreateAppserverRoleSubParams{
+			AppserverSubID:  pASId,
+			AppserverRoleID: pARId,
+			AppUserID:       pAUId,
 		},
 	)
+
 	return &appserverRole, err
 }
 
-func (service *AppserverRoleSubService) DeleteRoleSub(id string, ownerId string) error {
+func (s *AppserverRoleSubService) DeleteRoleSub(id string, ownerId string) error {
 	parsedUuid, err := uuid.Parse(id)
 
 	if err != nil {
@@ -82,14 +85,15 @@ func (service *AppserverRoleSubService) DeleteRoleSub(id string, ownerId string)
 		return err
 	}
 
-	deletedRows, err := qx.New(service.dbcPool).DeleteAppserverRoleSub(service.ctx, qx.DeleteAppserverRoleSubParams{
+	deleted, err := qx.New(s.dbcPool).DeleteAppserverRoleSub(s.ctx, qx.DeleteAppserverRoleSubParams{
 		ID: parsedUuid, AppUserID: parsedOwnerUuid,
 	})
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
-	} else if deletedRows == 0 {
+	} else if deleted == 0 {
 		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
+
 	return nil
 }

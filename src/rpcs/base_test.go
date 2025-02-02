@@ -1,3 +1,1 @@
-package rpcs
-
-//----
+package rpcs_test

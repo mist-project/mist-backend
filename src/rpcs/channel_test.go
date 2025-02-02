@@ -3,13 +3,13 @@ package rpcs_test
 import (
 	"testing"
 
-	pb_channel "mist/src/protos/channel/v1"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+
+	pb_channel "mist/src/protos/channel/v1"
 )
 
 // ----- RPC Channels -----

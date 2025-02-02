@@ -14,26 +14,29 @@ const (
 	UnknownError                    = -4
 )
 
-var validationErrorString string = fmt.Sprintf("(%d):", ValidationError)
-var DatabaseErrorString string = fmt.Sprintf("(%d):", DatabaseError)
-var NotFoundErrorString string = fmt.Sprintf("(%d):", NotFoundError)
+var (
+	DatabaseErrorString   string = fmt.Sprintf("(%d):", DatabaseError)
+	NotFoundErrorString   string = fmt.Sprintf("(%d):", NotFoundError)
+	validationErrorString string = fmt.Sprintf("(%d):", ValidationError)
+)
 
-func ParseServiceError(service_error string) CustomGRPCError {
-	if strings.Contains(service_error, validationErrorString) {
+func ParseServiceError(serviceErr string) CustomGRPCError {
+
+	if strings.Contains(serviceErr, validationErrorString) {
 		return ValidationError
 	}
 
-	if strings.Contains(service_error, DatabaseErrorString) {
+	if strings.Contains(serviceErr, DatabaseErrorString) {
 		return DatabaseError
 	}
 
-	if strings.Contains(service_error, NotFoundErrorString) {
+	if strings.Contains(serviceErr, NotFoundErrorString) {
 		return NotFoundError
 	}
 
 	return UnknownError
 }
 
-func AddValidationError(attribute string, validationErrors []string) []string {
-	return append(validationErrors, fmt.Sprintf("missing %s attribute", attribute))
+func AddValidationError(attribute string, validationErr []string) []string {
+	return append(validationErr, fmt.Sprintf("missing %s attribute", attribute))
 }

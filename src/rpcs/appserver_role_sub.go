@@ -11,11 +11,12 @@ import (
 func (s *AppserverGRPCService) CreateAppserverRoleSub(
 	ctx context.Context, req *pb_server.CreateAppserverRoleSubRequest,
 ) (*pb_server.CreateAppserverRoleSubResponse, error) {
-	asrSubService := service.NewAppserverRoleSubService(s.DbcPool, ctx)
-	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+
+	arss := service.NewAppserverRoleSubService(s.DbcPool, ctx)
+	claims, _ := middleware.GetJWTClaims(ctx)
 
 	// TODO: Figure out what can go wrong to add error handler
-	appserverSub, err := asrSubService.Create(req.GetAppserverRoleId(), req.GetAppserverSubId(), jwtClaims.UserID)
+	arSub, err := arss.Create(req.GetAppserverRoleId(), req.GetAppserverSubId(), claims.UserID)
 
 	// Error handling
 	if err != nil {
@@ -24,19 +25,20 @@ func (s *AppserverGRPCService) CreateAppserverRoleSub(
 
 	// Return response
 	return &pb_server.CreateAppserverRoleSubResponse{
-		AppserverRoleSub: asrSubService.PgTypeToPb(appserverSub),
+		AppserverRoleSub: arss.PgTypeToPb(arSub),
 	}, nil
 }
 
 func (s *AppserverGRPCService) DeleteAppserverRoleSub(
 	ctx context.Context, req *pb_server.DeleteAppserverRoleSubRequest,
 ) (*pb_server.DeleteAppserverRoleSubResponse, error) {
+
 	// Initialize the service for AppserveRole
-	asrSubService := service.NewAppserverRoleSubService(s.DbcPool, ctx)
-	jwtClaims, _ := middleware.GetJWTClaims(ctx)
+	arss := service.NewAppserverRoleSubService(s.DbcPool, ctx)
+	claims, _ := middleware.GetJWTClaims(ctx)
 
 	// Call delete service method
-	err := asrSubService.DeleteRoleSub(req.GetId(), jwtClaims.UserID)
+	err := arss.DeleteRoleSub(req.GetId(), claims.UserID)
 
 	// Error handling
 	if err != nil {

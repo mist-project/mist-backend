@@ -23,91 +23,97 @@ func NewAppserverSubService(dbcPool *pgxpool.Pool, ctx context.Context) *Appserv
 	return &AppserverSubService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (service *AppserverSubService) PgTypeToPb(appserverSub *qx.AppserverSub) *pb_server.AppserverSub {
+func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_server.AppserverSub {
 	return &pb_server.AppserverSub{
-		Id:          appserverSub.ID.String(),
-		AppserverId: appserverSub.AppserverID.String(),
-		CreatedAt:   timestamppb.New(appserverSub.CreatedAt.Time),
-		UpdatedAt:   timestamppb.New(appserverSub.UpdatedAt.Time),
+		Id:          aSub.ID.String(),
+		AppserverId: aSub.AppserverID.String(),
+		CreatedAt:   timestamppb.New(aSub.CreatedAt.Time),
+		UpdatedAt:   timestamppb.New(aSub.UpdatedAt.Time),
 	}
 }
 
-func (service *AppserverSubService) PgUserSubRowToPb(results *qx.GetUserAppserverSubsRow) *pb_server.AppserverAndSub {
+func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetUserAppserverSubsRow) *pb_server.AppserverAndSub {
 	appserver := &pb_server.Appserver{
-		Id:        results.ID.String(),
-		Name:      results.Name,
-		CreatedAt: timestamppb.New(results.CreatedAt.Time),
-		UpdatedAt: timestamppb.New(results.UpdatedAt.Time),
+		Id:        res.ID.String(),
+		Name:      res.Name,
+		CreatedAt: timestamppb.New(res.CreatedAt.Time),
+		UpdatedAt: timestamppb.New(res.UpdatedAt.Time),
 	}
+
 	return &pb_server.AppserverAndSub{
 		Appserver: appserver,
-		SubId:     results.AppserverSubID.String(),
+		SubId:     res.AppserverSubID.String(),
 	}
 }
 
-func (service *AppserverSubService) Create(appserverId string, ownerId string) (*qx.AppserverSub, error) {
-	validationErrors := []string{}
+func (s *AppserverSubService) Create(appserverId string, ownerId string) (*qx.AppserverSub, error) {
+	validationErr := []string{}
+
 	if appserverId == "" {
-		validationErrors = AddValidationError("appserver_id", validationErrors)
+		validationErr = AddValidationError("appserver_id", validationErr)
 	}
 
 	if ownerId == "" {
-		validationErrors = AddValidationError("app_user_id", validationErrors)
+		validationErr = AddValidationError("app_user_id", validationErr)
 	}
 
-	if len(validationErrors) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErrors, ", ")))
+	if len(validationErr) > 0 {
+		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ", ")))
 	}
 
-	parsedAppserverId, err := uuid.Parse(appserverId)
+	pAId, err := uuid.Parse(appserverId)
+
 	if err != nil {
 		return nil, err
 	}
 
-	parsedUserId, err := uuid.Parse(ownerId)
+	pUId, err := uuid.Parse(ownerId)
 	if err != nil {
 		return nil, err
 	}
 
-	appserverSub, err := qx.New(service.dbcPool).CreateAppserverSub(
-		service.ctx, qx.CreateAppserverSubParams{
-			AppserverID: parsedAppserverId,
-			AppUserID:   parsedUserId,
+	appserverSub, err := qx.New(s.dbcPool).CreateAppserverSub(
+		s.ctx, qx.CreateAppserverSubParams{
+			AppserverID: pAId,
+			AppUserID:   pUId,
 		},
 	)
+
 	return &appserverSub, err
 }
 
-func (service *AppserverSubService) ListUserAppserverAndSub(ownerId string) ([]qx.GetUserAppserverSubsRow, error) {
+func (s *AppserverSubService) ListUserAppserverAndSub(ownerId string) ([]qx.GetUserAppserverSubsRow, error) {
 	// TODO TOMORROW: REPLACE THIS QUERY WE DONT NEED TO FILTER BY APPSERVER
 	parsedUuid, err := uuid.Parse(ownerId)
+
 	if err != nil {
 		return nil, err
 	}
 
-	appserverSubs, err := qx.New(service.dbcPool).GetUserAppserverSubs(
-		service.ctx, parsedUuid,
+	aSubs, err := qx.New(s.dbcPool).GetUserAppserverSubs(
+		s.ctx, parsedUuid,
 	)
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
-	return appserverSubs, nil
+	return aSubs, nil
 }
 
-func (service *AppserverSubService) DeleteByAppserver(id string) error {
+func (s *AppserverSubService) DeleteByAppserver(id string) error {
 	parsedUuid, err := uuid.Parse(id)
 
 	if err != nil {
 		return err
 	}
 
-	deletedRows, err := qx.New(service.dbcPool).DeleteAppserverSub(service.ctx, parsedUuid)
+	deleted, err := qx.New(s.dbcPool).DeleteAppserverSub(s.ctx, parsedUuid)
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
-	} else if deletedRows == 0 {
+	} else if deleted == 0 {
 		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
+
 	return nil
 }

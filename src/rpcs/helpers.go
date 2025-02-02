@@ -7,11 +7,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-
 func ErrorHandler(err error) error {
-	parsedError := service.ParseServiceError(err.Error())
+	pErr := service.ParseServiceError(err.Error())
 
-	switch parsedError {
+	switch pErr {
 	case service.ValidationError:
 		return status.Errorf(codes.InvalidArgument, "%s", err.Error())
 	case service.NotFoundError:

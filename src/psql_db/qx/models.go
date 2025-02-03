@@ -5,22 +5,61 @@
 package qx
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type AppUser struct {
-	ID        uuid.UUID
-	Username  string
-	Online    bool
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+type AppuserOnlineStatus string
+
+const (
+	AppuserOnlineStatusInactive AppuserOnlineStatus = "inactive"
+	AppuserOnlineStatusOnline   AppuserOnlineStatus = "online"
+	AppuserOnlineStatusOffline  AppuserOnlineStatus = "offline"
+	AppuserOnlineStatusAway     AppuserOnlineStatus = "away"
+)
+
+func (e *AppuserOnlineStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AppuserOnlineStatus(s)
+	case string:
+		*e = AppuserOnlineStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AppuserOnlineStatus: %T", src)
+	}
+	return nil
+}
+
+type NullAppuserOnlineStatus struct {
+	AppuserOnlineStatus AppuserOnlineStatus
+	Valid               bool // Valid is true if AppuserOnlineStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAppuserOnlineStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.AppuserOnlineStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AppuserOnlineStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAppuserOnlineStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AppuserOnlineStatus), nil
 }
 
 type Appserver struct {
 	ID        uuid.UUID
 	Name      string
-	AppUserID uuid.UUID
+	AppuserID uuid.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
@@ -35,7 +74,7 @@ type AppserverRole struct {
 
 type AppserverRoleSub struct {
 	ID              uuid.UUID
-	AppUserID       uuid.UUID
+	AppuserID       uuid.UUID
 	AppserverRoleID uuid.UUID
 	AppserverSubID  uuid.UUID
 	CreatedAt       pgtype.Timestamp
@@ -45,9 +84,17 @@ type AppserverRoleSub struct {
 type AppserverSub struct {
 	ID          uuid.UUID
 	AppserverID uuid.UUID
-	AppUserID   uuid.UUID
+	AppuserID   uuid.UUID
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
+}
+
+type Appuser struct {
+	ID           uuid.UUID
+	Username     string
+	OnlineStatus AppuserOnlineStatus
+	CreatedAt    pgtype.Timestamp
+	UpdatedAt    pgtype.Timestamp
 }
 
 type Channel struct {

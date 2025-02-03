@@ -3,16 +3,22 @@ package rpcs
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appuser "mist/src/protos/v1/appuser"
 	pb_channel "mist/src/protos/v1/channel"
-	pb_server "mist/src/protos/v1/server"
 )
 
 type AppserverGRPCService struct {
-	pb_server.UnimplementedServerServiceServer
+	pb_appserver.UnimplementedServerServiceServer
 	DbcPool *pgxpool.Pool
 }
 
 type ChannelGRPCService struct {
 	pb_channel.UnimplementedChannelServiceServer
+	DbcPool *pgxpool.Pool
+}
+
+type AppuserGRPCService struct {
+	pb_appuser.UnimplementedAppuserServiceServer
 	DbcPool *pgxpool.Pool
 }

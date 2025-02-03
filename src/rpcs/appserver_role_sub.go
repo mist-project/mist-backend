@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"mist/src/middleware"
-	pb_server "mist/src/protos/v1/server"
+	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/service"
 )
 
 func (s *AppserverGRPCService) CreateAppserverRoleSub(
-	ctx context.Context, req *pb_server.CreateAppserverRoleSubRequest,
-) (*pb_server.CreateAppserverRoleSubResponse, error) {
+	ctx context.Context, req *pb_appserver.CreateAppserverRoleSubRequest,
+) (*pb_appserver.CreateAppserverRoleSubResponse, error) {
 
 	arss := service.NewAppserverRoleSubService(s.DbcPool, ctx)
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -24,14 +24,14 @@ func (s *AppserverGRPCService) CreateAppserverRoleSub(
 	}
 
 	// Return response
-	return &pb_server.CreateAppserverRoleSubResponse{
+	return &pb_appserver.CreateAppserverRoleSubResponse{
 		AppserverRoleSub: arss.PgTypeToPb(arSub),
 	}, nil
 }
 
 func (s *AppserverGRPCService) DeleteAppserverRoleSub(
-	ctx context.Context, req *pb_server.DeleteAppserverRoleSubRequest,
-) (*pb_server.DeleteAppserverRoleSubResponse, error) {
+	ctx context.Context, req *pb_appserver.DeleteAppserverRoleSubRequest,
+) (*pb_appserver.DeleteAppserverRoleSubResponse, error) {
 
 	// Initialize the service for AppserveRole
 	arss := service.NewAppserverRoleSubService(s.DbcPool, ctx)
@@ -46,5 +46,5 @@ func (s *AppserverGRPCService) DeleteAppserverRoleSub(
 	}
 
 	// Return success response
-	return &pb_server.DeleteAppserverRoleSubResponse{}, nil
+	return &pb_appserver.DeleteAppserverRoleSubResponse{}, nil
 }

@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"mist/src/middleware"
-	pb_server "mist/src/protos/v1/server"
+	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/service"
 )
 
 func (s *AppserverGRPCService) CreateAppserverSub(
-	ctx context.Context, req *pb_server.CreateAppserverSubRequest,
-) (*pb_server.CreateAppserverSubResponse, error) {
+	ctx context.Context, req *pb_appserver.CreateAppserverSubRequest,
+) (*pb_appserver.CreateAppserverSubResponse, error) {
 
 	// Initialize the service for AppserverSub
 	ass := service.NewAppserverSubService(s.DbcPool, ctx)
@@ -25,14 +25,14 @@ func (s *AppserverGRPCService) CreateAppserverSub(
 	}
 
 	// Return response
-	return &pb_server.CreateAppserverSubResponse{
+	return &pb_appserver.CreateAppserverSubResponse{
 		AppserverSub: ass.PgTypeToPb(appserverSub),
 	}, nil
 }
 
 func (s *AppserverGRPCService) GetUserAppserverSubs(
-	ctx context.Context, req *pb_server.GetUserAppserverSubsRequest,
-) (*pb_server.GetUserAppserverSubsResponse, error) {
+	ctx context.Context, req *pb_appserver.GetUserAppserverSubsRequest,
+) (*pb_appserver.GetUserAppserverSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
 	ass := service.NewAppserverSubService(s.DbcPool, ctx)
@@ -43,8 +43,8 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 	results, _ := ass.ListUserAppserverAndSub(claims.UserID)
 
 	// Construct the response
-	response := &pb_server.GetUserAppserverSubsResponse{
-		Appservers: make([]*pb_server.AppserverAndSub, 0, len(results)),
+	response := &pb_appserver.GetUserAppserverSubsResponse{
+		Appservers: make([]*pb_appserver.AppserverAndSub, 0, len(results)),
 	}
 
 	// Convert list of AppserverSubs to protobuf
@@ -56,8 +56,8 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 }
 
 func (s *AppserverGRPCService) DeleteAppserverSub(
-	ctx context.Context, req *pb_server.DeleteAppserverSubRequest,
-) (*pb_server.DeleteAppserverSubResponse, error) {
+	ctx context.Context, req *pb_appserver.DeleteAppserverSubRequest,
+) (*pb_appserver.DeleteAppserverSubResponse, error) {
 
 	// Initialize the service for AppserverSub
 	ass := service.NewAppserverSubService(s.DbcPool, ctx)
@@ -71,5 +71,5 @@ func (s *AppserverGRPCService) DeleteAppserverSub(
 	}
 
 	// Return success response
-	return &pb_server.DeleteAppserverSubResponse{}, nil
+	return &pb_appserver.DeleteAppserverSubResponse{}, nil
 }

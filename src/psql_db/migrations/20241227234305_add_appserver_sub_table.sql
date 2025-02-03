@@ -3,12 +3,13 @@
 CREATE TABLE IF NOT EXISTS appserver_sub (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     appserver_id UUID NOT NULL,
-    app_user_id UUID NOT NULL,
+    appuser_id UUID NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
 
     FOREIGN KEY (appserver_id) REFERENCES appserver(id) ON DELETE CASCADE,
-    CONSTRAINT appserver_sub_uk_appserver_owner UNIQUE (appserver_id, app_user_id)
+    FOREIGN KEY (appuser_id) REFERENCES appuser(id) ON DELETE CASCADE,
+    CONSTRAINT appserver_sub_uk_appserver_owner UNIQUE (appserver_id, appuser_id)
 );
 -- +goose StatementEnd
 

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+package v1.appuser;
+option go_package = "/appuser";
+
+service AppuserService {
+  // ----- APPUSER ----
+  rpc CreateAppuser(CreateAppuserRequest) returns (CreateAppuserResponse);
+}
+
+// RESOURCES
+enum AppUserStatus {
+  APP_USER_STATUS_UNSPECIFIED = 0;
+  APP_USER_STATUS_INACTIVE = 1;
+  APP_USER_STATUS_ONLINE = 2;
+  APP_USER_STATUS_OFFLINE = 3;
+  APP_USER_STATUS_AWAY = 4;
+}
+
+message Appuser {
+  string id = 1;
+  string username = 2;
+  AppUserStatus online_status = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+// ----- APPUSER -----
+message CreateAppuserRequest {
+  string id = 1;
+  string username = 2;
+}
+message CreateAppuserResponse {}

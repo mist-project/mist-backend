@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	pb_server "mist/src/protos/v1/server"
+	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 )
 
@@ -22,8 +22,8 @@ func NewAppserverRoleSubService(dbcPool *pgxpool.Pool, ctx context.Context) *App
 	return &AppserverRoleSubService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_server.AppserverRoleSub {
-	return &pb_server.AppserverRoleSub{
+func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_appserver.AppserverRoleSub {
+	return &pb_appserver.AppserverRoleSub{
 		Id:              arSub.ID.String(),
 		AppserverRoleId: arSub.AppserverRoleID.String(),
 		AppserverSubId:  arSub.AppserverSubID.String(),
@@ -65,7 +65,7 @@ func (s *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId 
 		s.ctx, qx.CreateAppserverRoleSubParams{
 			AppserverSubID:  pASId,
 			AppserverRoleID: pARId,
-			AppUserID:       pAUId,
+			AppuserID:       pAUId,
 		},
 	)
 
@@ -86,7 +86,7 @@ func (s *AppserverRoleSubService) DeleteRoleSub(id string, ownerId string) error
 	}
 
 	deleted, err := qx.New(s.dbcPool).DeleteAppserverRoleSub(s.ctx, qx.DeleteAppserverRoleSubParams{
-		ID: parsedUuid, AppUserID: parsedOwnerUuid,
+		ID: parsedUuid, AppuserID: parsedOwnerUuid,
 	})
 
 	if err != nil {

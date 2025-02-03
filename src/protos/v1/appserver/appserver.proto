@@ -3,8 +3,8 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-package v1.server;
-option go_package = "/server";
+package v1.appserver;
+option go_package = "/appserver";
 
 service ServerService {
   // ----- APPSERVER ----
@@ -73,35 +73,30 @@ message AppserverRoleSub {
   string appserver_sub_id = 3;
 }
 
-message Channel {
-  string id = 1;
-  string name = 2;
-  string appserver_id = 3;
-  google.protobuf.Timestamp created_at = 4;
-  google.protobuf.Timestamp updated_at = 5;
-}
-
 // RESPONSE/REQUEST
 // ----- Appserver -----
 message CreateAppserverRequest { string name = 1; }
-message GetByIdAppserverRequest { string id = 1; }
-message ListAppserversRequest { google.protobuf.StringValue name = 1; }
-message DeleteAppserverRequest { string id = 1; }
-
 message CreateAppserverResponse { Appserver appserver = 1; }
+
+message GetByIdAppserverRequest { string id = 1; }
 message GetByIdAppserverResponse { Appserver appserver = 1; }
+
+message ListAppserversRequest { google.protobuf.StringValue name = 1; }
 message ListAppserversResponse { repeated Appserver appservers = 1; }
+
+message DeleteAppserverRequest { string id = 1; }
 message DeleteAppserverResponse {}
 
 // ----- AppserverSub -----
 message CreateAppserverSubRequest { string appserver_id = 1; }
-message GetUserAppserverSubsRequest {}
-message DeleteAppserverSubRequest { string id = 1; }
-
 message CreateAppserverSubResponse { AppserverSub appserver_sub = 1; }
+
+message GetUserAppserverSubsRequest {}
 message GetUserAppserverSubsResponse {
   repeated AppserverAndSub appservers = 1;
 }
+
+message DeleteAppserverSubRequest { string id = 1; }
 message DeleteAppserverSubResponse {}
 
 // ----- AppserverRole -----
@@ -109,13 +104,14 @@ message CreateAppserverRoleRequest {
   string appserver_id = 1;
   string name = 2;
 }
-message GetAllAppserverRolesRequest { string appserver_id = 1; }
-message DeleteAppserverRoleRequest { string id = 1; }
-
 message CreateAppserverRoleResponse { AppserverRole appserver_role = 1; }
+
+message GetAllAppserverRolesRequest { string appserver_id = 1; }
 message GetAllAppserverRolesResponse {
   repeated AppserverRole appserver_roles = 1;
 }
+
+message DeleteAppserverRoleRequest { string id = 1; }
 message DeleteAppserverRoleResponse {}
 
 // ----- AppserverRole -----
@@ -123,9 +119,9 @@ message CreateAppserverRoleSubRequest {
   string appserver_role_id = 1;
   string appserver_sub_id = 2;
 }
-message DeleteAppserverRoleSubRequest { string id = 1; }
-
 message CreateAppserverRoleSubResponse {
   AppserverRoleSub appserver_role_sub = 1;
 }
+
+message DeleteAppserverRoleSubRequest { string id = 1; }
 message DeleteAppserverRoleSubResponse {}

@@ -4,10 +4,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS appserver (
     id UUID PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
-    app_user_id UUID NOT NULL,
+    appuser_id UUID NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    FOREIGN KEY (appuser_id) REFERENCES appuser(id) ON DELETE CASCADE
 );
+
 -- +goose StatementEnd
 
 -- +goose Down

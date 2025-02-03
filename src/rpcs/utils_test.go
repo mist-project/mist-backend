@@ -22,15 +22,17 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"mist/src/middleware"
+	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appuser "mist/src/protos/v1/appuser"
 	pb_channel "mist/src/protos/v1/channel"
-	pb_server "mist/src/protos/v1/server"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )
 
 var (
 	testServer          *grpc.Server
-	TestAppserverClient pb_server.ServerServiceClient
+	TestAppserverClient pb_appserver.ServerServiceClient
+	TestAppuserClient   pb_appuser.AppuserServiceClient
 	TestChannelClient   pb_channel.ChannelServiceClient
 	testClientConn      *grpc.ClientConn
 
@@ -96,8 +98,9 @@ func setupTestAppserverGRPCServiceAndClient() {
 
 	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_server.RegisterServerServiceServer(testServer, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
+	pb_appserver.RegisterServerServiceServer(testServer, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
 	pb_channel.RegisterChannelServiceServer(testServer, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
+	pb_appuser.RegisterAppuserServiceServer(testServer, &rpcs.AppuserGRPCService{DbcPool: dbcPool})
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {
@@ -112,8 +115,9 @@ func setupTestAppserverGRPCServiceAndClient() {
 		log.Fatalf("did not connect: %v", err)
 	}
 
-	TestAppserverClient = pb_server.NewServerServiceClient(testClientConn)
+	TestAppserverClient = pb_appserver.NewServerServiceClient(testClientConn)
 	TestChannelClient = pb_channel.NewChannelServiceClient(testClientConn)
+	TestAppuserClient = pb_appuser.NewAppuserServiceClient(testClientConn)
 
 }
 
@@ -164,7 +168,13 @@ func setup(t *testing.T, cleanup func()) context.Context {
 
 func teardown(ctx context.Context) {
 	// Cleans all the table's data after each test (used in setup) function
-	tables := []string{"appserver", "channel", "appserver_sub", "appserver_role", "appserver_role_sub"}
+	tables := []string{
+		"appserver",
+		"appuser",
+		"channel",
+		"appserver_sub",
+		"appserver_role",
+		"appserver_role_sub"}
 
 	for _, table := range tables {
 		query := fmt.Sprintf(`TRUNCATE TABLE %s RESTART IDENTITY CASCADE;`, table)
@@ -210,9 +220,9 @@ func createJwtToken(t *testing.T, params *CreateTokenParams) string {
 }
 
 // ----- DB HELPER FUNCTIONS -----
-func testAppUser(t *testing.T, appuser *qx.AppUser) *qx.AppUser {
+func testAppuser(t *testing.T, appuser *qx.Appuser) *qx.Appuser {
 	var (
-		au       qx.AppUser
+		au       qx.Appuser
 		err      error
 		id       uuid.UUID
 		username string
@@ -233,11 +243,11 @@ func testAppUser(t *testing.T, appuser *qx.AppUser) *qx.AppUser {
 
 	db := qx.New(dbcPool)
 
-	if au, err = db.GetAppUser(ctx, id); err == nil {
+	if au, err = db.GetAppuser(ctx, id); err == nil {
 		return &au
 	}
 
-	au, err = qx.New(dbcPool).CreateAppUser(ctx, qx.CreateAppUserParams{
+	au, err = qx.New(dbcPool).CreateAppuser(ctx, qx.CreateAppuserParams{
 		Username: username,
 		ID:       id,
 	})
@@ -253,7 +263,7 @@ func testAppserver(t *testing.T, userId string, appserver *qx.Appserver) *qx.App
 	var name string
 
 	parsedUserId, err := uuid.Parse(userId)
-	appuser := testAppUser(t, &qx.AppUser{Username: "test", ID: parsedUserId})
+	appuser := testAppuser(t, &qx.Appuser{Username: "test", ID: parsedUserId})
 
 	if err != nil {
 		t.Fatalf("unable to create appserver. Error %v", err)
@@ -270,7 +280,7 @@ func testAppserver(t *testing.T, userId string, appserver *qx.Appserver) *qx.App
 
 	as, err := qx.New(dbcPool).CreateAppserver(context.Background(), qx.CreateAppserverParams{
 		Name:      name,
-		AppUserID: appuser.ID,
+		AppuserID: appuser.ID,
 	})
 
 	if err != nil {
@@ -284,7 +294,7 @@ func testAppserverSub(t *testing.T, userId string, aSub *qx.AppserverSub) *qx.Ap
 	// Define attributes
 	var aId uuid.UUID
 	auId, err := uuid.Parse(userId)
-	appuser := testAppUser(t, &qx.AppUser{Username: "test", ID: auId})
+	appuser := testAppuser(t, &qx.Appuser{Username: "test", ID: auId})
 
 	if err != nil {
 		t.Fatalf("unable to create appserverSub. Error %v", err)
@@ -298,7 +308,7 @@ func testAppserverSub(t *testing.T, userId string, aSub *qx.AppserverSub) *qx.Ap
 	}
 
 	asSub, err := qx.New(dbcPool).CreateAppserverSub(context.Background(), qx.CreateAppserverSubParams{
-		AppserverID: aId, AppUserID: appuser.ID,
+		AppserverID: aId, AppuserID: appuser.ID,
 	})
 
 	if err != nil {
@@ -343,7 +353,7 @@ func testAppserverRoleSub(t *testing.T, userId string, aRSub *qx.AppserverRoleSu
 	)
 
 	appuserId, err := uuid.Parse(userId)
-	appuser := testAppUser(t, &qx.AppUser{Username: "test", ID: appuserId})
+	appuser := testAppuser(t, &qx.Appuser{Username: "test", ID: appuserId})
 
 	if err != nil {
 		t.Fatalf("unable to create appserverSub. Error %v", err)
@@ -357,12 +367,14 @@ func testAppserverRoleSub(t *testing.T, userId string, aRSub *qx.AppserverRoleSu
 		appserverRole := testAppserverRole(t, userId, nil)
 		aRId = appserverRole.ID
 		aSId = testAppserverSub(
-			t, userId, &qx.AppserverSub{AppserverID: appserverRole.AppserverID, AppUserID: appuser.ID},
+			t,
+			userId,
+			&qx.AppserverSub{AppserverID: appserverRole.AppserverID, AppuserID: appuser.ID},
 		).ID
 	}
 
 	asrSub, err := qx.New(dbcPool).CreateAppserverRoleSub(context.Background(), qx.CreateAppserverRoleSubParams{
-		AppserverRoleID: aRId, AppserverSubID: aSId, AppUserID: appuser.ID,
+		AppserverRoleID: aRId, AppserverSubID: aSId, AppuserID: appuser.ID,
 	})
 
 	if err != nil {

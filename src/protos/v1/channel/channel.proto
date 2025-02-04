@@ -29,14 +29,16 @@ message CreateChannelRequest {
   string name = 1;
   string appserver_id = 2;
 }
+message CreateChannelResponse { Channel channel = 1; }
+
 message GetByIdChannelRequest { string id = 1; }
+message GetByIdChannelResponse { Channel channel = 1; }
+
 message ListChannelsRequest {
   google.protobuf.StringValue name = 1;
   google.protobuf.StringValue appserver_id = 2;
 }
-message DeleteChannelRequest { string id = 1; }
-
-message CreateChannelResponse { Channel channel = 1; }
-message GetByIdChannelResponse { Channel channel = 1; }
 message ListChannelsResponse { repeated Channel channels = 1; }
+
+message DeleteChannelRequest { string id = 1; }
 message DeleteChannelResponse {}

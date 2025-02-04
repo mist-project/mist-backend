@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_server "mist/src/protos/v1/server"
+	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 )
 
@@ -25,8 +25,8 @@ func NewAppserverService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverS
 	return &AppserverService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_server.Appserver {
-	return &pb_server.Appserver{
+func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_appserver.Appserver {
+	return &pb_appserver.Appserver{
 		Id:        a.ID.String(),
 		Name:      a.Name,
 		CreatedAt: timestamppb.New(a.CreatedAt.Time),
@@ -59,7 +59,7 @@ func (s *AppserverService) Create(name string, userId string) (*qx.Appserver, er
 
 	as, err := qx.New(s.dbcPool).CreateAppserver(s.ctx, qx.CreateAppserverParams{
 		Name:      name,
-		AppUserID: parsedUserId,
+		AppuserID: parsedUserId,
 	})
 
 	return &as, err
@@ -96,7 +96,7 @@ func (s *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]q
 
 	parsedOwnerUuid, _ := uuid.Parse(ownerId)
 	appservers, err := qx.New(s.dbcPool).ListUserAppservers(
-		s.ctx, qx.ListUserAppserversParams{Name: fName, AppUserID: parsedOwnerUuid},
+		s.ctx, qx.ListUserAppserversParams{Name: fName, AppuserID: parsedOwnerUuid},
 	)
 
 	if err != nil {
@@ -116,7 +116,7 @@ func (s *AppserverService) Delete(id string, ownerId string) error {
 	parsedOwnerUuid, _ := uuid.Parse(ownerId)
 
 	deleted, err := qx.New(s.dbcPool).DeleteAppserver(
-		s.ctx, qx.DeleteAppserverParams{ID: parsedUuid, AppUserID: parsedOwnerUuid})
+		s.ctx, qx.DeleteAppserverParams{ID: parsedUuid, AppuserID: parsedOwnerUuid})
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))

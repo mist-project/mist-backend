@@ -11,8 +11,9 @@ import (
 	"google.golang.org/grpc"
 
 	"mist/src/middleware"
+	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appuser "mist/src/protos/v1/appuser"
 	pb_channel "mist/src/protos/v1/channel"
-	pb_server "mist/src/protos/v1/server"
 	"mist/src/rpcs"
 )
 
@@ -27,8 +28,9 @@ func InitializeServer() {
 
 	s := grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_server.RegisterServerServiceServer(s, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
+	pb_appserver.RegisterServerServiceServer(s, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
 	pb_channel.RegisterChannelServiceServer(s, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
+	pb_appuser.RegisterAppuserServiceServer(s, &rpcs.AppuserGRPCService{DbcPool: dbcPool})
 
 	log.Printf("server listening at %v", lis.Addr())
 

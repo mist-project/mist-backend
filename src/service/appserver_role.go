@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb_server "mist/src/protos/v1/server"
+	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 )
 
@@ -23,8 +23,8 @@ func NewAppserverRoleService(dbcPool *pgxpool.Pool, ctx context.Context) *Appser
 	return &AppserverRoleService{dbcPool: dbcPool, ctx: ctx}
 }
 
-func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_server.AppserverRole {
-	return &pb_server.AppserverRole{
+func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserver.AppserverRole {
+	return &pb_appserver.AppserverRole{
 		Id:          aRole.ID.String(),
 		AppserverId: aRole.AppserverID.String(),
 		Name:        aRole.Name,
@@ -96,7 +96,7 @@ func (s *AppserverRoleService) DeleteByAppserver(id string, ownerId string) erro
 	}
 
 	deleted, err := qx.New(s.dbcPool).DeleteAppserverRole(s.ctx, qx.DeleteAppserverRoleParams{
-		ID: parsedUuid, AppUserID: parsedOwnerUuid,
+		ID: parsedUuid, AppuserID: parsedOwnerUuid,
 	})
 
 	if err != nil {

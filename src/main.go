@@ -28,7 +28,7 @@ func InitializeServer() {
 
 	s := grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_appserver.RegisterServerServiceServer(s, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
+	pb_appserver.RegisterAppserverServiceServer(s, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
 	pb_channel.RegisterChannelServiceServer(s, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
 	pb_appuser.RegisterAppuserServiceServer(s, &rpcs.AppuserGRPCService{DbcPool: dbcPool})
 

@@ -9,7 +9,7 @@ import (
 )
 
 type AppserverGRPCService struct {
-	pb_appserver.UnimplementedServerServiceServer
+	pb_appserver.UnimplementedAppserverServiceServer
 	DbcPool *pgxpool.Pool
 }
 

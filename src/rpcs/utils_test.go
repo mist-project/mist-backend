@@ -31,7 +31,7 @@ import (
 
 var (
 	testServer          *grpc.Server
-	TestAppserverClient pb_appserver.ServerServiceClient
+	TestAppserverClient pb_appserver.AppserverServiceClient
 	TestAppuserClient   pb_appuser.AppuserServiceClient
 	TestChannelClient   pb_channel.ChannelServiceClient
 	testClientConn      *grpc.ClientConn
@@ -98,7 +98,7 @@ func setupTestAppserverGRPCServiceAndClient() {
 
 	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_appserver.RegisterServerServiceServer(testServer, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
+	pb_appserver.RegisterAppserverServiceServer(testServer, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
 	pb_channel.RegisterChannelServiceServer(testServer, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
 	pb_appuser.RegisterAppuserServiceServer(testServer, &rpcs.AppuserGRPCService{DbcPool: dbcPool})
 
@@ -115,7 +115,7 @@ func setupTestAppserverGRPCServiceAndClient() {
 		log.Fatalf("did not connect: %v", err)
 	}
 
-	TestAppserverClient = pb_appserver.NewServerServiceClient(testClientConn)
+	TestAppserverClient = pb_appserver.NewAppserverServiceClient(testClientConn)
 	TestChannelClient = pb_channel.NewChannelServiceClient(testClientConn)
 	TestAppuserClient = pb_appuser.NewAppuserServiceClient(testClientConn)
 

@@ -6,7 +6,7 @@ import "google/protobuf/wrappers.proto";
 package v1.appserver;
 option go_package = "/appserver";
 
-service ServerService {
+service AppserverService {
   // ----- APPSERVER ----
   rpc CreateAppserver(CreateAppserverRequest)
       returns (CreateAppserverResponse) {}

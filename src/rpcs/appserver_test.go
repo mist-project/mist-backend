@@ -90,6 +90,8 @@ func TestGetByIdAppServer(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, appserver.ID.String(), response.GetAppserver().Id)
+		assert.Equal(t, true, response.GetAppserver().IsOwner)
+		assert.Equal(t, appserver.Name, response.GetAppserver().Name)
 	})
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {

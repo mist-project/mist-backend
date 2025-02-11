@@ -23,8 +23,10 @@ func (s *AppserverGRPCService) CreateAppserver(
 
 	service.NewAppserverSubService(s.DbcPool, ctx).Create(appserver.ID.String(), claims.UserID)
 
+	pbA := as.PgTypeToPb(appserver)
+	pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
 	return &pb_appserver.CreateAppserverResponse{
-		Appserver: as.PgTypeToPb(appserver),
+		Appserver: pbA,
 	}, nil
 }
 
@@ -36,20 +38,21 @@ func (s *AppserverGRPCService) GetByIdAppserver(
 		err       error
 		appserver *qx.Appserver
 	)
-
+	claims, _ := middleware.GetJWTClaims(ctx)
 	as := service.NewAppserverService(s.DbcPool, ctx)
 
 	if appserver, err = as.GetById(req.GetId()); err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_appserver.GetByIdAppserverResponse{Appserver: as.PgTypeToPb(appserver)}, nil
+	pbA := as.PgTypeToPb(appserver)
+	pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
+	return &pb_appserver.GetByIdAppserverResponse{Appserver: pbA}, nil
 }
 
 func (s *AppserverGRPCService) ListAppservers(
 	ctx context.Context, req *pb_appserver.ListAppserversRequest,
 ) (*pb_appserver.ListAppserversResponse, error) {
-
 	as := service.NewAppserverService(s.DbcPool, ctx)
 	claims, _ := middleware.GetJWTClaims(ctx)
 
@@ -62,7 +65,9 @@ func (s *AppserverGRPCService) ListAppservers(
 	response.Appservers = make([]*pb_appserver.Appserver, 0, len(appservers))
 
 	for _, appserver := range appservers {
-		response.Appservers = append(response.Appservers, as.PgTypeToPb(&appserver))
+		pbA := as.PgTypeToPb(&appserver)
+		pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
+		response.Appservers = append(response.Appservers, pbA)
 	}
 
 	return response, nil

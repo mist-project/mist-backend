@@ -64,9 +64,8 @@ func (s *AppserverRoleService) Create(appserverId string, name string) (*qx.Apps
 	return &appserverRole, err
 }
 
-func (s *AppserverRoleService) ListAppserverRoles(ownerId string) ([]qx.AppserverRole, error) {
-	// TODO TOMORROW: REPLACE THIS QUERY WE DONT NEED TO FILTER BY APPSERVER
-	parsedUuid, err := uuid.Parse(ownerId)
+func (s *AppserverRoleService) ListAppserverRoles(appserverId string) ([]qx.AppserverRole, error) {
+	parsedUuid, err := uuid.Parse(appserverId)
 	if err != nil {
 		return nil, err
 	}

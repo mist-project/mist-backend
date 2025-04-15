@@ -54,6 +54,52 @@ func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, 
 	return result.RowsAffected(), nil
 }
 
+const getAllUsersAppserverSubs = `-- name: GetAllUsersAppserverSubs :many
+SELECT 
+  apssub.id as appserver_sub_id,
+  apu.id,
+  apu.username,
+  apu.created_at,
+  apu.updated_at  
+FROM appserver_sub as apssub
+JOIN appuser as apu ON apssub.appuser_id=apu.id
+WHERE apssub.appserver_id=$1
+`
+
+type GetAllUsersAppserverSubsRow struct {
+	AppserverSubID uuid.UUID
+	ID             uuid.UUID
+	Username       string
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+}
+
+func (q *Queries) GetAllUsersAppserverSubs(ctx context.Context, appserverID uuid.UUID) ([]GetAllUsersAppserverSubsRow, error) {
+	rows, err := q.db.Query(ctx, getAllUsersAppserverSubs, appserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllUsersAppserverSubsRow
+	for rows.Next() {
+		var i GetAllUsersAppserverSubsRow
+		if err := rows.Scan(
+			&i.AppserverSubID,
+			&i.ID,
+			&i.Username,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAppserverSub = `-- name: GetAppserverSub :one
 SELECT id, appserver_id, appuser_id, created_at, updated_at
 FROM appserver_sub

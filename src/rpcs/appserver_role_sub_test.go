@@ -19,8 +19,10 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 		ctx := setup(t, func() {})
 		userId := ctx.Value(ctxUserKey).(string)
 		ownerId, _ := uuid.Parse(userId)
+		appuser := testAppuser(t, &qx.Appuser{ID: ownerId, Username: "foo"})
+		appserver := testAppserver(t, appuser.ID.URN(), nil)
 		asRole := testAppserverRole(t, userId, nil)
-		asSub := testAppserverSub(t, userId, &qx.AppserverSub{AppserverID: asRole.AppserverID, AppuserID: ownerId})
+		asSub := testAppserverSub(t, appuser, appserver)
 
 		// ACT
 		response, err := TestAppserverClient.CreateAppserverRoleSub(ctx, &pb_appserver.CreateAppserverRoleSubRequest{

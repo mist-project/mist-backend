@@ -178,8 +178,10 @@ func TestDeleteAppserver(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 		userId := ctx.Value(ctxUserKey).(string)
+		uID, _ := uuid.Parse(userId)
+		appuser := testAppuser(t, &qx.Appuser{ID: uID, Username: "foo"})
 		appserver := testAppserver(t, userId, nil)
-		testAppserverSub(t, userId, &qx.AppserverSub{AppserverID: appserver.ID})
+		testAppserverSub(t, appuser, appserver)
 		ass := service.NewAppserverSubService(dbcPool, ctx)
 
 		// ASSERT

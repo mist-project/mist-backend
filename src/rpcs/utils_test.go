@@ -258,12 +258,12 @@ func testAppuser(t *testing.T, appuser *qx.Appuser) *qx.Appuser {
 
 	return &au
 }
-func testAppserver(t *testing.T, userId string, appserver *qx.Appserver) *qx.Appserver {
+func testAppserver(t *testing.T, ownerId string, appserver *qx.Appserver) *qx.Appserver {
 	// Define attributes
 	var name string
 
-	parsedUserId, err := uuid.Parse(userId)
-	appuser := testAppuser(t, &qx.Appuser{Username: "test", ID: parsedUserId})
+	parsedOID, err := uuid.Parse(ownerId)
+	appuser := testAppuser(t, &qx.Appuser{Username: "test", ID: parsedOID})
 
 	if err != nil {
 		t.Fatalf("unable to create appserver. Error %v", err)
@@ -290,21 +290,23 @@ func testAppserver(t *testing.T, userId string, appserver *qx.Appserver) *qx.App
 	return &as
 }
 
-func testAppserverSub(t *testing.T, userId string, aSub *qx.AppserverSub) *qx.AppserverSub {
+func testAppserverSub(t *testing.T, u *qx.Appuser, as *qx.Appserver) *qx.AppserverSub {
 	// Define attributes
 	var aId uuid.UUID
-	auId, err := uuid.Parse(userId)
-	appuser := testAppuser(t, &qx.Appuser{Username: "test", ID: auId})
+	var appuser *qx.Appuser
 
-	if err != nil {
-		t.Fatalf("unable to create appserverSub. Error %v", err)
+	if u != nil {
+		appuser = testAppuser(t, &qx.Appuser{Username: u.Username, ID: u.ID})
+	} else {
+		auId, _ := uuid.Parse(uuid.NewString())
+		appuser = testAppuser(t, &qx.Appuser{Username: "test", ID: auId})
 	}
 
-	if aSub != nil {
+	if as != nil {
 		// Custom values
-		aId = aSub.AppserverID
+		aId = as.ID
 	} else {
-		aId = testAppserver(t, userId, nil).ID
+		aId = testAppserver(t, appuser.ID.String(), nil).ID
 	}
 
 	asSub, err := qx.New(dbcPool).CreateAppserverSub(context.Background(), qx.CreateAppserverSubParams{
@@ -368,8 +370,8 @@ func testAppserverRoleSub(t *testing.T, userId string, aRSub *qx.AppserverRoleSu
 		aRId = appserverRole.ID
 		aSId = testAppserverSub(
 			t,
-			userId,
-			&qx.AppserverSub{AppserverID: appserverRole.AppserverID, AppuserID: appuser.ID},
+			appuser,
+			nil,
 		).ID
 	}
 

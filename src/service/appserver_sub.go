@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appuser "mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 )
 
@@ -32,7 +33,7 @@ func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserver.Ap
 	}
 }
 
-func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetUserAppserverSubsRow) *pb_appserver.AppserverAndSub {
+func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.GetUserAppserverSubsRow) *pb_appserver.AppserverAndSub {
 	appserver := &pb_appserver.Appserver{
 		Id:        res.ID.String(),
 		Name:      res.Name,
@@ -43,6 +44,20 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetUserAppserverSubsRow) 
 	return &pb_appserver.AppserverAndSub{
 		Appserver: appserver,
 		SubId:     res.AppserverSubID.String(),
+	}
+}
+
+func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsRow) *pb_appserver.AppuserAndSub {
+	appuser := &pb_appuser.Appuser{
+		Id:        res.ID.String(),
+		Username:  res.Username,
+		CreatedAt: timestamppb.New(res.CreatedAt.Time),
+		UpdatedAt: timestamppb.New(res.UpdatedAt.Time),
+	}
+
+	return &pb_appserver.AppuserAndSub{
+		Appuser: appuser,
+		SubId:   res.AppserverSubID.String(),
 	}
 }
 
@@ -83,7 +98,8 @@ func (s *AppserverSubService) Create(appserverId string, ownerId string) (*qx.Ap
 }
 
 func (s *AppserverSubService) ListUserAppserverAndSub(ownerId string) ([]qx.GetUserAppserverSubsRow, error) {
-	// TODO TOMORROW: REPLACE THIS QUERY WE DONT NEED TO FILTER BY APPSERVER
+	/* Returns all servers a user belongs to. */
+
 	parsedUuid, err := uuid.Parse(ownerId)
 
 	if err != nil {
@@ -101,7 +117,27 @@ func (s *AppserverSubService) ListUserAppserverAndSub(ownerId string) ([]qx.GetU
 	return aSubs, nil
 }
 
+func (s *AppserverSubService) ListAllUsersAppserverAndSub(appserverId string) ([]qx.GetAllUsersAppserverSubsRow, error) {
+	/* Returns all users in a server. */
+	parsedUuid, err := uuid.Parse(appserverId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	aSubs, err := qx.New(s.dbcPool).GetAllUsersAppserverSubs(
+		s.ctx, parsedUuid,
+	)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+	}
+
+	return aSubs, nil
+}
+
 func (s *AppserverSubService) DeleteByAppserver(id string) error {
+	/* Removes a user from a server. */
 	parsedUuid, err := uuid.Parse(id)
 
 	if err != nil {

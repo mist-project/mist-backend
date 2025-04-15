@@ -16,6 +16,17 @@ FROM appserver_sub as apssub
 JOIN appserver as aps ON apssub.appserver_id=aps.id
 WHERE apssub.appuser_id=$1;
 
+-- name: GetAllUsersAppserverSubs :many
+SELECT 
+  apssub.id as appserver_sub_id,
+  apu.id,
+  apu.username,
+  apu.created_at,
+  apu.updated_at  
+FROM appserver_sub as apssub
+JOIN appuser as apu ON apssub.appuser_id=apu.id
+WHERE apssub.appserver_id=$1;
+
 -- name: CreateAppserverSub :one
 INSERT INTO appserver_sub (
   appserver_id,

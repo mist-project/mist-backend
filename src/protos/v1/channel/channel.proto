@@ -4,7 +4,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 package v1.channel;
-option go_package = "/channel";
+option go_package = "mist/src/protos/v1/channel;channel";
 
 service ChannelService {
   // ----- CHANNEL ----

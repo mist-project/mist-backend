@@ -49,7 +49,29 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 
 	// Convert list of AppserverSubs to protobuf
 	for _, result := range results {
-		response.Appservers = append(response.Appservers, ass.PgUserSubRowToPb(&result))
+		response.Appservers = append(response.Appservers, ass.PgAppserverSubRowToPb(&result))
+	}
+
+	return response, nil
+}
+
+func (s *AppserverGRPCService) GetAllUsersAppserverSubs(
+	ctx context.Context, req *pb_appserver.GetAllUsersAppserverSubsRequest,
+) (*pb_appserver.GetAllUsersAppserverSubsResponse, error) {
+
+	// Initialize the service for AppserverSub
+	ass := service.NewAppserverSubService(s.DbcPool, ctx)
+
+	results, _ := ass.ListAllUsersAppserverAndSub(req.AppserverId)
+
+	// Construct the response
+	response := &pb_appserver.GetAllUsersAppserverSubsResponse{
+		Appusers: make([]*pb_appserver.AppuserAndSub, 0, len(results)),
+	}
+
+	// Convert list of AppserverSubs to protobuf
+	for _, result := range results {
+		response.Appusers = append(response.Appusers, ass.PgUserSubRowToPb(&result))
 	}
 
 	return response, nil

@@ -4,7 +4,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 package v1.appuser;
-option go_package = "/appuser";
+option go_package = "mist/src/protos/v1/appuser;appuser";
 
 service AppuserService {
   // ----- APPUSER ----

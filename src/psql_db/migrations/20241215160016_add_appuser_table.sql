@@ -11,7 +11,7 @@ CREATE TYPE appuser_online_status AS ENUM (
 -- Create appuser table
 CREATE TABLE IF NOT EXISTS appuser (
     id UUID PRIMARY KEY NOT NULL,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(255) UNIQUE NOT NULL,
     online_status appuser_online_status NOT NULL DEFAULT 'offline',
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()

@@ -32,16 +32,19 @@ func TestListAppServer(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
-	t.Run("can_return_all_resources_successfully", func(t *testing.T) {
+	t.Run("can_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-
-		testAppserver(t, userId, nil)
-		testAppserver(t, userId, &qx.Appserver{Name: "another one"})
+		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		testAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID})
+		testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverClient.ListAppservers(ctx, &pb_appserver.ListAppserversRequest{})
+		response, err := TestAppserverClient.ListAppservers(
+			ctx, &pb_appserver.ListAppserversRequest{},
+		)
+
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -53,13 +56,14 @@ func TestListAppServer(t *testing.T) {
 	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-		testAppserver(t, uuid.NewString(), nil)
-		testAppserver(t, userId, &qx.Appserver{Name: "another one"})
+		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appserver := testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
+		testAppserver(t, nil)
 
 		// ACT
 		response, err := TestAppserverClient.ListAppservers(
-			ctx, &pb_appserver.ListAppserversRequest{Name: wrapperspb.String("another one")},
+			ctx, &pb_appserver.ListAppserversRequest{Name: wrapperspb.String(appserver.Name)},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -76,8 +80,7 @@ func TestGetByIdAppServer(t *testing.T) {
 	t.Run("returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-		appserver := testAppserver(t, userId, nil)
+		appserver := testAppserver(t, nil)
 
 		// ACT
 		response, err := TestAppserverClient.GetByIdAppserver(
@@ -90,7 +93,7 @@ func TestGetByIdAppServer(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, appserver.ID.String(), response.GetAppserver().Id)
-		assert.Equal(t, true, response.GetAppserver().IsOwner)
+		assert.Equal(t, false, response.GetAppserver().IsOwner)
 		assert.Equal(t, appserver.Name, response.GetAppserver().Name)
 	})
 
@@ -131,16 +134,18 @@ func TestGetByIdAppServer(t *testing.T) {
 
 // ----- RPC CreateAppserver -----
 func TestCreateAppserver(t *testing.T) {
+
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-		parsedUserId, err := uuid.Parse(userId)
-		testAppuser(t, &qx.Appuser{ID: parsedUserId, Username: "foo"})
+		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserver(ctx, &pb_appserver.CreateAppserverRequest{Name: "someone"})
+		response, err := TestAppserverClient.CreateAppserver(
+			ctx, &pb_appserver.CreateAppserverRequest{Name: "someone"},
+		)
 
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -149,7 +154,7 @@ func TestCreateAppserver(t *testing.T) {
 		// ASSERT
 		dbcPool.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
 
-		serverSubs, _ := service.NewAppserverSubService(dbcPool, ctx).ListUserAppserverAndSub(userId)
+		serverSubs, _ := service.NewAppserverSubService(dbcPool, ctx).ListUserAppserverAndSub(appuser.ID.String())
 		assert.NotNil(t, response.Appserver)
 		assert.Equal(t, 1, len(serverSubs))
 		assert.Equal(t, 1, count)
@@ -177,22 +182,24 @@ func TestDeleteAppserver(t *testing.T) {
 	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-		uID, _ := uuid.Parse(userId)
-		appuser := testAppuser(t, &qx.Appuser{ID: uID, Username: "foo"})
-		appserver := testAppserver(t, userId, nil)
-		testAppserverSub(t, appuser, appserver)
-		ass := service.NewAppserverSubService(dbcPool, ctx)
+		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appserver := testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid})
+		testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid})
+
+		subService := service.NewAppserverSubService(dbcPool, ctx)
 
 		// ASSERT
-		serverSubs, _ := ass.ListUserAppserverAndSub(userId)
+		serverSubs, _ := subService.ListUserAppserverAndSub(appuser.ID.String())
 		assert.Equal(t, 1, len(serverSubs))
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserver(ctx, &pb_appserver.DeleteAppserverRequest{Id: appserver.ID.String()})
+		response, err := TestAppserverClient.DeleteAppserver(
+			ctx, &pb_appserver.DeleteAppserverRequest{Id: appserver.ID.String()},
+		)
 
 		// ASSERT
-		serverSubs, _ = ass.ListUserAppserverAndSub(userId)
+		serverSubs, _ = subService.ListUserAppserverAndSub(appuser.ID.String())
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(serverSubs))

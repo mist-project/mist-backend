@@ -77,6 +77,7 @@ type AppserverRoleSub struct {
 	AppuserID       uuid.UUID
 	AppserverRoleID uuid.UUID
 	AppserverSubID  uuid.UUID
+	AppserverID     uuid.UUID
 	CreatedAt       pgtype.Timestamp
 	UpdatedAt       pgtype.Timestamp
 }

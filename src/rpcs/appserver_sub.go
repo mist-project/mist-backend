@@ -49,7 +49,9 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 
 	// Convert list of AppserverSubs to protobuf
 	for _, result := range results {
-		response.Appservers = append(response.Appservers, ass.PgAppserverSubRowToPb(&result))
+		pbA := ass.PgAppserverSubRowToPb(&result)
+		pbA.Appserver.IsOwner = result.AppuserID.String() == claims.UserID
+		response.Appservers = append(response.Appservers, pbA)
 	}
 
 	return response, nil

@@ -55,15 +55,15 @@ func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, 
 }
 
 const getAllUsersAppserverSubs = `-- name: GetAllUsersAppserverSubs :many
-SELECT 
-  apssub.id as appserver_sub_id,
-  apu.id,
-  apu.username,
-  apu.created_at,
-  apu.updated_at  
-FROM appserver_sub as apssub
-JOIN appuser as apu ON apssub.appuser_id=apu.id
-WHERE apssub.appserver_id=$1
+SELECT
+  asub.id as appserver_sub_id,
+  auser.id,
+  auser.username,
+  auser.created_at,
+  auser.updated_at  
+FROM appserver_sub as asub
+JOIN appuser as auser ON asub.appuser_id=auser.id
+WHERE asub.appserver_id=$1
 `
 
 type GetAllUsersAppserverSubsRow struct {
@@ -122,19 +122,21 @@ func (q *Queries) GetAppserverSub(ctx context.Context, id uuid.UUID) (AppserverS
 }
 
 const getUserAppserverSubs = `-- name: GetUserAppserverSubs :many
-SELECT 
-  apssub.id as appserver_sub_id,
-  aps.id,
-  aps.name,
-  aps.created_at,
-  aps.updated_at  
-FROM appserver_sub as apssub
-JOIN appserver as aps ON apssub.appserver_id=aps.id
-WHERE apssub.appuser_id=$1
+SELECT
+  asub.id as appserver_sub_id,
+  asub.appuser_id,
+  aserver.id,
+  aserver.name,
+  aserver.created_at,
+  aserver.updated_at  
+FROM appserver_sub as asub
+JOIN appserver as aserver ON asub.appserver_id=aserver.id
+WHERE asub.appuser_id=$1
 `
 
 type GetUserAppserverSubsRow struct {
 	AppserverSubID uuid.UUID
+	AppuserID      uuid.UUID
 	ID             uuid.UUID
 	Name           string
 	CreatedAt      pgtype.Timestamp
@@ -152,6 +154,7 @@ func (q *Queries) GetUserAppserverSubs(ctx context.Context, appuserID uuid.UUID)
 		var i GetUserAppserverSubsRow
 		if err := rows.Scan(
 			&i.AppserverSubID,
+			&i.AppuserID,
 			&i.ID,
 			&i.Name,
 			&i.CreatedAt,

@@ -38,6 +38,8 @@ service AppserverService {
   // ----- APPSERVER ROLE SUB -----
   rpc CreateAppserverRoleSub(CreateAppserverRoleSubRequest)
       returns (CreateAppserverRoleSubResponse) {}
+  rpc GetAllAppserverUserRoleSubs(GetAllAppserverUserRoleSubsRequest)
+      returns (GetAllAppserverUserRoleSubsResponse) {}
   rpc DeleteAppserverRoleSub(DeleteAppserverRoleSubRequest)
       returns (DeleteAppserverRoleSubResponse) {}
 }
@@ -78,8 +80,9 @@ message AppserverRole {
 
 message AppserverRoleSub {
   string id = 1;
-  string appserver_role_id = 2;
-  string appserver_sub_id = 3;
+  string appuser_id = 2;
+  string appserver_role_id = 3;
+  string appserver_id = 4;
 }
 
 // RESPONSE/REQUEST
@@ -128,13 +131,21 @@ message GetAllAppserverRolesResponse {
 message DeleteAppserverRoleRequest { string id = 1; }
 message DeleteAppserverRoleResponse {}
 
-// ----- AppserverRole -----
+// ----- AppserverRoleSub -----
 message CreateAppserverRoleSubRequest {
   string appserver_role_id = 1;
   string appserver_sub_id = 2;
+  string appserver_id = 3;
+  string appuser_id = 4;
 }
+
 message CreateAppserverRoleSubResponse {
   AppserverRoleSub appserver_role_sub = 1;
+}
+
+message GetAllAppserverUserRoleSubsRequest { string appserver_id = 1; }
+message GetAllAppserverUserRoleSubsResponse {
+  repeated AppserverRoleSub appserver_role_subs = 1;
 }
 
 message DeleteAppserverRoleSubRequest { string id = 1; }

@@ -32,14 +32,12 @@ func (s *AppserverGRPCService) GetAllAppserverRoles(
 
 	// Initialize the service for AppserveRole
 	ars := service.NewAppserverRoleService(s.DbcPool, ctx)
-
 	results, _ := ars.ListAppserverRoles(req.GetAppserverId())
 
 	// Construct the response
 	response := &pb_appserver.GetAllAppserverRolesResponse{
 		AppserverRoles: make([]*pb_appserver.AppserverRole, 0, len(results)),
 	}
-
 	// Convert list of AppserveRoles to protobuf
 	for _, result := range results {
 		response.AppserverRoles = append(response.AppserverRoles, ars.PgTypeToPb(&result))

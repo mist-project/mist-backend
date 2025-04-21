@@ -15,30 +15,39 @@ const createAppserverRoleSub = `-- name: CreateAppserverRoleSub :one
 INSERT INTO appserver_role_sub (
   appserver_sub_id,
   appserver_role_id,
-  appuser_id
+  appuser_id,
+  appserver_id
 ) VALUES (
   $1,
   $2,
-  $3
+  $3,
+  $4
 )
-RETURNING id, appuser_id, appserver_role_id, appserver_sub_id, created_at, updated_at
+RETURNING id, appuser_id, appserver_role_id, appserver_sub_id, appserver_id, created_at, updated_at
 `
 
 type CreateAppserverRoleSubParams struct {
 	AppserverSubID  uuid.UUID
 	AppserverRoleID uuid.UUID
 	AppuserID       uuid.UUID
+	AppserverID     uuid.UUID
 }
 
 // --- APP SERVER ROLE SUBS -----
 func (q *Queries) CreateAppserverRoleSub(ctx context.Context, arg CreateAppserverRoleSubParams) (AppserverRoleSub, error) {
-	row := q.db.QueryRow(ctx, createAppserverRoleSub, arg.AppserverSubID, arg.AppserverRoleID, arg.AppuserID)
+	row := q.db.QueryRow(ctx, createAppserverRoleSub,
+		arg.AppserverSubID,
+		arg.AppserverRoleID,
+		arg.AppuserID,
+		arg.AppserverID,
+	)
 	var i AppserverRoleSub
 	err := row.Scan(
 		&i.ID,
 		&i.AppuserID,
 		&i.AppserverRoleID,
 		&i.AppserverSubID,
+		&i.AppserverID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -46,11 +55,11 @@ func (q *Queries) CreateAppserverRoleSub(ctx context.Context, arg CreateAppserve
 }
 
 const deleteAppserverRoleSub = `-- name: DeleteAppserverRoleSub :execrows
-DELETE FROM appserver_role_sub as ars
-USING appserver as a, appserver_role as ar
+DELETE FROM appserver_role_sub AS role_sub
+USING appserver AS a, appserver_role AS ar
 WHERE a.id=ar.appserver_id
-  AND ar.id=ars.appserver_role_id
-  AND ars.id=$1
+  AND ar.id=role_sub.appserver_role_id
+  AND role_sub.id=$1
   AND a.appuser_id=$2
 `
 
@@ -65,4 +74,95 @@ func (q *Queries) DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserve
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const getAppserverAllUserRoleSubs = `-- name: GetAppserverAllUserRoleSubs :many
+SELECT
+  role_sub.id,
+  role_sub.appuser_id,
+  role_sub.appserver_role_id,
+  role_sub.appserver_id
+
+FROM appserver_role_sub AS role_sub
+WHERE role_sub.appserver_id=$1
+`
+
+type GetAppserverAllUserRoleSubsRow struct {
+	ID              uuid.UUID
+	AppuserID       uuid.UUID
+	AppserverRoleID uuid.UUID
+	AppserverID     uuid.UUID
+}
+
+func (q *Queries) GetAppserverAllUserRoleSubs(ctx context.Context, appserverID uuid.UUID) ([]GetAppserverAllUserRoleSubsRow, error) {
+	rows, err := q.db.Query(ctx, getAppserverAllUserRoleSubs, appserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAppserverAllUserRoleSubsRow
+	for rows.Next() {
+		var i GetAppserverAllUserRoleSubsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AppuserID,
+			&i.AppserverRoleID,
+			&i.AppserverID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAppuserRoleSubs = `-- name: GetAppuserRoleSubs :many
+SELECT
+  role_sub.id,
+  role_sub.appuser_id,
+  role_sub.appserver_role_id,
+  role_sub.appserver_id
+FROM appserver_role_sub AS role_sub
+WHERE role_sub.appuser_id=$1
+  AND role_sub.appserver_id=$2
+`
+
+type GetAppuserRoleSubsParams struct {
+	AppuserID   uuid.UUID
+	AppserverID uuid.UUID
+}
+
+type GetAppuserRoleSubsRow struct {
+	ID              uuid.UUID
+	AppuserID       uuid.UUID
+	AppserverRoleID uuid.UUID
+	AppserverID     uuid.UUID
+}
+
+func (q *Queries) GetAppuserRoleSubs(ctx context.Context, arg GetAppuserRoleSubsParams) ([]GetAppuserRoleSubsRow, error) {
+	rows, err := q.db.Query(ctx, getAppuserRoleSubs, arg.AppuserID, arg.AppserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAppuserRoleSubsRow
+	for rows.Next() {
+		var i GetAppuserRoleSubsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AppuserID,
+			&i.AppserverRoleID,
+			&i.AppserverID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

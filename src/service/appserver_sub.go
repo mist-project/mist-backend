@@ -97,10 +97,10 @@ func (s *AppserverSubService) Create(appserverId string, ownerId string) (*qx.Ap
 	return &appserverSub, err
 }
 
-func (s *AppserverSubService) ListUserAppserverAndSub(ownerId string) ([]qx.GetUserAppserverSubsRow, error) {
+func (s *AppserverSubService) ListUserAppserverAndSub(userId string) ([]qx.GetUserAppserverSubsRow, error) {
 	/* Returns all servers a user belongs to. */
 
-	parsedUuid, err := uuid.Parse(ownerId)
+	parsedUuid, err := uuid.Parse(userId)
 
 	if err != nil {
 		return nil, err
@@ -117,7 +117,9 @@ func (s *AppserverSubService) ListUserAppserverAndSub(ownerId string) ([]qx.GetU
 	return aSubs, nil
 }
 
-func (s *AppserverSubService) ListAllUsersAppserverAndSub(appserverId string) ([]qx.GetAllUsersAppserverSubsRow, error) {
+func (s *AppserverSubService) ListAllUsersAppserverAndSub(
+	appserverId string,
+) ([]qx.GetAllUsersAppserverSubsRow, error) {
 	/* Returns all users in a server. */
 	parsedUuid, err := uuid.Parse(appserverId)
 

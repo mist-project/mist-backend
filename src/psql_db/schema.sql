@@ -31,6 +31,7 @@ CREATE TABLE public.appserver_role_sub (
     appuser_id uuid NOT NULL,
     appserver_role_id uuid NOT NULL,
     appserver_sub_id uuid NOT NULL,
+    appserver_id uuid NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
 );
@@ -85,7 +86,7 @@ ALTER TABLE ONLY public.appserver_role_sub
     ADD CONSTRAINT appserver_role_sub_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.appserver_role_sub
-    ADD CONSTRAINT appserver_role_sub_uk_appserver_role_appserver_sub UNIQUE (appserver_role_id, appserver_sub_id);
+    ADD CONSTRAINT appserver_role_sub_uk_role_sub_server UNIQUE (appserver_role_id, appserver_sub_id, appserver_id);
 
 ALTER TABLE ONLY public.appserver_role
     ADD CONSTRAINT appserver_role_uk_appserver_name UNIQUE (appserver_id, name);
@@ -99,6 +100,9 @@ ALTER TABLE ONLY public.appserver_sub
 ALTER TABLE ONLY public.appuser
     ADD CONSTRAINT appuser_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY public.appuser
+    ADD CONSTRAINT appuser_username_key UNIQUE (username);
+
 ALTER TABLE ONLY public.channel
     ADD CONSTRAINT channel_pkey PRIMARY KEY (id);
 
@@ -110,6 +114,9 @@ ALTER TABLE ONLY public.appserver
 
 ALTER TABLE ONLY public.appserver_role
     ADD CONSTRAINT appserver_role_appserver_id_fkey FOREIGN KEY (appserver_id) REFERENCES public.appserver(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.appserver_role_sub
+    ADD CONSTRAINT appserver_role_sub_appserver_id_fkey FOREIGN KEY (appserver_id) REFERENCES public.appserver(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY public.appserver_role_sub
     ADD CONSTRAINT appserver_role_sub_appserver_role_id_fkey FOREIGN KEY (appserver_role_id) REFERENCES public.appserver_role(id) ON DELETE CASCADE;

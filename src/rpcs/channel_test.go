@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/psql_db/qx"
 )
 
 // ----- RPC Channels -----
@@ -33,8 +34,9 @@ func TestListChannels(t *testing.T) {
 	t.Run("returns_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		testChannel(t, nil)
-		testChannel(t, nil)
+		server := testAppserver(t, nil)
+		testChannel(t, &qx.Channel{Name: "foo", AppserverID: server.ID})
+		testChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
 
 		// ACT
 		response, err := TestChannelClient.ListChannels(ctx, &pb_channel.ListChannelsRequest{})
@@ -49,12 +51,13 @@ func TestListChannels(t *testing.T) {
 	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
+		server := testAppserver(t, nil)
+		testChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
 		testChannel(t, nil)
-		channelToFilterBy := testChannel(t, nil)
 
 		// ACT
 		response, err := TestChannelClient.ListChannels(
-			ctx, &pb_channel.ListChannelsRequest{AppserverId: wrapperspb.String(channelToFilterBy.AppserverID.String())},
+			ctx, &pb_channel.ListChannelsRequest{AppserverId: wrapperspb.String(server.ID.String())},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -125,7 +128,7 @@ func TestCreateChannel(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appserver := testAppserver(t, uuid.NewString(), nil)
+		appserver := testAppserver(t, nil)
 
 		// ACT
 		response, err := TestChannelClient.CreateChannel(

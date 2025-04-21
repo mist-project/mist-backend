@@ -6,26 +6,27 @@ WHERE id=$1
 LIMIT 1;
 
 -- name: GetUserAppserverSubs :many
-SELECT 
-  apssub.id as appserver_sub_id,
-  aps.id,
-  aps.name,
-  aps.created_at,
-  aps.updated_at  
-FROM appserver_sub as apssub
-JOIN appserver as aps ON apssub.appserver_id=aps.id
-WHERE apssub.appuser_id=$1;
+SELECT
+  asub.id as appserver_sub_id,
+  asub.appuser_id,
+  aserver.id,
+  aserver.name,
+  aserver.created_at,
+  aserver.updated_at  
+FROM appserver_sub as asub
+JOIN appserver as aserver ON asub.appserver_id=aserver.id
+WHERE asub.appuser_id=$1;
 
 -- name: GetAllUsersAppserverSubs :many
-SELECT 
-  apssub.id as appserver_sub_id,
-  apu.id,
-  apu.username,
-  apu.created_at,
-  apu.updated_at  
-FROM appserver_sub as apssub
-JOIN appuser as apu ON apssub.appuser_id=apu.id
-WHERE apssub.appserver_id=$1;
+SELECT
+  asub.id as appserver_sub_id,
+  auser.id,
+  auser.username,
+  auser.created_at,
+  auser.updated_at  
+FROM appserver_sub as asub
+JOIN appuser as auser ON asub.appuser_id=auser.id
+WHERE asub.appserver_id=$1;
 
 -- name: CreateAppserverSub :one
 INSERT INTO appserver_sub (

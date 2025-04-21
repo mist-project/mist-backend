@@ -12,9 +12,6 @@ import (
 	"mist/src/psql_db/qx"
 )
 
-// ----- RPC AppserverSub -----
-
-// Test GetUserAppserverSubs
 func TestGetUserAppserverSubs(t *testing.T) {
 	t.Run("can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -35,16 +32,17 @@ func TestGetUserAppserverSubs(t *testing.T) {
 	t.Run("can_return_all_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-		uId, _ := uuid.Parse(userId)
-		appuser := testAppuser(t, &qx.Appuser{ID: uId, Username: "foo"})
-		appserver := testAppserver(t, userId, nil)
-		appserver2 := testAppserver(t, userId, nil)
-		testAppserverSub(t, appuser, appserver)
-		testAppserverSub(t, appuser, appserver2)
+		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appserver := testAppserver(t, nil)
+		appserver2 := testAppserver(t, nil)
+		testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
+		testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver2.ID, AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverClient.GetUserAppserverSubs(ctx, &pb_appserver.GetUserAppserverSubsRequest{})
+		response, err := TestAppserverClient.GetUserAppserverSubs(
+			ctx, &pb_appserver.GetUserAppserverSubsRequest{},
+		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -55,7 +53,6 @@ func TestGetUserAppserverSubs(t *testing.T) {
 
 }
 
-// Test GetUserAppserverSubs
 func TestGetAllUsersAppserverSubs(t *testing.T) {
 	t.Run("can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -76,17 +73,17 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 	t.Run("can_return_all_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-		appuser1 := testAppuser(t, nil)
-		appuser2 := testAppuser(t, nil)
-		appserver := testAppserver(t, userId, nil)
-		testAppserverSub(t, appuser1, appserver)
-		testAppserverSub(t, appuser2, appserver)
+		user1 := testAppuser(t, nil)
+		user2 := testAppuser(t, nil)
+		server := testAppserver(t, nil)
+		testAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user1.ID})
+		testAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user2.ID})
 
 		// ACT
-		response, err := TestAppserverClient.GetAllUsersAppserverSubs(ctx, &pb_appserver.GetAllUsersAppserverSubsRequest{
-			AppserverId: appserver.ID.String(),
-		})
+		response, err := TestAppserverClient.GetAllUsersAppserverSubs(
+			ctx,
+			&pb_appserver.GetAllUsersAppserverSubsRequest{AppserverId: server.ID.String()},
+		)
 
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -98,18 +95,18 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 
 }
 
-// ----- RPC CreateAppserverSub -----
 func TestCreateAppserverSub(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		userId := ctx.Value(ctxUserKey).(string)
-		appserver := testAppserver(t, userId, nil)
+		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appserver := testAppserver(t, &qx.Appserver{AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverSub(ctx, &pb_appserver.CreateAppserverSubRequest{
-			AppserverId: appserver.ID.String(),
-		})
+		response, err := TestAppserverClient.CreateAppserverSub(
+			ctx, &pb_appserver.CreateAppserverSubRequest{AppserverId: appserver.ID.String()},
+		)
 
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -124,7 +121,9 @@ func TestCreateAppserverSub(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverSub(ctx, &pb_appserver.CreateAppserverSubRequest{})
+		response, err := TestAppserverClient.CreateAppserverSub(
+			ctx, &pb_appserver.CreateAppserverSubRequest{},
+		)
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -135,13 +134,17 @@ func TestCreateAppserverSub(t *testing.T) {
 	})
 }
 
-// ----- RPC DeleteAllAppserverSubs -----
 func TestDeleteAppserverSubs(t *testing.T) {
 	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
-		appuser := testAppuser(t, nil)
-		appserverSub := testAppserverSub(t, appuser, nil)
+		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appserver := testAppserver(t, &qx.Appserver{AppuserID: appuser.ID})
+		appserverSub := testAppserverSub(t, &qx.AppserverSub{
+			AppserverID: appserver.ID,
+			AppuserID:   appuser.ID,
+		})
 
 		// ACT
 		response, err := TestAppserverClient.DeleteAppserverSub(
@@ -157,7 +160,9 @@ func TestDeleteAppserverSubs(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverSub(ctx, &pb_appserver.DeleteAppserverSubRequest{Id: uuid.NewString()})
+		response, err := TestAppserverClient.DeleteAppserverSub(
+			ctx, &pb_appserver.DeleteAppserverSubRequest{Id: uuid.NewString()},
+		)
 		s, ok := status.FromError(err)
 
 		// ASSERT

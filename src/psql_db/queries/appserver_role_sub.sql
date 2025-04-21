@@ -3,18 +3,40 @@
 INSERT INTO appserver_role_sub (
   appserver_sub_id,
   appserver_role_id,
-  appuser_id
+  appuser_id,
+  appserver_id
 ) VALUES (
   $1,
   $2,
-  $3
+  $3,
+  $4
 )
 RETURNING *;
 
+-- name: GetAppserverAllUserRoleSubs :many
+SELECT
+  role_sub.id,
+  role_sub.appuser_id,
+  role_sub.appserver_role_id,
+  role_sub.appserver_id
+
+FROM appserver_role_sub AS role_sub
+WHERE role_sub.appserver_id=$1;
+
+-- name: GetAppuserRoleSubs :many
+SELECT
+  role_sub.id,
+  role_sub.appuser_id,
+  role_sub.appserver_role_id,
+  role_sub.appserver_id
+FROM appserver_role_sub AS role_sub
+WHERE role_sub.appuser_id=$1
+  AND role_sub.appserver_id=$2;
+
 -- name: DeleteAppserverRoleSub :execrows
-DELETE FROM appserver_role_sub as ars
-USING appserver as a, appserver_role as ar
+DELETE FROM appserver_role_sub AS role_sub
+USING appserver AS a, appserver_role AS ar
 WHERE a.id=ar.appserver_id
-  AND ar.id=ars.appserver_role_id
-  AND ars.id=$1
+  AND ar.id=role_sub.appserver_role_id
+  AND role_sub.id=$1
   AND a.appuser_id=$2;

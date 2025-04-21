@@ -26,11 +26,14 @@ func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_app
 	return &pb_appserver.AppserverRoleSub{
 		Id:              arSub.ID.String(),
 		AppserverRoleId: arSub.AppserverRoleID.String(),
-		AppserverSubId:  arSub.AppserverSubID.String(),
+		AppuserId:       arSub.AppuserID.String(),
+		AppserverId:     arSub.AppserverID.String(),
 	}
 }
 
-func (s *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId string, appUserId string) (*qx.AppserverRoleSub, error) {
+func (s *AppserverRoleSubService) Create(
+	appserverRoleId string, appserverSubId string, appserverId string, appUserId string,
+) (*qx.AppserverRoleSub, error) {
 	validationErr := []string{}
 
 	if appserverRoleId == "" {
@@ -41,12 +44,15 @@ func (s *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId 
 		validationErr = AddValidationError("appserver_sub_id", validationErr)
 	}
 
+	if appserverId == "" {
+		validationErr = AddValidationError("appserver_id", validationErr)
+	}
+
 	if len(validationErr) > 0 {
 		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ", ")))
 	}
 
 	pARId, err := uuid.Parse(appserverRoleId)
-
 	if err != nil {
 		return nil, err
 	}
@@ -61,15 +67,40 @@ func (s *AppserverRoleSubService) Create(appserverRoleId string, appserverSubId 
 		return nil, err
 	}
 
+	aId, err := uuid.Parse(appserverId)
+	if err != nil {
+		return nil, err
+	}
+
 	appserverRole, err := qx.New(s.dbcPool).CreateAppserverRoleSub(
 		s.ctx, qx.CreateAppserverRoleSubParams{
 			AppserverSubID:  pASId,
 			AppserverRoleID: pARId,
 			AppuserID:       pAUId,
+			AppserverID:     aId,
 		},
 	)
 
 	return &appserverRole, err
+}
+
+func (s *AppserverRoleSubService) GetAppserverAllUserRoleSubs(
+	appserverId string) ([]qx.GetAppserverAllUserRoleSubsRow, error) {
+	aId, err := uuid.Parse(appserverId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := qx.New(s.dbcPool).GetAppserverAllUserRoleSubs(s.ctx,
+		aId,
+	)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+	}
+
+	return rows, nil
 }
 
 func (s *AppserverRoleSubService) DeleteRoleSub(id string, ownerId string) error {

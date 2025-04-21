@@ -1,5 +1,4 @@
------ APPSERVER SUB QUERIES -----
--- name: GetAppserverSub :one
+-- name: GetAppserverSubById :one
 SELECT *
 FROM appserver_sub
 WHERE id=$1

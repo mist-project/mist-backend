@@ -1,5 +1,10 @@
 
------ APP SERVER ROLES -----
+-- name: GetAppserverRoleById :one
+SELECT *
+FROM appserver_role
+WHERE id=$1
+LIMIT 1;
+
 -- name: GetAppserverRoles :many
 SELECT *
 FROM appserver_role

@@ -1,4 +1,9 @@
------ APP SERVER ROLE SUBS -----
+-- name: GetAppserverRoleSubById :one
+SELECT *
+FROM appserver_role_sub
+WHERE id=$1
+LIMIT 1;
+
 -- name: CreateAppserverRoleSub :one
 INSERT INTO appserver_role_sub (
   appserver_sub_id,

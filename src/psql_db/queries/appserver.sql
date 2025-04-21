@@ -1,6 +1,5 @@
 
------ APP SERVER QUERIES -----
--- name: GetAppserver :one
+-- name: GetAppserverById :one
 SELECT *
 FROM appserver
 WHERE id=$1

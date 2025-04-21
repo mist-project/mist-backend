@@ -72,7 +72,7 @@ func (s *AppserverService) GetById(id string) (*qx.Appserver, error) {
 		return nil, err
 	}
 
-	as, err := qx.New(s.dbcPool).GetAppserver(s.ctx, parsedUuid)
+	as, err := qx.New(s.dbcPool).GetAppserverById(s.ctx, parsedUuid)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {

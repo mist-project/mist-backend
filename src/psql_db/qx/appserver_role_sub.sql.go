@@ -33,7 +33,6 @@ type CreateAppserverRoleSubParams struct {
 	AppserverID     uuid.UUID
 }
 
-// --- APP SERVER ROLE SUBS -----
 func (q *Queries) CreateAppserverRoleSub(ctx context.Context, arg CreateAppserverRoleSubParams) (AppserverRoleSub, error) {
 	row := q.db.QueryRow(ctx, createAppserverRoleSub,
 		arg.AppserverSubID,
@@ -117,6 +116,28 @@ func (q *Queries) GetAppserverAllUserRoleSubs(ctx context.Context, appserverID u
 		return nil, err
 	}
 	return items, nil
+}
+
+const getAppserverRoleSubById = `-- name: GetAppserverRoleSubById :one
+SELECT id, appuser_id, appserver_role_id, appserver_sub_id, appserver_id, created_at, updated_at
+FROM appserver_role_sub
+WHERE id=$1
+LIMIT 1
+`
+
+func (q *Queries) GetAppserverRoleSubById(ctx context.Context, id uuid.UUID) (AppserverRoleSub, error) {
+	row := q.db.QueryRow(ctx, getAppserverRoleSubById, id)
+	var i AppserverRoleSub
+	err := row.Scan(
+		&i.ID,
+		&i.AppuserID,
+		&i.AppserverRoleID,
+		&i.AppserverSubID,
+		&i.AppserverID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getAppuserRoleSubs = `-- name: GetAppuserRoleSubs :many

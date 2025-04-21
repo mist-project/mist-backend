@@ -68,7 +68,7 @@ func (s *ChannelService) GetById(id string) (*qx.Channel, error) {
 		return nil, err
 	}
 
-	channel, err := qx.New(s.dbcPool).GetChannel(s.ctx, parsedUuid)
+	channel, err := qx.New(s.dbcPool).GetChannelById(s.ctx, parsedUuid)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {

@@ -40,16 +40,15 @@ func (q *Queries) CreateAppuser(ctx context.Context, arg CreateAppuserParams) (A
 	return i, err
 }
 
-const getAppuser = `-- name: GetAppuser :one
+const getAppuserById = `-- name: GetAppuserById :one
 SELECT id, username, online_status, created_at, updated_at
 FROM appuser
 WHERE id=$1
 LIMIT 1
 `
 
-// ----- APP USER QUERIES -----
-func (q *Queries) GetAppuser(ctx context.Context, id uuid.UUID) (Appuser, error) {
-	row := q.db.QueryRow(ctx, getAppuser, id)
+func (q *Queries) GetAppuserById(ctx context.Context, id uuid.UUID) (Appuser, error) {
+	row := q.db.QueryRow(ctx, getAppuserById, id)
 	var i Appuser
 	err := row.Scan(
 		&i.ID,

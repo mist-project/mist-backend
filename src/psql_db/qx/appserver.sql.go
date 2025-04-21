@@ -62,16 +62,15 @@ func (q *Queries) DeleteAppserver(ctx context.Context, arg DeleteAppserverParams
 	return result.RowsAffected(), nil
 }
 
-const getAppserver = `-- name: GetAppserver :one
+const getAppserverById = `-- name: GetAppserverById :one
 SELECT id, name, appuser_id, created_at, updated_at
 FROM appserver
 WHERE id=$1
 LIMIT 1
 `
 
-// --- APP SERVER QUERIES -----
-func (q *Queries) GetAppserver(ctx context.Context, id uuid.UUID) (Appserver, error) {
-	row := q.db.QueryRow(ctx, getAppserver, id)
+func (q *Queries) GetAppserverById(ctx context.Context, id uuid.UUID) (Appserver, error) {
+	row := q.db.QueryRow(ctx, getAppserverById, id)
 	var i Appserver
 	err := row.Scan(
 		&i.ID,

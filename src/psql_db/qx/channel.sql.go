@@ -54,16 +54,15 @@ func (q *Queries) DeleteChannel(ctx context.Context, id uuid.UUID) (int64, error
 	return result.RowsAffected(), nil
 }
 
-const getChannel = `-- name: GetChannel :one
+const getChannelById = `-- name: GetChannelById :one
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel
 WHERE id=$1
 LIMIT 1
 `
 
-// --- CHANNEL QUERIES -----
-func (q *Queries) GetChannel(ctx context.Context, id uuid.UUID) (Channel, error) {
-	row := q.db.QueryRow(ctx, getChannel, id)
+func (q *Queries) GetChannelById(ctx context.Context, id uuid.UUID) (Channel, error) {
+	row := q.db.QueryRow(ctx, getChannelById, id)
 	var i Channel
 	err := row.Scan(
 		&i.ID,

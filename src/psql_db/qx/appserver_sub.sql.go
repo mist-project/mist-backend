@@ -100,16 +100,15 @@ func (q *Queries) GetAllUsersAppserverSubs(ctx context.Context, appserverID uuid
 	return items, nil
 }
 
-const getAppserverSub = `-- name: GetAppserverSub :one
+const getAppserverSubById = `-- name: GetAppserverSubById :one
 SELECT id, appserver_id, appuser_id, created_at, updated_at
 FROM appserver_sub
 WHERE id=$1
 LIMIT 1
 `
 
-// --- APPSERVER SUB QUERIES -----
-func (q *Queries) GetAppserverSub(ctx context.Context, id uuid.UUID) (AppserverSub, error) {
-	row := q.db.QueryRow(ctx, getAppserverSub, id)
+func (q *Queries) GetAppserverSubById(ctx context.Context, id uuid.UUID) (AppserverSub, error) {
+	row := q.db.QueryRow(ctx, getAppserverSubById, id)
 	var i AppserverSub
 	err := row.Scan(
 		&i.ID,

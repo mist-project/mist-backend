@@ -1,5 +1,4 @@
------ CHANNEL QUERIES -----
--- name: GetChannel :one
+-- name: GetChannelById :one
 SELECT *
 FROM channel
 WHERE id=$1

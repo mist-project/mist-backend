@@ -1,10 +1,11 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
-
 package v1.channel;
 option go_package = "mist/src/protos/v1/channel;channel";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 service ChannelService {
   // ----- CHANNEL ----
@@ -26,12 +27,17 @@ message Channel {
 
 // ----- Channel -----
 message CreateChannelRequest {
-  string name = 1;
-  string appserver_id = 2;
+  string name = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 64
+  ];
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
 message CreateChannelResponse { Channel channel = 1; }
 
-message GetByIdChannelRequest { string id = 1; }
+message GetByIdChannelRequest {
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+}
 message GetByIdChannelResponse { Channel channel = 1; }
 
 message ListChannelsRequest {
@@ -40,5 +46,7 @@ message ListChannelsRequest {
 }
 message ListChannelsResponse { repeated Channel channels = 1; }
 
-message DeleteChannelRequest { string id = 1; }
+message DeleteChannelRequest {
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+}
 message DeleteChannelResponse {}

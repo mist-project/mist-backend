@@ -1,10 +1,11 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
-
 package v1.appuser;
 option go_package = "mist/src/protos/v1/appuser;appuser";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 
 service AppuserService {
   // ----- APPUSER ----
@@ -30,7 +31,11 @@ message Appuser {
 
 // ----- APPUSER -----
 message CreateAppuserRequest {
-  string id = 1;
-  string username = 2;
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+  string username = 2 [
+    (buf.validate.field).string.min_len = 255,
+    (buf.validate.field).string.max_len = 255
+  ];
 }
+
 message CreateAppuserResponse {}

@@ -7,6 +7,8 @@ import (
 	"net"
 	"os"
 
+	"github.com/bufbuild/protovalidate-go"
+	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 
@@ -26,7 +28,16 @@ func InitializeServer() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
+	validator, err := protovalidate.New()
+	if err != nil {
+		log.Fatalf("failed to create protovalidate validator")
+	}
+
+	//TODO: add these registers to its own function
+	s := grpc.NewServer(grpc.ChainUnaryInterceptor(
+		middleware.AuthJwtInterceptor,
+		protovalidate_middleware.UnaryServerInterceptor(validator),
+	))
 
 	pb_appserver.RegisterAppserverServiceServer(s, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
 	pb_channel.RegisterChannelServiceServer(s, &rpcs.ChannelGRPCService{DbcPool: dbcPool})

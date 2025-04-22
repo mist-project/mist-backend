@@ -18,7 +18,7 @@ endif
   build \
   live-run \
   compile-protos \
-  generate-migration \
+  create-migration \
   migrate \
   migrate-to \
   migrate-one \
@@ -45,7 +45,7 @@ generate-queries:
 	@sqlc generate
 
 # ----- DB Migrations -----
-generate-migration gm:
+create-migration gm:
 	goose create ${message} sql
 
 migrate:

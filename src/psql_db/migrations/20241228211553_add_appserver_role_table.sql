@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS appserver_role (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     appserver_id UUID NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(64) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
 

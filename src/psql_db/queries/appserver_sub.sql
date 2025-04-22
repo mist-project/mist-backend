@@ -4,6 +4,16 @@ FROM appserver_sub
 WHERE id=$1
 LIMIT 1;
 
+-- name: CreateAppserverSub :one
+INSERT INTO appserver_sub (
+  appserver_id,
+  appuser_id
+) VALUES (
+  $1,
+  $2
+)
+RETURNING *;
+
 -- name: GetUserAppserverSubs :many
 SELECT
   asub.id as appserver_sub_id,
@@ -26,16 +36,6 @@ SELECT
 FROM appserver_sub as asub
 JOIN appuser as auser ON asub.appuser_id=auser.id
 WHERE asub.appserver_id=$1;
-
--- name: CreateAppserverSub :one
-INSERT INTO appserver_sub (
-  appserver_id,
-  appuser_id
-) VALUES (
-  $1,
-  $2
-)
-RETURNING *;
 
 -- name: DeleteAppserverSub :execrows
 DELETE FROM appserver_sub

@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
@@ -16,12 +14,12 @@ import (
 )
 
 type AppserverSubService struct {
-	dbcPool *pgxpool.Pool
-	ctx     context.Context
+	dbConn qx.DBTX
+	ctx    context.Context
 }
 
-func NewAppserverSubService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverSubService {
-	return &AppserverSubService{dbcPool: dbcPool, ctx: ctx}
+func NewAppserverSubService(dbConn qx.DBTX, ctx context.Context) *AppserverSubService {
+	return &AppserverSubService{dbConn: dbConn, ctx: ctx}
 }
 
 func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserver.AppserverSub {
@@ -61,54 +59,15 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsR
 	}
 }
 
-func (s *AppserverSubService) Create(appserverId string, ownerId string) (*qx.AppserverSub, error) {
-	validationErr := []string{}
-
-	if appserverId == "" {
-		validationErr = AddValidationError("appserver_id", validationErr)
-	}
-
-	if ownerId == "" {
-		validationErr = AddValidationError("app_user_id", validationErr)
-	}
-
-	if len(validationErr) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ", ")))
-	}
-
-	pAId, err := uuid.Parse(appserverId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	pUId, err := uuid.Parse(ownerId)
-	if err != nil {
-		return nil, err
-	}
-
-	appserverSub, err := qx.New(s.dbcPool).CreateAppserverSub(
-		s.ctx, qx.CreateAppserverSubParams{
-			AppserverID: pAId,
-			AppuserID:   pUId,
-		},
-	)
-
+func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.AppserverSub, error) {
+	appserverSub, err := qx.New(s.dbConn).CreateAppserverSub(s.ctx, obj)
 	return &appserverSub, err
 }
 
-func (s *AppserverSubService) ListUserAppserverAndSub(userId string) ([]qx.GetUserAppserverSubsRow, error) {
+func (s *AppserverSubService) ListUserAppserverAndSub(userId uuid.UUID) ([]qx.GetUserAppserverSubsRow, error) {
 	/* Returns all servers a user belongs to. */
 
-	parsedUuid, err := uuid.Parse(userId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	aSubs, err := qx.New(s.dbcPool).GetUserAppserverSubs(
-		s.ctx, parsedUuid,
-	)
+	aSubs, err := qx.New(s.dbConn).GetUserAppserverSubs(s.ctx, userId)
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
@@ -118,18 +77,10 @@ func (s *AppserverSubService) ListUserAppserverAndSub(userId string) ([]qx.GetUs
 }
 
 func (s *AppserverSubService) ListAllUsersAppserverAndSub(
-	appserverId string,
+	appserverId uuid.UUID,
 ) ([]qx.GetAllUsersAppserverSubsRow, error) {
-	/* Returns all users in a server. */
-	parsedUuid, err := uuid.Parse(appserverId)
 
-	if err != nil {
-		return nil, err
-	}
-
-	aSubs, err := qx.New(s.dbcPool).GetAllUsersAppserverSubs(
-		s.ctx, parsedUuid,
-	)
+	aSubs, err := qx.New(s.dbConn).GetAllUsersAppserverSubs(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
@@ -138,15 +89,11 @@ func (s *AppserverSubService) ListAllUsersAppserverAndSub(
 	return aSubs, nil
 }
 
-func (s *AppserverSubService) DeleteByAppserver(id string) error {
+func (s *AppserverSubService) DeleteByAppserver(id uuid.UUID) error {
 	/* Removes a user from a server. */
-	parsedUuid, err := uuid.Parse(id)
 
-	if err != nil {
-		return err
-	}
+	deleted, err := qx.New(s.dbConn).DeleteAppserverSub(s.ctx, id)
 
-	deleted, err := qx.New(s.dbcPool).DeleteAppserverSub(s.ctx, parsedUuid)
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	} else if deleted == 0 {

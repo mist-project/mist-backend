@@ -152,9 +152,9 @@ func TestCreateAppserver(t *testing.T) {
 		}
 
 		// ASSERT
-		dbcPool.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
+		dbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
 
-		serverSubs, _ := service.NewAppserverSubService(dbcPool, ctx).ListUserAppserverAndSub(appuser.ID.String())
+		serverSubs, _ := service.NewAppserverSubService(dbConn, ctx).ListUserAppserverAndSub(appuser.ID)
 		assert.NotNil(t, response.Appserver)
 		assert.Equal(t, 1, len(serverSubs))
 		assert.Equal(t, 1, count)
@@ -187,10 +187,10 @@ func TestDeleteAppserver(t *testing.T) {
 		appserver := testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid})
 		testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid})
 
-		subService := service.NewAppserverSubService(dbcPool, ctx)
+		subService := service.NewAppserverSubService(dbConn, ctx)
 
 		// ASSERT
-		serverSubs, _ := subService.ListUserAppserverAndSub(appuser.ID.String())
+		serverSubs, _ := subService.ListUserAppserverAndSub(appuser.ID)
 		assert.Equal(t, 1, len(serverSubs))
 
 		// ACT
@@ -199,7 +199,7 @@ func TestDeleteAppserver(t *testing.T) {
 		)
 
 		// ASSERT
-		serverSubs, _ = subService.ListUserAppserverAndSub(appuser.ID.String())
+		serverSubs, _ = subService.ListUserAppserverAndSub(appuser.ID)
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(serverSubs))

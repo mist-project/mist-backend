@@ -5,7 +5,10 @@ import (
 
 	"mist/src/middleware"
 	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/psql_db/qx"
 	"mist/src/service"
+
+	"github.com/google/uuid"
 )
 
 func (s *AppserverGRPCService) CreateAppserverSub(
@@ -13,11 +16,17 @@ func (s *AppserverGRPCService) CreateAppserverSub(
 ) (*pb_appserver.CreateAppserverSubResponse, error) {
 
 	// Initialize the service for AppserverSub
-	ass := service.NewAppserverSubService(s.DbcPool, ctx)
+	subService := service.NewAppserverSubService(s.DbConn, ctx)
 
 	claims, _ := middleware.GetJWTClaims(ctx)
-
-	appserverSub, err := ass.Create(req.GetAppserverId(), claims.UserID)
+	serverId, _ := uuid.Parse(req.AppserverId)
+	userId, _ := uuid.Parse(claims.UserID)
+	appserverSub, err := subService.Create(
+		qx.CreateAppserverSubParams{
+			AppserverID: serverId,
+			AppuserID:   userId,
+		},
+	)
 
 	// Error handling
 	if err != nil {
@@ -26,7 +35,7 @@ func (s *AppserverGRPCService) CreateAppserverSub(
 
 	// Return response
 	return &pb_appserver.CreateAppserverSubResponse{
-		AppserverSub: ass.PgTypeToPb(appserverSub),
+		AppserverSub: subService.PgTypeToPb(appserverSub),
 	}, nil
 }
 
@@ -35,12 +44,13 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 ) (*pb_appserver.GetUserAppserverSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
-	ass := service.NewAppserverSubService(s.DbcPool, ctx)
+	subService := service.NewAppserverSubService(s.DbConn, ctx)
 
 	claims, _ := middleware.GetJWTClaims(ctx)
 
 	// TODO: Handle potential errors that can happen here
-	results, _ := ass.ListUserAppserverAndSub(claims.UserID)
+	userId, _ := uuid.Parse(claims.UserID)
+	results, _ := subService.ListUserAppserverAndSub(userId)
 
 	// Construct the response
 	response := &pb_appserver.GetUserAppserverSubsResponse{
@@ -49,7 +59,7 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 
 	// Convert list of AppserverSubs to protobuf
 	for _, result := range results {
-		pbA := ass.PgAppserverSubRowToPb(&result)
+		pbA := subService.PgAppserverSubRowToPb(&result)
 		pbA.Appserver.IsOwner = result.AppuserID.String() == claims.UserID
 		response.Appservers = append(response.Appservers, pbA)
 	}
@@ -62,9 +72,10 @@ func (s *AppserverGRPCService) GetAllUsersAppserverSubs(
 ) (*pb_appserver.GetAllUsersAppserverSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
-	ass := service.NewAppserverSubService(s.DbcPool, ctx)
+	subService := service.NewAppserverSubService(s.DbConn, ctx)
+	serverId, _ := uuid.Parse((req.AppserverId))
 
-	results, _ := ass.ListAllUsersAppserverAndSub(req.AppserverId)
+	results, _ := subService.ListAllUsersAppserverAndSub(serverId)
 
 	// Construct the response
 	response := &pb_appserver.GetAllUsersAppserverSubsResponse{
@@ -73,7 +84,7 @@ func (s *AppserverGRPCService) GetAllUsersAppserverSubs(
 
 	// Convert list of AppserverSubs to protobuf
 	for _, result := range results {
-		response.Appusers = append(response.Appusers, ass.PgUserSubRowToPb(&result))
+		response.Appusers = append(response.Appusers, subService.PgUserSubRowToPb(&result))
 	}
 
 	return response, nil
@@ -84,10 +95,9 @@ func (s *AppserverGRPCService) DeleteAppserverSub(
 ) (*pb_appserver.DeleteAppserverSubResponse, error) {
 
 	// Initialize the service for AppserverSub
-	ass := service.NewAppserverSubService(s.DbcPool, ctx)
-
+	id, _ := uuid.Parse((req.Id))
 	// Call delete service method
-	err := ass.DeleteByAppserver(req.GetId())
+	err := service.NewAppserverSubService(s.DbConn, ctx).DeleteByAppserver(id)
 
 	// Error handling
 	if err != nil {

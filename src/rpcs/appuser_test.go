@@ -28,8 +28,7 @@ func TestCreateAppuser(t *testing.T) {
 		}
 
 		// ASSERT
-
-		dbcPool.QueryRow(ctx, "SELECT COUNT(*) FROM appuser").Scan(&count)
+		dbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appuser").Scan(&count)
 		assert.NotNil(t, response)
 		assert.Equal(t, 1, count)
 	})

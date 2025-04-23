@@ -20,8 +20,8 @@ import (
 )
 
 func InitializeServer() {
-	dbcPool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-	defer dbcPool.Close()
+	DbConn, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	defer DbConn.Close()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
 	if err != nil {
@@ -39,9 +39,9 @@ func InitializeServer() {
 		protovalidate_middleware.UnaryServerInterceptor(validator),
 	))
 
-	pb_appserver.RegisterAppserverServiceServer(s, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
-	pb_channel.RegisterChannelServiceServer(s, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
-	pb_appuser.RegisterAppuserServiceServer(s, &rpcs.AppuserGRPCService{DbcPool: dbcPool})
+	pb_appserver.RegisterAppserverServiceServer(s, &rpcs.AppserverGRPCService{DbConn: DbConn})
+	pb_channel.RegisterChannelServiceServer(s, &rpcs.ChannelGRPCService{DbConn: DbConn})
+	pb_appuser.RegisterAppuserServiceServer(s, &rpcs.AppuserGRPCService{DbConn: DbConn})
 
 	log.Printf("server listening at %v", lis.Addr())
 

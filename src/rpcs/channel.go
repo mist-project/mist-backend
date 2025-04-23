@@ -4,15 +4,19 @@ import (
 	"context"
 
 	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/psql_db/qx"
 	"mist/src/service"
+
+	"github.com/google/uuid"
 )
 
 func (s *ChannelGRPCService) CreateChannel(
 	ctx context.Context, req *pb_channel.CreateChannelRequest,
 ) (*pb_channel.CreateChannelResponse, error) {
 
-	cs := service.NewChannelService(s.DbcPool, ctx)
-	channel, err := cs.Create(req.GetName(), req.GetAppserverId())
+	cs := service.NewChannelService(s.DbConn, ctx)
+	serverId, _ := uuid.Parse(req.AppserverId)
+	channel, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId})
 
 	if err != nil {
 		return nil, ErrorHandler(err)
@@ -28,8 +32,9 @@ func (s *ChannelGRPCService) GetByIdChannel(
 	ctx context.Context, req *pb_channel.GetByIdChannelRequest,
 ) (*pb_channel.GetByIdChannelResponse, error) {
 
-	cs := service.NewChannelService(s.DbcPool, ctx)
-	channel, err := cs.GetById(req.GetId())
+	cs := service.NewChannelService(s.DbConn, ctx)
+	id, _ := uuid.Parse(req.Id)
+	channel, err := cs.GetById(id)
 
 	if err != nil {
 		return nil, ErrorHandler(err)
@@ -42,7 +47,7 @@ func (s *ChannelGRPCService) ListChannels(
 	ctx context.Context, req *pb_channel.ListChannelsRequest,
 ) (*pb_channel.ListChannelsResponse, error) {
 
-	cs := service.NewChannelService(s.DbcPool, ctx)
+	cs := service.NewChannelService(s.DbConn, ctx)
 	// TODO: Handle potential errors that can happen here
 	channels, _ := cs.List(req.GetName(), req.GetAppserverId())
 
@@ -62,7 +67,8 @@ func (s *ChannelGRPCService) DeleteChannel(
 	ctx context.Context, req *pb_channel.DeleteChannelRequest,
 ) (*pb_channel.DeleteChannelResponse, error) {
 
-	if err := service.NewChannelService(s.DbcPool, ctx).Delete(req.GetId()); err != nil {
+	id, _ := uuid.Parse(req.Id)
+	if err := service.NewChannelService(s.DbConn, ctx).Delete(id); err != nil {
 		return nil, ErrorHandler(err)
 	}
 

@@ -9,7 +9,6 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_channel "mist/src/protos/v1/channel"
@@ -17,12 +16,12 @@ import (
 )
 
 type ChannelService struct {
-	dbcPool *pgxpool.Pool
-	ctx     context.Context
+	dbConn qx.DBTX
+	ctx    context.Context
 }
 
-func NewChannelService(dbcPool *pgxpool.Pool, ctx context.Context) *ChannelService {
-	return &ChannelService{dbcPool: dbcPool, ctx: ctx}
+func NewChannelService(dbConn qx.DBTX, ctx context.Context) *ChannelService {
+	return &ChannelService{dbConn: dbConn, ctx: ctx}
 }
 
 func (s *ChannelService) PgTypeToPb(c *qx.Channel) *pb_channel.Channel {
@@ -34,41 +33,13 @@ func (s *ChannelService) PgTypeToPb(c *qx.Channel) *pb_channel.Channel {
 	}
 }
 
-func (s *ChannelService) Create(name string, appserverId string) (*qx.Channel, error) {
-	validationErr := []string{}
-
-	if name == "" {
-		validationErr = AddValidationError("name", validationErr)
-	}
-
-	if appserverId == "" {
-		validationErr = AddValidationError("appserver_id", validationErr)
-	}
-
-	if len(validationErr) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ",")))
-	}
-
-	parsedUuid, err := uuid.Parse(appserverId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := qx.New(s.dbcPool).CreateChannel(
-		s.ctx, qx.CreateChannelParams{Name: name, AppserverID: parsedUuid},
-	)
+func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error) {
+	channel, err := qx.New(s.dbConn).CreateChannel(s.ctx, obj)
 	return &channel, err
 }
 
-func (s *ChannelService) GetById(id string) (*qx.Channel, error) {
-	parsedUuid, err := uuid.Parse(id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := qx.New(s.dbcPool).GetChannelById(s.ctx, parsedUuid)
+func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
+	channel, err := qx.New(s.dbConn).GetChannelById(s.ctx, id)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
@@ -102,7 +73,7 @@ func (s *ChannelService) List(name *wrappers.StringValue, appserverId *wrappers.
 		fAId = pgtype.UUID{Valid: false}
 	}
 
-	channels, err := qx.New(s.dbcPool).ListChannels(
+	channels, err := qx.New(s.dbConn).ListChannels(
 		s.ctx, qx.ListChannelsParams{Name: fName, AppserverID: fAId},
 	)
 
@@ -113,14 +84,9 @@ func (s *ChannelService) List(name *wrappers.StringValue, appserverId *wrappers.
 	return channels, nil
 }
 
-func (s *ChannelService) Delete(id string) error {
-	parsedUuid, err := uuid.Parse(id)
-
-	if err != nil {
-		return err
-	}
-
-	deleted, err := qx.New(s.dbcPool).DeleteChannel(s.ctx, parsedUuid)
+func (s *ChannelService) Delete(id uuid.UUID) error {
+	// TODO: add authorization layer before deleting
+	deleted, err := qx.New(s.dbConn).DeleteChannel(s.ctx, id)
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))

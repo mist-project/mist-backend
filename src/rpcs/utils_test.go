@@ -36,8 +36,8 @@ var (
 	TestChannelClient   pb_channel.ChannelServiceClient
 	testClientConn      *grpc.ClientConn
 
-	dbcPool *pgxpool.Pool
-	lis     net.Listener
+	dbConn qx.DBTX
+	lis    net.Listener
 
 	once sync.Once
 
@@ -92,7 +92,7 @@ func setupTestAppserverGRPCServiceAndClient() {
 		err error
 		lis net.Listener
 	)
-	dbcPool, err = pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
+	dbConn, err = pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
 
 	if lis, err = net.Listen("tcp", ":0"); err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -100,9 +100,9 @@ func setupTestAppserverGRPCServiceAndClient() {
 
 	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
 
-	pb_appserver.RegisterAppserverServiceServer(testServer, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
-	pb_channel.RegisterChannelServiceServer(testServer, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
-	pb_appuser.RegisterAppuserServiceServer(testServer, &rpcs.AppuserGRPCService{DbcPool: dbcPool})
+	pb_appserver.RegisterAppserverServiceServer(testServer, &rpcs.AppserverGRPCService{DbConn: dbConn})
+	pb_channel.RegisterChannelServiceServer(testServer, &rpcs.ChannelGRPCService{DbConn: dbConn})
+	pb_appuser.RegisterAppuserServiceServer(testServer, &rpcs.AppuserGRPCService{DbConn: dbConn})
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {
@@ -132,8 +132,8 @@ func rpcTestCleanup() {
 		testServer.GracefulStop() // Gracefully shut down the server
 	}
 
-	if dbcPool != nil {
-		dbcPool.Close()
+	if dbConn != nil {
+		dbConn.(*pgxpool.Pool).Close()
 	}
 
 	if testClientConn != nil {
@@ -184,7 +184,7 @@ func teardown(ctx context.Context) {
 	for _, table := range tables {
 		query := fmt.Sprintf(`TRUNCATE TABLE %s RESTART IDENTITY CASCADE;`, table)
 
-		if _, err := dbcPool.Exec(ctx, query); err != nil {
+		if _, err := dbConn.Exec(ctx, query); err != nil {
 			log.Fatalf("Failed to truncate table: %v", err)
 		}
 	}
@@ -240,7 +240,7 @@ func testAppuser(t *testing.T, appuser *qx.Appuser) *qx.Appuser {
 		}
 	}
 
-	user, err := qx.New(dbcPool).CreateAppuser(ctx, qx.CreateAppuserParams{
+	user, err := qx.New(dbConn).CreateAppuser(ctx, qx.CreateAppuserParams{
 		ID:       appuser.ID,
 		Username: appuser.Username,
 	})
@@ -262,7 +262,7 @@ func testAppserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
 		}
 	}
 
-	as, err := qx.New(dbcPool).CreateAppserver(context.Background(), qx.CreateAppserverParams{
+	as, err := qx.New(dbConn).CreateAppserver(context.Background(), qx.CreateAppserverParams{
 		AppuserID: appserver.AppuserID,
 		Name:      appserver.Name,
 	})
@@ -286,7 +286,7 @@ func testAppserverSub(t *testing.T, aSub *qx.AppserverSub) *qx.AppserverSub {
 		}
 	}
 
-	asSub, err := qx.New(dbcPool).CreateAppserverSub(
+	asSub, err := qx.New(dbConn).CreateAppserverSub(
 		context.Background(),
 		qx.CreateAppserverSubParams{AppserverID: aSub.AppserverID, AppuserID: aSub.AppuserID},
 	)
@@ -308,7 +308,7 @@ func testAppserverRole(t *testing.T, aRole *qx.AppserverRole) *qx.AppserverRole 
 		}
 	}
 
-	asRole, err := qx.New(dbcPool).CreateAppserverRole(
+	asRole, err := qx.New(dbConn).CreateAppserverRole(
 		context.Background(),
 		qx.CreateAppserverRoleParams{AppserverID: aRole.AppserverID, Name: aRole.Name},
 	)
@@ -343,7 +343,7 @@ func testAppserverRoleSub(t *testing.T, roleSub *qx.AppserverRoleSub) *qx.Appser
 		}
 	}
 
-	asrSub, err := qx.New(dbcPool).CreateAppserverRoleSub(
+	asrSub, err := qx.New(dbConn).CreateAppserverRoleSub(
 		context.Background(),
 		qx.CreateAppserverRoleSubParams{
 			AppserverRoleID: roleSub.AppserverRoleID,
@@ -371,7 +371,7 @@ func testChannel(t *testing.T, c *qx.Channel) *qx.Channel {
 		}
 	}
 
-	channel, err := qx.New(dbcPool).CreateChannel(
+	channel, err := qx.New(dbConn).CreateChannel(
 		context.Background(), qx.CreateChannelParams{Name: c.Name, AppserverID: c.AppserverID})
 
 	if err != nil {

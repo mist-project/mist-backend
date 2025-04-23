@@ -4,14 +4,23 @@ import (
 	"context"
 
 	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/psql_db/qx"
 	"mist/src/service"
+
+	"github.com/google/uuid"
 )
 
 func (s *AppuserGRPCService) CreateAppuser(
 	ctx context.Context, req *pb_appuser.CreateAppuserRequest,
 ) (*pb_appuser.CreateAppuserResponse, error) {
 
-	_, err := service.NewAppuserService(s.DbcPool, ctx).Create(req.GetUsername(), req.GetId())
+	userId, _ := uuid.Parse(req.Id)
+	_, err := service.NewAppuserService(s.DbConn, ctx).Create(
+		qx.CreateAppuserParams{
+			ID:       userId,
+			Username: req.Username,
+		},
+	)
 
 	if err != nil {
 		return nil, ErrorHandler(err)

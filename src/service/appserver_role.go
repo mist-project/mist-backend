@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
@@ -15,12 +13,12 @@ import (
 )
 
 type AppserverRoleService struct {
-	dbcPool *pgxpool.Pool
-	ctx     context.Context
+	dbConn qx.DBTX
+	ctx    context.Context
 }
 
-func NewAppserverRoleService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverRoleService {
-	return &AppserverRoleService{dbcPool: dbcPool, ctx: ctx}
+func NewAppserverRoleService(dbConn qx.DBTX, ctx context.Context) *AppserverRoleService {
+	return &AppserverRoleService{dbConn: dbConn, ctx: ctx}
 }
 
 func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserver.AppserverRole {
@@ -33,46 +31,13 @@ func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserver
 	}
 }
 
-func (s *AppserverRoleService) Create(appserverId string, name string) (*qx.AppserverRole, error) {
-	validationErr := []string{}
-
-	if appserverId == "" {
-		validationErr = AddValidationError("appserver_id", validationErr)
-	}
-
-	if name == "" {
-		validationErr = AddValidationError("name", validationErr)
-	}
-
-	if len(validationErr) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ", ")))
-	}
-
-	parsedAId, err := uuid.Parse(appserverId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	appserverRole, err := qx.New(s.dbcPool).CreateAppserverRole(
-		s.ctx, qx.CreateAppserverRoleParams{
-			AppserverID: parsedAId,
-			Name:        name,
-		},
-	)
-
+func (s *AppserverRoleService) Create(obj qx.CreateAppserverRoleParams) (*qx.AppserverRole, error) {
+	appserverRole, err := qx.New(s.dbConn).CreateAppserverRole(s.ctx, obj)
 	return &appserverRole, err
 }
 
-func (s *AppserverRoleService) ListAppserverRoles(appserverId string) ([]qx.AppserverRole, error) {
-	parsedUuid, err := uuid.Parse(appserverId)
-	if err != nil {
-		return nil, err
-	}
-
-	aRoles, err := qx.New(s.dbcPool).GetAppserverRoles(
-		s.ctx, parsedUuid,
-	)
+func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.AppserverRole, error) {
+	aRoles, err := qx.New(s.dbConn).GetAppserverRoles(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
@@ -81,22 +46,8 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId string) ([]qx.Apps
 	return aRoles, nil
 }
 
-func (s *AppserverRoleService) DeleteByAppserver(id string, ownerId string) error {
-	parsedUuid, err := uuid.Parse(id)
-
-	if err != nil {
-		return err
-	}
-
-	parsedOwnerUuid, err := uuid.Parse(ownerId)
-
-	if err != nil {
-		return err
-	}
-
-	deleted, err := qx.New(s.dbcPool).DeleteAppserverRole(s.ctx, qx.DeleteAppserverRoleParams{
-		ID: parsedUuid, AppuserID: parsedOwnerUuid,
-	})
+func (s *AppserverRoleService) DeleteByAppserver(obj qx.DeleteAppserverRoleParams) error {
+	deleted, err := qx.New(s.dbConn).DeleteAppserverRole(s.ctx, obj)
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))

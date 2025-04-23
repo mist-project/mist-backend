@@ -9,7 +9,6 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
@@ -17,12 +16,12 @@ import (
 )
 
 type AppserverService struct {
-	dbcPool *pgxpool.Pool
-	ctx     context.Context
+	dbConn qx.DBTX
+	ctx    context.Context
 }
 
-func NewAppserverService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverService {
-	return &AppserverService{dbcPool: dbcPool, ctx: ctx}
+func NewAppserverService(dbConn qx.DBTX, ctx context.Context) *AppserverService {
+	return &AppserverService{dbConn: dbConn, ctx: ctx}
 }
 
 func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_appserver.Appserver {
@@ -33,46 +32,18 @@ func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_appserver.Appserver {
 	}
 }
 
-func (s *AppserverService) Create(name string, userId string) (*qx.Appserver, error) {
-	// Keeping the validationErr variable as a way to show the pattern I'd like to follow (using a list of
-	// validation errors to then send them)
-	// Note: might change the pattern to use some sort of validation package. This might be duable by changing the
-	// parameter in this method for example, to a struct type that can be validated. (Similar concept of python's
-	// Pydantic object validation)
-	validationErr := []string{}
-	if name == "" {
-		validationErr = AddValidationError("name", validationErr)
-	}
+func (s *AppserverService) Create(obj qx.CreateAppserverParams) (*qx.Appserver, error) {
+	appserver, err := qx.New(s.dbConn).CreateAppserver(s.ctx, obj)
 
-	if userId == "" {
-		validationErr = AddValidationError("user_id", validationErr)
-	}
-
-	if len(validationErr) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): missing name attribute", ValidationError))
-	}
-
-	parsedUserId, err := uuid.Parse(userId)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): %v", ValidationError, err))
+		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
-
-	as, err := qx.New(s.dbcPool).CreateAppserver(s.ctx, qx.CreateAppserverParams{
-		Name:      name,
-		AppuserID: parsedUserId,
-	})
-
-	return &as, err
+	
+	return &appserver, err
 }
 
-func (s *AppserverService) GetById(id string) (*qx.Appserver, error) {
-	parsedUuid, err := uuid.Parse(id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	as, err := qx.New(s.dbcPool).GetAppserverById(s.ctx, parsedUuid)
+func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
+	appserver, err := qx.New(s.dbConn).GetAppserverById(s.ctx, id)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
@@ -82,7 +53,7 @@ func (s *AppserverService) GetById(id string) (*qx.Appserver, error) {
 		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
-	return &as, nil
+	return &appserver, nil
 }
 
 func (s *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]qx.Appserver, error) {
@@ -95,7 +66,7 @@ func (s *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]q
 	}
 
 	parsedOwnerUuid, _ := uuid.Parse(ownerId)
-	appservers, err := qx.New(s.dbcPool).ListUserAppservers(
+	appservers, err := qx.New(s.dbConn).ListUserAppservers(
 		s.ctx, qx.ListUserAppserversParams{Name: fName, AppuserID: parsedOwnerUuid},
 	)
 
@@ -106,17 +77,8 @@ func (s *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]q
 	return appservers, nil
 }
 
-func (s *AppserverService) Delete(id string, ownerId string) error {
-	parsedUuid, err := uuid.Parse(id)
-
-	if err != nil {
-		return err
-	}
-
-	parsedOwnerUuid, _ := uuid.Parse(ownerId)
-
-	deleted, err := qx.New(s.dbcPool).DeleteAppserver(
-		s.ctx, qx.DeleteAppserverParams{ID: parsedUuid, AppuserID: parsedOwnerUuid})
+func (s *AppserverService) Delete(obj qx.DeleteAppserverParams) error {
+	deleted, err := qx.New(s.dbConn).DeleteAppserver(s.ctx, obj)
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))

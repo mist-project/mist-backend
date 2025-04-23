@@ -13,7 +13,6 @@ import (
 )
 
 const createAppserver = `-- name: CreateAppserver :one
-
 INSERT INTO appserver (
   name,
   appuser_id
@@ -29,7 +28,6 @@ type CreateAppserverParams struct {
 	AppuserID uuid.UUID
 }
 
-// This query might be removed. Hence the 1=0. So it returns no data.
 func (q *Queries) CreateAppserver(ctx context.Context, arg CreateAppserverParams) (Appserver, error) {
 	row := q.db.QueryRow(ctx, createAppserver, arg.Name, arg.AppuserID)
 	var i Appserver
@@ -44,6 +42,9 @@ func (q *Queries) CreateAppserver(ctx context.Context, arg CreateAppserverParams
 }
 
 const deleteAppserver = `-- name: DeleteAppserver :execrows
+
+
+
 DELETE FROM appserver
 WHERE id=$1
   AND appuser_id=$2
@@ -54,6 +55,7 @@ type DeleteAppserverParams struct {
 	AppuserID uuid.UUID
 }
 
+// This query might be removed. Hence the 1=0. So it returns no data.
 func (q *Queries) DeleteAppserver(ctx context.Context, arg DeleteAppserverParams) (int64, error) {
 	result, err := q.db.Exec(ctx, deleteAppserver, arg.ID, arg.AppuserID)
 	if err != nil {

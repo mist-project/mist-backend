@@ -5,17 +5,32 @@ import (
 
 	"mist/src/middleware"
 	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/psql_db/qx"
 	"mist/src/service"
+
+	"github.com/google/uuid"
 )
 
 func (s *AppserverGRPCService) CreateAppserverRoleSub(
 	ctx context.Context, req *pb_appserver.CreateAppserverRoleSubRequest,
 ) (*pb_appserver.CreateAppserverRoleSubResponse, error) {
 
-	arss := service.NewAppserverRoleSubService(s.DbcPool, ctx)
+	roleSubS := service.NewAppserverRoleSubService(s.DbConn, ctx)
 
 	// TODO: Figure out what can go wrong to add error handler
-	arSub, err := arss.Create(req.AppserverRoleId, req.AppserverSubId, req.AppserverId, req.AppuserId)
+	subId, _ := uuid.Parse(req.AppserverSubId)
+	roleId, _ := uuid.Parse(req.AppserverRoleId)
+	userId, _ := uuid.Parse(req.AppuserId)
+	serverId, _ := uuid.Parse(req.AppserverId)
+
+	arSub, err := roleSubS.Create(
+		qx.CreateAppserverRoleSubParams{
+			AppserverSubID:  subId,
+			AppserverRoleID: roleId,
+			AppuserID:       userId,
+			AppserverID:     serverId,
+		},
+	)
 
 	// Error handling
 	if err != nil {
@@ -24,7 +39,7 @@ func (s *AppserverGRPCService) CreateAppserverRoleSub(
 
 	// Return response
 	return &pb_appserver.CreateAppserverRoleSubResponse{
-		AppserverRoleSub: arss.PgTypeToPb(arSub),
+		AppserverRoleSub: roleSubS.PgTypeToPb(arSub),
 	}, nil
 }
 
@@ -33,8 +48,8 @@ func (s *AppserverGRPCService) GetAllAppserverUserRoleSubs(
 ) (*pb_appserver.GetAllAppserverUserRoleSubsResponse, error) {
 
 	// Initialize the service for AppserveRole
-	arss := service.NewAppserverRoleSubService(s.DbcPool, ctx)
-	results, _ := arss.GetAppserverAllUserRoleSubs(req.GetAppserverId())
+	serverId, _ := uuid.Parse(req.AppserverId)
+	results, _ := service.NewAppserverRoleSubService(s.DbConn, ctx).GetAppserverAllUserRoleSubs(serverId)
 
 	// Construct the response
 	response := &pb_appserver.GetAllAppserverUserRoleSubsResponse{
@@ -59,11 +74,16 @@ func (s *AppserverGRPCService) DeleteAppserverRoleSub(
 ) (*pb_appserver.DeleteAppserverRoleSubResponse, error) {
 
 	// Initialize the service for AppserveRole
-	arss := service.NewAppserverRoleSubService(s.DbcPool, ctx)
+	arss := service.NewAppserverRoleSubService(s.DbConn, ctx)
 	claims, _ := middleware.GetJWTClaims(ctx)
+	userId, _ := uuid.Parse(claims.UserID)
+	roleSubId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err := arss.DeleteRoleSub(req.GetId(), claims.UserID)
+	err := arss.DeleteRoleSub(qx.DeleteAppserverRoleSubParams{
+		ID:        roleSubId,
+		AppuserID: userId,
+	})
 
 	// Error handling
 	if err != nil {

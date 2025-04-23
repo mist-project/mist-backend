@@ -53,7 +53,7 @@ var (
 func TestMain(m *testing.M) {
 	// ---- SETUP -----
 	runTestDbMigrations()
-	setupTestAppserverGRPCServiceAndClient()
+	setupTestGRPCServicesAndClient()
 
 	// ----- EXECUTION -----
 	exit := m.Run()
@@ -92,7 +92,7 @@ func runTestDbMigrations() {
 	})
 }
 
-func setupTestAppserverGRPCServiceAndClient() {
+func setupTestGRPCServicesAndClient() {
 	// Creates a grpc server and client to run tests on
 	var (
 		err error

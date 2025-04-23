@@ -43,11 +43,11 @@ type ChannelGRPCService struct {
 
 type AppuserGRPCService struct {
 	pb_appuser.UnimplementedAppuserServiceServer
-	DbConn qx.DBTX
+	Db qx.Querier
 }
 
 func RegisterGrpcServices(s *grpc.Server, dbConn qx.DBTX) {
-	pb_appuser.RegisterAppuserServiceServer(s, &AppuserGRPCService{DbConn: dbConn})
+	pb_appuser.RegisterAppuserServiceServer(s, &AppuserGRPCService{Db: qx.New(dbConn)})
 	pb_appserver.RegisterAppserverServiceServer(s, &AppserverGRPCService{DbConn: dbConn})
 	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{DbConn: dbConn})
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{DbConn: dbConn})

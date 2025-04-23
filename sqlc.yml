@@ -8,6 +8,7 @@ sql:
         package: "qx"
         out: "src/psql_db/qx"
         sql_package: "pgx/v5"
+        emit_interface: true
         overrides:
           - db_type: "uuid"
             go_type:

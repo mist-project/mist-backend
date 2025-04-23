@@ -19,7 +19,7 @@ RETURNING *;
 SELECT *
 FROM appserver
 WHERE name=COALESCE(sqlc.narg('name'), name)
-  AND appuser_id = $1; -- This query might be removed. Hence the 1=0. So it returns no data.
+  AND appuser_id = $1;
 
 
 

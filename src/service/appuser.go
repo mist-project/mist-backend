@@ -10,12 +10,12 @@ import (
 )
 
 type AppuserService struct {
-	dbConn qx.DBTX
-	ctx    context.Context
+	ctx context.Context
+	db  qx.Querier
 }
 
-func NewAppuserService(dbConn qx.DBTX, ctx context.Context) *AppuserService {
-	return &AppuserService{dbConn: dbConn, ctx: ctx}
+func NewAppuserService(db qx.Querier, ctx context.Context) *AppuserService {
+	return &AppuserService{db: db, ctx: ctx}
 }
 
 func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *pb_appuser.Appuser {
@@ -27,6 +27,6 @@ func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *pb_appuser.Appuser {
 }
 
 func (s *AppuserService) Create(obj qx.CreateAppuserParams) (*qx.Appuser, error) {
-	as, err := qx.New(s.dbConn).CreateAppuser(s.ctx, obj)
+	as, err := s.db.CreateAppuser(s.ctx, obj)
 	return &as, err
 }

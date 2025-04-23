@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package v1.appserversub;
+option go_package = "mist/src/protos/v1/appserversub;appserversub";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "v1/appuser/appuser.proto";
+import "v1/appserver/appserver.proto";
+
+service AppserverSubService {
+  rpc CreateAppserverSub(CreateAppserverSubRequest)
+      returns (CreateAppserverSubResponse) {}
+  rpc GetUserAppserverSubs(GetUserAppserverSubsRequest)
+      returns (GetUserAppserverSubsResponse) {}
+  rpc GetAllUsersAppserverSubs(GetAllUsersAppserverSubsRequest)
+      returns (GetAllUsersAppserverSubsResponse) {}
+  rpc DeleteAppserverSub(DeleteAppserverSubRequest)
+      returns (DeleteAppserverSubResponse) {}
+}
+
+// ----- STRUCTURES -----
+message AppserverSub {
+  string id = 1;
+  string appserver_id = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+message AppserverAndSub {
+  string sub_id = 1;
+  appserver.Appserver appserver = 2;
+}
+
+message AppuserAndSub {
+  string sub_id = 1;
+  appuser.Appuser appuser = 2;
+}
+
+// ----- REQUEST/RESPONSE -----
+message CreateAppserverSubRequest {
+  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message CreateAppserverSubResponse { AppserverSub appserver_sub = 1; }
+
+message GetUserAppserverSubsRequest {}
+message GetUserAppserverSubsResponse {
+  repeated AppserverAndSub appservers = 1;
+}
+
+message GetAllUsersAppserverSubsRequest {
+  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message GetAllUsersAppserverSubsResponse {
+  repeated AppuserAndSub appusers = 1;
+}
+
+message DeleteAppserverSubRequest {
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message DeleteAppserverSubResponse {}

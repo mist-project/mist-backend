@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
 )
 
@@ -20,8 +20,8 @@ func NewAppserverRoleSubService(dbConn qx.DBTX, ctx context.Context) *AppserverR
 	return &AppserverRoleSubService{dbConn: dbConn, ctx: ctx}
 }
 
-func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_appserver.AppserverRoleSub {
-	return &pb_appserver.AppserverRoleSub{
+func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_appserverrolesub.AppserverRoleSub {
+	return &pb_appserverrolesub.AppserverRoleSub{
 		Id:              arSub.ID.String(),
 		AppserverRoleId: arSub.AppserverRoleID.String(),
 		AppuserId:       arSub.AppuserID.String(),

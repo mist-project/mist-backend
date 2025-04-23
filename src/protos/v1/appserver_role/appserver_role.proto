@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package v1.appserverrole;
+option go_package = "mist/src/protos/v1/appserverrole;appserverrole";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "v1/appuser/appuser.proto";
+import "v1/appserver/appserver.proto";
+
+service AppserverRoleService {
+  rpc CreateAppserverRole(CreateAppserverRoleRequest)
+      returns (CreateAppserverRoleResponse) {}
+  rpc GetAllAppserverRoles(GetAllAppserverRolesRequest)
+      returns (GetAllAppserverRolesResponse) {}
+  rpc DeleteAppserverRole(DeleteAppserverRoleRequest)
+      returns (DeleteAppserverRoleResponse) {}
+}
+
+// ----- STRUCTURES -----
+message AppserverRole {
+  string id = 1;
+  string name = 2;
+  string appserver_id = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+// ----- REQUEST/RESPONSE -----
+message CreateAppserverRoleRequest {
+  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
+  string name = 2 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 64
+  ];
+}
+message CreateAppserverRoleResponse { AppserverRole appserver_role = 1; }
+
+message GetAllAppserverRolesRequest {
+  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message GetAllAppserverRolesResponse {
+  repeated AppserverRole appserver_roles = 1;
+}
+
+message DeleteAppserverRoleRequest {
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message DeleteAppserverRoleResponse {}

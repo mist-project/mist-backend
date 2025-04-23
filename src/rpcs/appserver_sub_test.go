@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 )
 
@@ -18,8 +18,8 @@ func TestGetUserAppserverSubs(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.GetUserAppserverSubs(
-			ctx, &pb_appserver.GetUserAppserverSubsRequest{},
+		response, err := TestAppserverSubClient.GetUserAppserverSubs(
+			ctx, &pb_appserversub.GetUserAppserverSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -40,8 +40,8 @@ func TestGetUserAppserverSubs(t *testing.T) {
 		testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver2.ID, AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverClient.GetUserAppserverSubs(
-			ctx, &pb_appserver.GetUserAppserverSubsRequest{},
+		response, err := TestAppserverSubClient.GetUserAppserverSubs(
+			ctx, &pb_appserversub.GetUserAppserverSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -59,8 +59,8 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.GetAllUsersAppserverSubs(
-			ctx, &pb_appserver.GetAllUsersAppserverSubsRequest{},
+		response, err := TestAppserverSubClient.GetAllUsersAppserverSubs(
+			ctx, &pb_appserversub.GetAllUsersAppserverSubsRequest{AppserverId: uuid.NewString()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -80,9 +80,9 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 		testAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user2.ID})
 
 		// ACT
-		response, err := TestAppserverClient.GetAllUsersAppserverSubs(
+		response, err := TestAppserverSubClient.GetAllUsersAppserverSubs(
 			ctx,
-			&pb_appserver.GetAllUsersAppserverSubsRequest{AppserverId: server.ID.String()},
+			&pb_appserversub.GetAllUsersAppserverSubsRequest{AppserverId: server.ID.String()},
 		)
 
 		if err != nil {
@@ -104,8 +104,8 @@ func TestCreateAppserverSub(t *testing.T) {
 		appserver := testAppserver(t, &qx.Appserver{AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverSub(
-			ctx, &pb_appserver.CreateAppserverSubRequest{AppserverId: appserver.ID.String()},
+		response, err := TestAppserverSubClient.CreateAppserverSub(
+			ctx, &pb_appserversub.CreateAppserverSubRequest{AppserverId: appserver.ID.String()},
 		)
 
 		if err != nil {
@@ -121,8 +121,8 @@ func TestCreateAppserverSub(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverSub(
-			ctx, &pb_appserver.CreateAppserverSubRequest{},
+		response, err := TestAppserverSubClient.CreateAppserverSub(
+			ctx, &pb_appserversub.CreateAppserverSubRequest{},
 		)
 		s, ok := status.FromError(err)
 
@@ -130,7 +130,7 @@ func TestCreateAppserverSub(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.InvalidArgument, s.Code())
-		assert.Contains(t, s.Message(), "(-1): missing appserver_id attribute")
+		assert.Contains(t, s.Message(), "validation error")
 	})
 }
 
@@ -147,8 +147,8 @@ func TestDeleteAppserverSubs(t *testing.T) {
 		})
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverSub(
-			ctx, &pb_appserver.DeleteAppserverSubRequest{Id: appserverSub.ID.String()})
+		response, err := TestAppserverSubClient.DeleteAppserverSub(
+			ctx, &pb_appserversub.DeleteAppserverSubRequest{Id: appserverSub.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -160,8 +160,8 @@ func TestDeleteAppserverSubs(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverSub(
-			ctx, &pb_appserver.DeleteAppserverSubRequest{Id: uuid.NewString()},
+		response, err := TestAppserverSubClient.DeleteAppserverSub(
+			ctx, &pb_appserversub.DeleteAppserverSubRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 

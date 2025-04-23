@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
 )
 
@@ -22,9 +22,9 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 		sub := testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverRoleSub(
+		response, err := TestAppserverRoleSubClient.CreateAppserverRoleSub(
 			ctx,
-			&pb_appserver.CreateAppserverRoleSubRequest{
+			&pb_appserverrolesub.CreateAppserverRoleSubRequest{
 				AppserverSubId:  sub.ID.String(),
 				AppserverRoleId: role.ID.String(),
 				AppserverId:     appserver.ID.String(),
@@ -44,14 +44,16 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverRoleSub(ctx, &pb_appserver.CreateAppserverRoleSubRequest{})
+		response, err := TestAppserverRoleSubClient.CreateAppserverRoleSub(
+			ctx, &pb_appserverrolesub.CreateAppserverRoleSubRequest{},
+		)
 		s, ok := status.FromError(err)
 
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.InvalidArgument, s.Code())
-		assert.Contains(t, s.Message(), "(-1): missing appserver_role_id attribute, missing appserver_sub_id attribute")
+		assert.Contains(t, s.Message(), "validation error")
 	})
 }
 
@@ -62,8 +64,8 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 		appserver := testAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverClient.GetAllAppserverUserRoleSubs(
-			ctx, &pb_appserver.GetAllAppserverUserRoleSubsRequest{AppserverId: appserver.ID.String()},
+		response, err := TestAppserverRoleSubClient.GetAllAppserverUserRoleSubs(
+			ctx, &pb_appserverrolesub.GetAllAppserverUserRoleSubsRequest{AppserverId: appserver.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -99,8 +101,8 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 		)
 
 		// ACT
-		response, err := TestAppserverClient.GetAllAppserverUserRoleSubs(
-			ctx, &pb_appserver.GetAllAppserverUserRoleSubsRequest{AppserverId: appserver.ID.String()},
+		response, err := TestAppserverRoleSubClient.GetAllAppserverUserRoleSubs(
+			ctx, &pb_appserverrolesub.GetAllAppserverUserRoleSubsRequest{AppserverId: appserver.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -111,12 +113,12 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 	})
 }
 
-func TestDeleteAppserveRolesSub(t *testing.T) {
+func TestDeleteAppserveRoleSub(t *testing.T) {
 	t.Run("roles_can_only_be_deleted_by_server_owner_only", func(t *testing.T) {
 		// ARRANGE
 		ctx := setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
-		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "delete role sub user"})
 		appserver := testAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID})
 		role := testAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID})
 		sub := testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
@@ -128,9 +130,9 @@ func TestDeleteAppserveRolesSub(t *testing.T) {
 		)
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRoleSub(
+		response, err := TestAppserverRoleSubClient.DeleteAppserverRoleSub(
 			ctx,
-			&pb_appserver.DeleteAppserverRoleSubRequest{Id: roleSub.ID.String()},
+			&pb_appserverrolesub.DeleteAppserverRoleSubRequest{Id: roleSub.ID.String()},
 		)
 
 		// ASSERT
@@ -144,9 +146,9 @@ func TestDeleteAppserveRolesSub(t *testing.T) {
 		asrSub := testAppserverRoleSub(t, nil)
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRoleSub(
+		response, err := TestAppserverRoleSubClient.DeleteAppserverRoleSub(
 			ctx,
-			&pb_appserver.DeleteAppserverRoleSubRequest{Id: asrSub.ID.String()},
+			&pb_appserverrolesub.DeleteAppserverRoleSubRequest{Id: asrSub.ID.String()},
 		)
 
 		// ASSERT
@@ -160,7 +162,10 @@ func TestDeleteAppserveRolesSub(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRole(ctx, &pb_appserver.DeleteAppserverRoleRequest{Id: uuid.NewString()})
+		response, err := TestAppserverRoleSubClient.DeleteAppserverRoleSub(
+			ctx,
+			&pb_appserverrolesub.DeleteAppserverRoleSubRequest{Id: uuid.NewString()},
+		)
 		s, ok := status.FromError(err)
 
 		// ASSERT

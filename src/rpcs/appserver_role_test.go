@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
 )
 
@@ -21,8 +21,8 @@ func TestGetAllAppserverRoles(t *testing.T) {
 		appserver := testAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverClient.GetAllAppserverRoles(
-			ctx, &pb_appserver.GetAllAppserverRolesRequest{AppserverId: appserver.ID.String()},
+		response, err := TestAppserverRoleClient.GetAllAppserverRoles(
+			ctx, &pb_appserverrole.GetAllAppserverRolesRequest{AppserverId: appserver.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -40,8 +40,8 @@ func TestGetAllAppserverRoles(t *testing.T) {
 		testAppserverRole(t, &qx.AppserverRole{Name: "some random name #2", AppserverID: server.ID})
 
 		// ACT
-		response, err := TestAppserverClient.GetAllAppserverRoles(
-			ctx, &pb_appserver.GetAllAppserverRolesRequest{AppserverId: server.ID.String()},
+		response, err := TestAppserverRoleClient.GetAllAppserverRoles(
+			ctx, &pb_appserverrole.GetAllAppserverRolesRequest{AppserverId: server.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -60,7 +60,7 @@ func TestCreateAppserveRole(t *testing.T) {
 		appserver := testAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverRole(ctx, &pb_appserver.CreateAppserverRoleRequest{
+		response, err := TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{
 			AppserverId: appserver.ID.String(),
 			Name:        "foo",
 		})
@@ -77,14 +77,14 @@ func TestCreateAppserveRole(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserverRole(ctx, &pb_appserver.CreateAppserverRoleRequest{})
+		response, err := TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.InvalidArgument, s.Code())
-		assert.Contains(t, s.Message(), "(-1): missing appserver_id attribute, missing name attribute")
+		assert.Contains(t, s.Message(), "validation error")
 	})
 }
 
@@ -99,8 +99,8 @@ func TestDeleteAppserveRoles(t *testing.T) {
 		aRole := testAppserverRole(t, &qx.AppserverRole{AppserverID: server.ID, Name: "zoo"})
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRole(
-			ctx, &pb_appserver.DeleteAppserverRoleRequest{Id: aRole.ID.String()},
+		response, err := TestAppserverRoleClient.DeleteAppserverRole(
+			ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: aRole.ID.String()},
 		)
 
 		// ASSERT
@@ -114,8 +114,8 @@ func TestDeleteAppserveRoles(t *testing.T) {
 		aRole := testAppserverRole(t, nil)
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRole(
-			ctx, &pb_appserver.DeleteAppserverRoleRequest{Id: aRole.ID.String()})
+		response, err := TestAppserverRoleClient.DeleteAppserverRole(
+			ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: aRole.ID.String()})
 
 		// ASSERT
 		assert.Nil(t, response)
@@ -128,7 +128,7 @@ func TestDeleteAppserveRoles(t *testing.T) {
 		ctx := setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserverRole(ctx, &pb_appserver.DeleteAppserverRoleRequest{Id: uuid.NewString()})
+		response, err := TestAppserverRoleClient.DeleteAppserverRole(ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

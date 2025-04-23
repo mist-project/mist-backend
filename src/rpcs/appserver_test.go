@@ -127,8 +127,8 @@ func TestGetByIdAppServer(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.Unknown, s.Code())
-		assert.Contains(t, s.Message(), "invalid UUID")
+		assert.Equal(t, codes.InvalidArgument, s.Code())
+		assert.Contains(t, s.Message(), "validation error:\n - id: value must be a valid UUID")
 	})
 }
 
@@ -172,7 +172,7 @@ func TestCreateAppserver(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.InvalidArgument, s.Code())
-		assert.Contains(t, s.Message(), "missing name attribute")
+		assert.Contains(t, s.Message(), "validation error:\n - name: value length must be at least 1 characters")
 	})
 }
 

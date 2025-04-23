@@ -9,7 +9,6 @@ import "google/protobuf/wrappers.proto";
 import "v1/appuser/appuser.proto";
 
 service AppserverService {
-  // ----- APPSERVER ----
   rpc CreateAppserver(CreateAppserverRequest)
       returns (CreateAppserverResponse) {}
   rpc GetByIdAppserver(GetByIdAppserverRequest)
@@ -17,32 +16,6 @@ service AppserverService {
   rpc ListAppservers(ListAppserversRequest) returns (ListAppserversResponse) {}
   rpc DeleteAppserver(DeleteAppserverRequest)
       returns (DeleteAppserverResponse) {}
-
-  // ----- APPSERVER SUB -----
-  rpc CreateAppserverSub(CreateAppserverSubRequest)
-      returns (CreateAppserverSubResponse) {}
-  rpc GetUserAppserverSubs(GetUserAppserverSubsRequest)
-      returns (GetUserAppserverSubsResponse) {}
-  rpc GetAllUsersAppserverSubs(GetAllUsersAppserverSubsRequest)
-      returns (GetAllUsersAppserverSubsResponse) {}
-  rpc DeleteAppserverSub(DeleteAppserverSubRequest)
-      returns (DeleteAppserverSubResponse) {}
-
-  // ----- APPSERVER ROLE -----
-  rpc CreateAppserverRole(CreateAppserverRoleRequest)
-      returns (CreateAppserverRoleResponse) {}
-  rpc GetAllAppserverRoles(GetAllAppserverRolesRequest)
-      returns (GetAllAppserverRolesResponse) {}
-  rpc DeleteAppserverRole(DeleteAppserverRoleRequest)
-      returns (DeleteAppserverRoleResponse) {}
-
-  // ----- APPSERVER ROLE SUB -----
-  rpc CreateAppserverRoleSub(CreateAppserverRoleSubRequest)
-      returns (CreateAppserverRoleSubResponse) {}
-  rpc GetAllAppserverUserRoleSubs(GetAllAppserverUserRoleSubsRequest)
-      returns (GetAllAppserverUserRoleSubsResponse) {}
-  rpc DeleteAppserverRoleSub(DeleteAppserverRoleSubRequest)
-      returns (DeleteAppserverRoleSubResponse) {}
 }
 
 // RESOURCES
@@ -54,40 +27,7 @@ message Appserver {
   google.protobuf.Timestamp updated_at = 5;
 }
 
-message AppserverSub {
-  string id = 1;
-  string appserver_id = 2;
-  google.protobuf.Timestamp created_at = 3;
-  google.protobuf.Timestamp updated_at = 4;
-}
-
-message AppserverAndSub {
-  string sub_id = 1;
-  Appserver appserver = 2;
-}
-
-message AppuserAndSub {
-  string sub_id = 1;
-  appuser.Appuser appuser = 2;
-}
-
-message AppserverRole {
-  string id = 1;
-  string name = 2;
-  string appserver_id = 3;
-  google.protobuf.Timestamp created_at = 4;
-  google.protobuf.Timestamp updated_at = 5;
-}
-
-message AppserverRoleSub {
-  string id = 1;
-  string appuser_id = 2;
-  string appserver_role_id = 3;
-  string appserver_id = 4;
-}
-
 // RESPONSE/REQUEST
-// ----- Appserver -----
 message CreateAppserverRequest {
   string name = 1 [
     (buf.validate.field).string.min_len = 1,
@@ -108,71 +48,3 @@ message DeleteAppserverRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
 }
 message DeleteAppserverResponse {}
-
-// ----- AppserverSub -----
-message CreateAppserverSubRequest {
-  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
-}
-message CreateAppserverSubResponse { AppserverSub appserver_sub = 1; }
-
-message GetUserAppserverSubsRequest {}
-message GetUserAppserverSubsResponse {
-  repeated AppserverAndSub appservers = 1;
-}
-
-message GetAllUsersAppserverSubsRequest {
-  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
-}
-message GetAllUsersAppserverSubsResponse {
-  repeated AppuserAndSub appusers = 1;
-}
-
-message DeleteAppserverSubRequest {
-  string id = 1 [ (buf.validate.field).string.uuid = true ];
-}
-message DeleteAppserverSubResponse {}
-
-// ----- AppserverRole -----
-message CreateAppserverRoleRequest {
-  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
-  string name = 2 [
-    (buf.validate.field).string.min_len = 1,
-    (buf.validate.field).string.max_len = 64
-  ];
-}
-message CreateAppserverRoleResponse { AppserverRole appserver_role = 1; }
-
-message GetAllAppserverRolesRequest {
-  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
-}
-message GetAllAppserverRolesResponse {
-  repeated AppserverRole appserver_roles = 1;
-}
-
-message DeleteAppserverRoleRequest {
-  string id = 1 [ (buf.validate.field).string.uuid = true ];
-}
-message DeleteAppserverRoleResponse {}
-
-// ----- AppserverRoleSub -----
-message CreateAppserverRoleSubRequest {
-  string appserver_role_id = 1 [ (buf.validate.field).string.uuid = true ];
-  string appserver_sub_id = 2 [ (buf.validate.field).string.uuid = true ];
-  string appserver_id = 3 [ (buf.validate.field).string.uuid = true ];
-  string appuser_id = 4 [ (buf.validate.field).string.uuid = true ];
-}
-message CreateAppserverRoleSubResponse {
-  AppserverRoleSub appserver_role_sub = 1;
-}
-
-message GetAllAppserverUserRoleSubsRequest {
-  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
-}
-message GetAllAppserverUserRoleSubsResponse {
-  repeated AppserverRoleSub appserver_role_subs = 1;
-}
-
-message DeleteAppserverRoleSubRequest {
-  string id = 1 [ (buf.validate.field).string.uuid = true ];
-}
-message DeleteAppserverRoleSubResponse {}

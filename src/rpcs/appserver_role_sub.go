@@ -4,17 +4,16 @@ import (
 	"context"
 
 	"mist/src/middleware"
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 
 	"github.com/google/uuid"
 )
 
-func (s *AppserverGRPCService) CreateAppserverRoleSub(
-	ctx context.Context, req *pb_appserver.CreateAppserverRoleSubRequest,
-) (*pb_appserver.CreateAppserverRoleSubResponse, error) {
-
+func (s *AppserverRoleSubGRPCService) CreateAppserverRoleSub(
+	ctx context.Context, req *pb_appserverrolesub.CreateAppserverRoleSubRequest,
+) (*pb_appserverrolesub.CreateAppserverRoleSubResponse, error) {
 	roleSubS := service.NewAppserverRoleSubService(s.DbConn, ctx)
 
 	// TODO: Figure out what can go wrong to add error handler
@@ -38,27 +37,27 @@ func (s *AppserverGRPCService) CreateAppserverRoleSub(
 	}
 
 	// Return response
-	return &pb_appserver.CreateAppserverRoleSubResponse{
+	return &pb_appserverrolesub.CreateAppserverRoleSubResponse{
 		AppserverRoleSub: roleSubS.PgTypeToPb(arSub),
 	}, nil
 }
 
-func (s *AppserverGRPCService) GetAllAppserverUserRoleSubs(
-	ctx context.Context, req *pb_appserver.GetAllAppserverUserRoleSubsRequest,
-) (*pb_appserver.GetAllAppserverUserRoleSubsResponse, error) {
+func (s *AppserverRoleSubGRPCService) GetAllAppserverUserRoleSubs(
+	ctx context.Context, req *pb_appserverrolesub.GetAllAppserverUserRoleSubsRequest,
+) (*pb_appserverrolesub.GetAllAppserverUserRoleSubsResponse, error) {
 
 	// Initialize the service for AppserveRole
 	serverId, _ := uuid.Parse(req.AppserverId)
 	results, _ := service.NewAppserverRoleSubService(s.DbConn, ctx).GetAppserverAllUserRoleSubs(serverId)
 
 	// Construct the response
-	response := &pb_appserver.GetAllAppserverUserRoleSubsResponse{
-		AppserverRoleSubs: make([]*pb_appserver.AppserverRoleSub, 0, len(results)),
+	response := &pb_appserverrolesub.GetAllAppserverUserRoleSubsResponse{
+		AppserverRoleSubs: make([]*pb_appserverrolesub.AppserverRoleSub, 0, len(results)),
 	}
 
 	// Convert list of AppserveRoles to protobuf
 	for _, result := range results {
-		response.AppserverRoleSubs = append(response.AppserverRoleSubs, &pb_appserver.AppserverRoleSub{
+		response.AppserverRoleSubs = append(response.AppserverRoleSubs, &pb_appserverrolesub.AppserverRoleSub{
 			Id:              result.ID.String(),
 			AppserverRoleId: result.AppserverRoleID.String(),
 			AppuserId:       result.AppuserID.String(),
@@ -69,9 +68,9 @@ func (s *AppserverGRPCService) GetAllAppserverUserRoleSubs(
 	return response, nil
 }
 
-func (s *AppserverGRPCService) DeleteAppserverRoleSub(
-	ctx context.Context, req *pb_appserver.DeleteAppserverRoleSubRequest,
-) (*pb_appserver.DeleteAppserverRoleSubResponse, error) {
+func (s *AppserverRoleSubGRPCService) DeleteAppserverRoleSub(
+	ctx context.Context, req *pb_appserverrolesub.DeleteAppserverRoleSubRequest,
+) (*pb_appserverrolesub.DeleteAppserverRoleSubResponse, error) {
 
 	// Initialize the service for AppserveRole
 	arss := service.NewAppserverRoleSubService(s.DbConn, ctx)
@@ -91,5 +90,5 @@ func (s *AppserverGRPCService) DeleteAppserverRoleSub(
 	}
 
 	// Return success response
-	return &pb_appserver.DeleteAppserverRoleSubResponse{}, nil
+	return &pb_appserverrolesub.DeleteAppserverRoleSubResponse{}, nil
 }

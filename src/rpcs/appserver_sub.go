@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"mist/src/middleware"
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 
 	"github.com/google/uuid"
 )
 
-func (s *AppserverGRPCService) CreateAppserverSub(
-	ctx context.Context, req *pb_appserver.CreateAppserverSubRequest,
-) (*pb_appserver.CreateAppserverSubResponse, error) {
+func (s *AppserverSubGRPCService) CreateAppserverSub(
+	ctx context.Context, req *pb_appserversub.CreateAppserverSubRequest,
+) (*pb_appserversub.CreateAppserverSubResponse, error) {
 
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(s.DbConn, ctx)
@@ -34,14 +34,14 @@ func (s *AppserverGRPCService) CreateAppserverSub(
 	}
 
 	// Return response
-	return &pb_appserver.CreateAppserverSubResponse{
+	return &pb_appserversub.CreateAppserverSubResponse{
 		AppserverSub: subService.PgTypeToPb(appserverSub),
 	}, nil
 }
 
-func (s *AppserverGRPCService) GetUserAppserverSubs(
-	ctx context.Context, req *pb_appserver.GetUserAppserverSubsRequest,
-) (*pb_appserver.GetUserAppserverSubsResponse, error) {
+func (s *AppserverSubGRPCService) GetUserAppserverSubs(
+	ctx context.Context, req *pb_appserversub.GetUserAppserverSubsRequest,
+) (*pb_appserversub.GetUserAppserverSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(s.DbConn, ctx)
@@ -53,8 +53,8 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 	results, _ := subService.ListUserAppserverAndSub(userId)
 
 	// Construct the response
-	response := &pb_appserver.GetUserAppserverSubsResponse{
-		Appservers: make([]*pb_appserver.AppserverAndSub, 0, len(results)),
+	response := &pb_appserversub.GetUserAppserverSubsResponse{
+		Appservers: make([]*pb_appserversub.AppserverAndSub, 0, len(results)),
 	}
 
 	// Convert list of AppserverSubs to protobuf
@@ -67,9 +67,9 @@ func (s *AppserverGRPCService) GetUserAppserverSubs(
 	return response, nil
 }
 
-func (s *AppserverGRPCService) GetAllUsersAppserverSubs(
-	ctx context.Context, req *pb_appserver.GetAllUsersAppserverSubsRequest,
-) (*pb_appserver.GetAllUsersAppserverSubsResponse, error) {
+func (s *AppserverSubGRPCService) GetAllUsersAppserverSubs(
+	ctx context.Context, req *pb_appserversub.GetAllUsersAppserverSubsRequest,
+) (*pb_appserversub.GetAllUsersAppserverSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(s.DbConn, ctx)
@@ -78,8 +78,8 @@ func (s *AppserverGRPCService) GetAllUsersAppserverSubs(
 	results, _ := subService.ListAllUsersAppserverAndSub(serverId)
 
 	// Construct the response
-	response := &pb_appserver.GetAllUsersAppserverSubsResponse{
-		Appusers: make([]*pb_appserver.AppuserAndSub, 0, len(results)),
+	response := &pb_appserversub.GetAllUsersAppserverSubsResponse{
+		Appusers: make([]*pb_appserversub.AppuserAndSub, 0, len(results)),
 	}
 
 	// Convert list of AppserverSubs to protobuf
@@ -90,9 +90,9 @@ func (s *AppserverGRPCService) GetAllUsersAppserverSubs(
 	return response, nil
 }
 
-func (s *AppserverGRPCService) DeleteAppserverSub(
-	ctx context.Context, req *pb_appserver.DeleteAppserverSubRequest,
-) (*pb_appserver.DeleteAppserverSubResponse, error) {
+func (s *AppserverSubGRPCService) DeleteAppserverSub(
+	ctx context.Context, req *pb_appserversub.DeleteAppserverSubRequest,
+) (*pb_appserversub.DeleteAppserverSubResponse, error) {
 
 	// Initialize the service for AppserverSub
 	id, _ := uuid.Parse((req.Id))
@@ -105,5 +105,5 @@ func (s *AppserverGRPCService) DeleteAppserverSub(
 	}
 
 	// Return success response
-	return &pb_appserver.DeleteAppserverSubResponse{}, nil
+	return &pb_appserversub.DeleteAppserverSubResponse{}, nil
 }

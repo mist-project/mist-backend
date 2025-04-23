@@ -23,6 +23,9 @@ import (
 
 	"mist/src/middleware"
 	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverrole "mist/src/protos/v1/appserver_role"
+	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
+	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	pb_appuser "mist/src/protos/v1/appuser"
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
@@ -30,11 +33,14 @@ import (
 )
 
 var (
-	testServer          *grpc.Server
-	TestAppserverClient pb_appserver.AppserverServiceClient
-	TestAppuserClient   pb_appuser.AppuserServiceClient
-	TestChannelClient   pb_channel.ChannelServiceClient
-	testClientConn      *grpc.ClientConn
+	testServer                 *grpc.Server
+	TestAppserverClient        pb_appserver.AppserverServiceClient
+	TestAppserverRoleClient    pb_appserverrole.AppserverRoleServiceClient
+	TestAppserverRoleSubClient pb_appserverrolesub.AppserverRoleSubServiceClient
+	TestAppserverSubClient     pb_appserversub.AppserverSubServiceClient
+	TestAppuserClient          pb_appuser.AppuserServiceClient
+	TestChannelClient          pb_channel.ChannelServiceClient
+	testClientConn             *grpc.ClientConn
 
 	dbConn qx.DBTX
 	lis    net.Listener
@@ -98,11 +104,8 @@ func setupTestAppserverGRPCServiceAndClient() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	testServer = grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
-
-	pb_appserver.RegisterAppserverServiceServer(testServer, &rpcs.AppserverGRPCService{DbConn: dbConn})
-	pb_channel.RegisterChannelServiceServer(testServer, &rpcs.ChannelGRPCService{DbConn: dbConn})
-	pb_appuser.RegisterAppuserServiceServer(testServer, &rpcs.AppuserGRPCService{DbConn: dbConn})
+	testServer = grpc.NewServer(rpcs.BaseInterceptors())
+	rpcs.RegisterGrpcServices(testServer, dbConn)
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {
@@ -120,10 +123,12 @@ func setupTestAppserverGRPCServiceAndClient() {
 		log.Fatalf("did not connect: %v", err)
 	}
 
-	TestAppserverClient = pb_appserver.NewAppserverServiceClient(testClientConn)
-	TestChannelClient = pb_channel.NewChannelServiceClient(testClientConn)
 	TestAppuserClient = pb_appuser.NewAppuserServiceClient(testClientConn)
-
+	TestAppserverClient = pb_appserver.NewAppserverServiceClient(testClientConn)
+	TestAppserverRoleClient = pb_appserverrole.NewAppserverRoleServiceClient(testClientConn)
+	TestAppserverRoleSubClient = pb_appserverrolesub.NewAppserverRoleSubServiceClient(testClientConn)
+	TestAppserverSubClient = pb_appserversub.NewAppserverSubServiceClient(testClientConn)
+	TestChannelClient = pb_channel.NewChannelServiceClient(testClientConn)
 }
 
 func rpcTestCleanup() {

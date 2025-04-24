@@ -75,12 +75,15 @@ dump-schema:
 
 
 # ----- TESTS -----
-run-tests t: generate-queries test-service test-middleware
+run-tests t: generate-queries test-rpcs test-middleware test-service
+
+all-tests: 
+	go test -cover ./... | grep -v 'testutil'
 
 tbreak:
 	go test ./... -run "$(t)"
 
-test-service:
+test-rpcs:
 	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
@@ -88,6 +91,12 @@ test-middleware:
 	@echo -----------------------------------------
 	@go test mist/src/middleware -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
+
+test-service:
+	@echo -----------------------------------------
+	@go test mist/src/service -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
 
 # ----- FORMAT -----
 lint:

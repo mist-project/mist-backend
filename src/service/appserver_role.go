@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -40,7 +39,7 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.A
 	aRoles, err := qx.New(s.dbConn).GetAppserverRoles(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
 	return aRoles, nil
@@ -50,9 +49,9 @@ func (s *AppserverRoleService) DeleteByAppserver(obj qx.DeleteAppserverRoleParam
 	deleted, err := qx.New(s.dbConn).DeleteAppserverRole(s.ctx, obj)
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
 	return nil
 }

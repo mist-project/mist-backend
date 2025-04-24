@@ -1,27 +1,31 @@
 package rpcs_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
+	"mist/src/rpcs"
 	"mist/src/service"
+	"mist/src/testutil"
 )
 
 // ----- RPC Appservers -----
 func TestListAppServer(t *testing.T) {
 	t.Run("can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.ListAppservers(
+		response, err := testutil.TestAppserverClient.ListAppservers(
 			ctx, &pb_appserver.ListAppserversRequest{Name: wrapperspb.String("random")},
 		)
 		if err != nil {
@@ -34,14 +38,14 @@ func TestListAppServer(t *testing.T) {
 
 	t.Run("can_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
-		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		testAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID})
-		testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
+		ctx := testutil.Setup(t, func() {})
+		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID})
+		testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverClient.ListAppservers(
+		response, err := testutil.TestAppserverClient.ListAppservers(
 			ctx, &pb_appserver.ListAppserversRequest{},
 		)
 
@@ -55,14 +59,14 @@ func TestListAppServer(t *testing.T) {
 
 	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
-		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		appserver := testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
-		testAppserver(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
+		testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverClient.ListAppservers(
+		response, err := testutil.TestAppserverClient.ListAppservers(
 			ctx, &pb_appserver.ListAppserversRequest{Name: wrapperspb.String(appserver.Name)},
 		)
 		if err != nil {
@@ -74,16 +78,14 @@ func TestListAppServer(t *testing.T) {
 	})
 }
 
-// ----- RPC GetByIdAppserver -----
-
 func TestGetByIdAppServer(t *testing.T) {
 	t.Run("returns_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverClient.GetByIdAppserver(
+		response, err := testutil.TestAppserverClient.GetByIdAppserver(
 			ctx, &pb_appserver.GetByIdAppserverRequest{Id: appserver.ID.String()},
 		)
 
@@ -99,10 +101,10 @@ func TestGetByIdAppServer(t *testing.T) {
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.GetByIdAppserver(
+		response, err := testutil.TestAppserverClient.GetByIdAppserver(
 			ctx, &pb_appserver.GetByIdAppserverRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
@@ -116,10 +118,10 @@ func TestGetByIdAppServer(t *testing.T) {
 
 	t.Run("invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.GetByIdAppserver(
+		response, err := testutil.TestAppserverClient.GetByIdAppserver(
 			ctx, &pb_appserver.GetByIdAppserverRequest{Id: "foo"},
 		)
 		s, ok := status.FromError(err)
@@ -132,18 +134,17 @@ func TestGetByIdAppServer(t *testing.T) {
 	})
 }
 
-// ----- RPC CreateAppserver -----
 func TestCreateAppserver(t *testing.T) {
 
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
-		ctx := setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
-		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		ctx := testutil.Setup(t, func() {})
+		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserver(
+		response, err := testutil.TestAppserverClient.CreateAppserver(
 			ctx, &pb_appserver.CreateAppserverRequest{Name: "someone"},
 		)
 
@@ -152,9 +153,9 @@ func TestCreateAppserver(t *testing.T) {
 		}
 
 		// ASSERT
-		dbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
+		testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
 
-		serverSubs, _ := service.NewAppserverSubService(dbConn, ctx).ListUserAppserverAndSub(appuser.ID)
+		serverSubs, _ := service.NewAppserverSubService(testutil.TestDbConn, ctx).ListUserAppserverAndSub(appuser.ID)
 		assert.NotNil(t, response.Appserver)
 		assert.Equal(t, 1, len(serverSubs))
 		assert.Equal(t, 1, count)
@@ -162,10 +163,10 @@ func TestCreateAppserver(t *testing.T) {
 
 	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.CreateAppserver(ctx, &pb_appserver.CreateAppserverRequest{})
+		response, err := testutil.TestAppserverClient.CreateAppserver(ctx, &pb_appserver.CreateAppserverRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -174,6 +175,32 @@ func TestCreateAppserver(t *testing.T) {
 		assert.Equal(t, codes.InvalidArgument, s.Code())
 		assert.Contains(t, s.Message(), "validation error:\n - name: value length must be at least 1 characters")
 	})
+
+	t.Run("error_on_db_exists_gracefully", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		expectedRequest := qx.CreateAppserverParams{AppuserID: userId, Name: "boo"}
+
+		mockTxQuerier := new(testutil.MockQuerier)
+		mockTxQuerier.On(
+			"CreateAppserver", ctx, expectedRequest,
+		).Return(qx.Appserver{}, fmt.Errorf("a db error"))
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
+
+		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
+
+		// ACT
+		_, err := svc.CreateAppserver(ctx, &pb_appserver.CreateAppserverRequest{
+			Name: "boo",
+		})
+
+		// ASSERT
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "a db error")
+	})
 }
 
 // ----- RPC Deleteappserver -----
@@ -181,20 +208,20 @@ func TestDeleteAppserver(t *testing.T) {
 
 	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
-		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		appserver := testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid})
-		testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid})
+		ctx := testutil.Setup(t, func() {})
+		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid})
+		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid})
 
-		subService := service.NewAppserverSubService(dbConn, ctx)
+		subService := service.NewAppserverSubService(testutil.TestDbConn, ctx)
 
 		// ASSERT
 		serverSubs, _ := subService.ListUserAppserverAndSub(appuser.ID)
 		assert.Equal(t, 1, len(serverSubs))
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserver(
+		response, err := testutil.TestAppserverClient.DeleteAppserver(
 			ctx, &pb_appserver.DeleteAppserverRequest{Id: appserver.ID.String()},
 		)
 
@@ -207,10 +234,10 @@ func TestDeleteAppserver(t *testing.T) {
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverClient.DeleteAppserver(ctx, &pb_appserver.DeleteAppserverRequest{Id: uuid.NewString()})
+		response, err := testutil.TestAppserverClient.DeleteAppserver(ctx, &pb_appserver.DeleteAppserverRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

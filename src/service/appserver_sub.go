@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -62,6 +61,7 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsR
 
 func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.AppserverSub, error) {
 	appserverSub, err := qx.New(s.dbConn).CreateAppserverSub(s.ctx, obj)
+
 	return &appserverSub, err
 }
 
@@ -71,7 +71,7 @@ func (s *AppserverSubService) ListUserAppserverAndSub(userId uuid.UUID) ([]qx.Ge
 	aSubs, err := qx.New(s.dbConn).GetUserAppserverSubs(s.ctx, userId)
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
 	return aSubs, nil
@@ -84,7 +84,7 @@ func (s *AppserverSubService) ListAllUsersAppserverAndSub(
 	aSubs, err := qx.New(s.dbConn).GetAllUsersAppserverSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
 	return aSubs, nil
@@ -96,9 +96,9 @@ func (s *AppserverSubService) DeleteByAppserver(id uuid.UUID) error {
 	deleted, err := qx.New(s.dbConn).DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
 
 	return nil

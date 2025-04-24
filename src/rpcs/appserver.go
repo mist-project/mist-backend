@@ -9,7 +9,6 @@ import (
 	"mist/src/service"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func (s *AppserverGRPCService) CreateAppserver(
@@ -17,10 +16,8 @@ func (s *AppserverGRPCService) CreateAppserver(
 ) (*pb_appserver.CreateAppserverResponse, error) {
 
 	// TODO: replace for a function to start transactions
-	tx, err := s.DbConn.(*pgxpool.Pool).Begin(ctx)
-
-	serverS := service.NewAppserverService(tx, ctx)
-	claims, _ := middleware.GetJWTClaims(ctx)
+	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
+	claims, err := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 
 	appserver, err := serverS.Create(
@@ -31,24 +28,9 @@ func (s *AppserverGRPCService) CreateAppserver(
 	)
 
 	if err != nil {
-		tx.Rollback(ctx)
 		return nil, ErrorHandler(err)
 	}
 
-	// once the appserver is created, add user as a subscriber
-	_, err = service.NewAppserverSubService(tx, ctx).Create(
-		qx.CreateAppserverSubParams{
-			AppserverID: appserver.ID,
-			AppuserID:   userId,
-		},
-	)
-
-	if err != nil {
-		tx.Rollback(ctx)
-		return nil, ErrorHandler(err)
-	}
-
-	tx.Commit(ctx)
 	res := serverS.PgTypeToPb(appserver)
 	res.IsOwner = appserver.AppuserID == userId
 
@@ -66,7 +48,7 @@ func (s *AppserverGRPCService) GetByIdAppserver(
 		appserver *qx.Appserver
 	)
 	claims, _ := middleware.GetJWTClaims(ctx)
-	as := service.NewAppserverService(s.DbConn, ctx)
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 
 	id, _ := uuid.Parse(req.Id)
 	if appserver, err = as.GetById(id); err != nil {
@@ -81,7 +63,7 @@ func (s *AppserverGRPCService) GetByIdAppserver(
 func (s *AppserverGRPCService) ListAppservers(
 	ctx context.Context, req *pb_appserver.ListAppserversRequest,
 ) (*pb_appserver.ListAppserversResponse, error) {
-	as := service.NewAppserverService(s.DbConn, ctx)
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
 
 	// TODO: Figure out what can go wrong to add error handler
@@ -108,7 +90,7 @@ func (s *AppserverGRPCService) DeleteAppserver(
 	claims, _ := middleware.GetJWTClaims(ctx)
 	id, _ := uuid.Parse(req.Id)
 	userId, _ := uuid.Parse(claims.UserID)
-	err := service.NewAppserverService(s.DbConn, ctx).Delete(qx.DeleteAppserverParams{
+	err := service.NewAppserverService(ctx, s.DbConn, s.Db).Delete(qx.DeleteAppserverParams{
 		ID:        id,
 		AppuserID: userId,
 	})

@@ -10,6 +10,7 @@ import (
 
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
+	"mist/src/testutil"
 )
 
 // ----- RPC AppserveRole -----
@@ -17,11 +18,11 @@ import (
 func TestGetAllAppserverRoles(t *testing.T) {
 	t.Run("can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverRoleClient.GetAllAppserverRoles(
+		response, err := testutil.TestAppserverRoleClient.GetAllAppserverRoles(
 			ctx, &pb_appserverrole.GetAllAppserverRolesRequest{AppserverId: appserver.ID.String()},
 		)
 		if err != nil {
@@ -34,13 +35,13 @@ func TestGetAllAppserverRoles(t *testing.T) {
 
 	t.Run("can_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		server := testAppserver(t, nil)
-		testAppserverRole(t, &qx.AppserverRole{Name: "some random name", AppserverID: server.ID})
-		testAppserverRole(t, &qx.AppserverRole{Name: "some random name #2", AppserverID: server.ID})
+		ctx := testutil.Setup(t, func() {})
+		server := testutil.TestAppserver(t, nil)
+		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name", AppserverID: server.ID})
+		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name #2", AppserverID: server.ID})
 
 		// ACT
-		response, err := TestAppserverRoleClient.GetAllAppserverRoles(
+		response, err := testutil.TestAppserverRoleClient.GetAllAppserverRoles(
 			ctx, &pb_appserverrole.GetAllAppserverRolesRequest{AppserverId: server.ID.String()},
 		)
 		if err != nil {
@@ -56,11 +57,11 @@ func TestGetAllAppserverRoles(t *testing.T) {
 func TestCreateAppserveRole(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{
+		response, err := testutil.TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{
 			AppserverId: appserver.ID.String(),
 			Name:        "foo",
 		})
@@ -74,10 +75,10 @@ func TestCreateAppserveRole(t *testing.T) {
 
 	t.Run("invalid_arguments_return_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{})
+		response, err := testutil.TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -92,14 +93,14 @@ func TestCreateAppserveRole(t *testing.T) {
 func TestDeleteAppserveRoles(t *testing.T) {
 	t.Run("roles_can_only_be_deleted_by_server_owner_only", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
-		user := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		server := testAppserver(t, &qx.Appserver{Name: "bar", AppuserID: user.ID})
-		aRole := testAppserverRole(t, &qx.AppserverRole{AppserverID: server.ID, Name: "zoo"})
+		ctx := testutil.Setup(t, func() {})
+		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		user := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
+		server := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: user.ID})
+		aRole := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: server.ID, Name: "zoo"})
 
 		// ACT
-		response, err := TestAppserverRoleClient.DeleteAppserverRole(
+		response, err := testutil.TestAppserverRoleClient.DeleteAppserverRole(
 			ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: aRole.ID.String()},
 		)
 
@@ -110,11 +111,11 @@ func TestDeleteAppserveRoles(t *testing.T) {
 
 	t.Run("cannot_be_deleted_by_non_owner", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		aRole := testAppserverRole(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		aRole := testutil.TestAppserverRole(t, nil)
 
 		// ACT
-		response, err := TestAppserverRoleClient.DeleteAppserverRole(
+		response, err := testutil.TestAppserverRoleClient.DeleteAppserverRole(
 			ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: aRole.ID.String()})
 
 		// ASSERT
@@ -125,10 +126,10 @@ func TestDeleteAppserveRoles(t *testing.T) {
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverRoleClient.DeleteAppserverRole(ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: uuid.NewString()})
+		response, err := testutil.TestAppserverRoleClient.DeleteAppserverRole(ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

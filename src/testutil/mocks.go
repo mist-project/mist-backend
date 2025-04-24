@@ -1,15 +1,22 @@
-package rpcs_test
+package testutil
 
 import (
 	"context"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/mock"
 )
 
 type MockQuerier struct {
 	mock.Mock
+}
+
+func (m *MockQuerier) WithTx(tx pgx.Tx) db.Querier {
+	args := m.Called(tx)
+	return args.Get(0).(db.Querier)
 }
 
 func (m *MockQuerier) CreateAppserver(ctx context.Context, arg qx.CreateAppserverParams) (qx.Appserver, error) {

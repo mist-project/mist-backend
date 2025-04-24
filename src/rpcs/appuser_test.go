@@ -1,15 +1,15 @@
 package rpcs_test
 
 import (
-	"errors"
+	"fmt"
 	pb_appuser "mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
+	"mist/src/testutil"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -19,11 +19,11 @@ func TestCreateAppuser(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
 
-		response, err := TestAppuserClient.CreateAppuser(
+		response, err := testutil.TestAppuserClient.CreateAppuser(
 			ctx,
 			&pb_appuser.CreateAppuserRequest{Username: "someone", Id: uuid.NewString()})
 
@@ -32,17 +32,17 @@ func TestCreateAppuser(t *testing.T) {
 		}
 
 		// ASSERT
-		dbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appuser").Scan(&count)
+		testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appuser").Scan(&count)
 		assert.NotNil(t, response)
 		assert.Equal(t, 1, count)
 	})
 
 	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppuserClient.CreateAppuser(ctx, &pb_appuser.CreateAppuserRequest{})
+		response, err := testutil.TestAppuserClient.CreateAppuser(ctx, &pb_appuser.CreateAppuserRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -54,22 +54,24 @@ func TestCreateAppuser(t *testing.T) {
 
 	t.Run("error_on_db_exists_gracefully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		mockQuerier := new(MockQuerier)
+		ctx := testutil.Setup(t, func() {})
+		userId := uuid.New()
+		expectedRequest := qx.CreateAppuserParams{ID: userId, Username: "boo"}
+
+		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On(
-			"CreateAppuser", mock.Anything, mock.Anything,
-		).Return(qx.Appuser{}, errors.New("a db error"))
-		svc := &rpcs.AppuserGRPCService{Db: mockQuerier}
+			"CreateAppuser", ctx, expectedRequest,
+		).Return(qx.Appuser{}, fmt.Errorf("a db error"))
+		svc := &rpcs.AppuserGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
 
 		// ACT
 		_, err := svc.CreateAppuser(ctx, &pb_appuser.CreateAppuserRequest{
-			Id:       uuid.NewString(),
+			Id:       userId.String(),
 			Username: "boo",
 		})
 
 		// ASSERT
 		assert.NotNil(t, err)
 		assert.Contains(t, err.Error(), "a db error")
-
 	})
 }

@@ -15,7 +15,7 @@ func (s *AppuserGRPCService) CreateAppuser(
 ) (*pb_appuser.CreateAppuserResponse, error) {
 
 	userId, _ := uuid.Parse(req.Id)
-	_, err := service.NewAppuserService(s.Db, ctx).Create(
+	_, err := service.NewAppuserService(ctx, s.DbConn, s.Db).Create(
 		qx.CreateAppuserParams{
 			ID:       userId,
 			Username: req.Username,

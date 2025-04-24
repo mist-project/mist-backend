@@ -11,16 +11,17 @@ import (
 
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
+	"mist/src/testutil"
 )
 
 // ----- RPC Channels -----
 func TestListChannels(t *testing.T) {
 	t.Run("returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.ListChannels(
+		response, err := testutil.TestChannelClient.ListChannels(
 			ctx, &pb_channel.ListChannelsRequest{Name: wrapperspb.String("random")},
 		)
 		if err != nil {
@@ -33,13 +34,13 @@ func TestListChannels(t *testing.T) {
 
 	t.Run("returns_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		server := testAppserver(t, nil)
-		testChannel(t, &qx.Channel{Name: "foo", AppserverID: server.ID})
-		testChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
+		ctx := testutil.Setup(t, func() {})
+		server := testutil.TestAppserver(t, nil)
+		testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: server.ID})
+		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
 
 		// ACT
-		response, err := TestChannelClient.ListChannels(ctx, &pb_channel.ListChannelsRequest{})
+		response, err := testutil.TestChannelClient.ListChannels(ctx, &pb_channel.ListChannelsRequest{})
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -50,13 +51,13 @@ func TestListChannels(t *testing.T) {
 
 	t.Run("can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		server := testAppserver(t, nil)
-		testChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
-		testChannel(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		server := testutil.TestAppserver(t, nil)
+		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
+		testutil.TestChannel(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.ListChannels(
+		response, err := testutil.TestChannelClient.ListChannels(
 			ctx, &pb_channel.ListChannelsRequest{AppserverId: wrapperspb.String(server.ID.String())},
 		)
 		if err != nil {
@@ -72,11 +73,11 @@ func TestListChannels(t *testing.T) {
 func TestGetByIdChannel(t *testing.T) {
 	t.Run("returns_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		channel := testChannel(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		channel := testutil.TestChannel(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.GetByIdChannel(
+		response, err := testutil.TestChannelClient.GetByIdChannel(
 			ctx, &pb_channel.GetByIdChannelRequest{Id: channel.ID.String()},
 		)
 
@@ -90,10 +91,10 @@ func TestGetByIdChannel(t *testing.T) {
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.GetByIdChannel(
+		response, err := testutil.TestChannelClient.GetByIdChannel(
 			ctx, &pb_channel.GetByIdChannelRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
@@ -107,10 +108,10 @@ func TestGetByIdChannel(t *testing.T) {
 
 	t.Run("invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.GetByIdChannel(
+		response, err := testutil.TestChannelClient.GetByIdChannel(
 			ctx, &pb_channel.GetByIdChannelRequest{Id: "foo"},
 		)
 		s, ok := status.FromError(err)
@@ -127,11 +128,11 @@ func TestGetByIdChannel(t *testing.T) {
 func TestCreateChannel(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.CreateChannel(
+		response, err := testutil.TestChannelClient.CreateChannel(
 			ctx, &pb_channel.CreateChannelRequest{Name: "new channel", AppserverId: appserver.ID.String()})
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -143,10 +144,10 @@ func TestCreateChannel(t *testing.T) {
 
 	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.CreateChannel(ctx, &pb_channel.CreateChannelRequest{})
+		response, err := testutil.TestChannelClient.CreateChannel(ctx, &pb_channel.CreateChannelRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -161,11 +162,11 @@ func TestCreateChannel(t *testing.T) {
 func TestDeleteChannel(t *testing.T) {
 	t.Run("deletes_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		channel := testChannel(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		channel := testutil.TestChannel(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.DeleteChannel(ctx, &pb_channel.DeleteChannelRequest{Id: channel.ID.String()})
+		response, err := testutil.TestChannelClient.DeleteChannel(ctx, &pb_channel.DeleteChannelRequest{Id: channel.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -174,10 +175,10 @@ func TestDeleteChannel(t *testing.T) {
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.DeleteChannel(ctx, &pb_channel.DeleteChannelRequest{Id: uuid.NewString()})
+		response, err := testutil.TestChannelClient.DeleteChannel(ctx, &pb_channel.DeleteChannelRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

@@ -1,7 +1,7 @@
 package rpcs_test
 
 import (
-	"errors"
+	"fmt"
 	"mist/src/rpcs"
 	"testing"
 
@@ -20,19 +20,19 @@ func TestErrorHandler(t *testing.T) {
 	}{
 		{
 			name:         "ValidationError",
-			input:        errors.New("(-1): validation failed"),
+			input:        fmt.Errorf("(-1): validation failed"),
 			expectedCode: codes.InvalidArgument,
 			expectedMsg:  "(-1): validation failed",
 		},
 		{
 			name:         "NotFoundError",
-			input:        errors.New("(-2): item not found"),
+			input:        fmt.Errorf("(-2): item not found"),
 			expectedCode: codes.NotFound,
 			expectedMsg:  "(-2): item not found",
 		},
 		{
 			name:         "UnknownError",
-			input:        errors.New("weird DB crash"),
+			input:        fmt.Errorf("weird DB crash"),
 			expectedCode: codes.Unknown,
 			expectedMsg:  "weird DB crash",
 		},

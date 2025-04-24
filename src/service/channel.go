@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -43,10 +42,10 @@ func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
-			return nil, errors.New(fmt.Sprintf("(%d): resource not found", NotFoundError))
+			return nil, fmt.Errorf(fmt.Sprintf("(%d): resource not found", NotFoundError))
 		}
 
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
 	return &channel, nil
@@ -78,7 +77,7 @@ func (s *ChannelService) List(name *wrappers.StringValue, appserverId *wrappers.
 	)
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	}
 
 	return channels, nil
@@ -89,9 +88,9 @@ func (s *ChannelService) Delete(id uuid.UUID) error {
 	deleted, err := qx.New(s.dbConn).DeleteChannel(s.ctx, id)
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
 	}
 
 	return err

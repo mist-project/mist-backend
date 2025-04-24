@@ -10,19 +10,20 @@ import (
 
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
+	"mist/src/testutil"
 )
 
 func TestCreateAppserveRoleSub(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		appuser := testAppuser(t, nil)
-		appserver := testAppserver(t, nil)
-		role := testAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID})
-		sub := testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
+		ctx := testutil.Setup(t, func() {})
+		appuser := testutil.TestAppuser(t, nil)
+		appserver := testutil.TestAppserver(t, nil)
+		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID})
+		sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
 
 		// ACT
-		response, err := TestAppserverRoleSubClient.CreateAppserverRoleSub(
+		response, err := testutil.TestAppserverRoleSubClient.CreateAppserverRoleSub(
 			ctx,
 			&pb_appserverrolesub.CreateAppserverRoleSubRequest{
 				AppserverSubId:  sub.ID.String(),
@@ -41,10 +42,10 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 
 	t.Run("invalid_arguments_return_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverRoleSubClient.CreateAppserverRoleSub(
+		response, err := testutil.TestAppserverRoleSubClient.CreateAppserverRoleSub(
 			ctx, &pb_appserverrolesub.CreateAppserverRoleSubRequest{},
 		)
 		s, ok := status.FromError(err)
@@ -60,11 +61,11 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 	t.Run("can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := TestAppserverRoleSubClient.GetAllAppserverUserRoleSubs(
+		response, err := testutil.TestAppserverRoleSubClient.GetAllAppserverUserRoleSubs(
 			ctx, &pb_appserverrolesub.GetAllAppserverUserRoleSubsRequest{AppserverId: appserver.ID.String()},
 		)
 		if err != nil {
@@ -78,22 +79,22 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 	t.Run("can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
 
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 		userId, _ := uuid.NewUUID()
-		user1 := testAppuser(t, &qx.Appuser{ID: userId, Username: "boo"})
+		user1 := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "boo"})
 		userId, _ = uuid.NewUUID()
-		user2 := testAppuser(t, &qx.Appuser{ID: userId, Username: "bar"})
-		appserver := testAppserver(t, nil)
-		role := testAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID})
-		sub := testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: user1.ID})
-		sub2 := testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: user2.ID})
-		testAppserverRoleSub(
+		user2 := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "bar"})
+		appserver := testutil.TestAppserver(t, nil)
+		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID})
+		sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: user1.ID})
+		sub2 := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: user2.ID})
+		testutil.TestAppserverRoleSub(
 			t,
 			&qx.AppserverRoleSub{
 				AppserverRoleID: role.ID, AppuserID: user1.ID, AppserverSubID: sub.ID, AppserverID: appserver.ID,
 			},
 		)
-		testAppserverRoleSub(
+		testutil.TestAppserverRoleSub(
 			t,
 			&qx.AppserverRoleSub{
 				AppserverRoleID: role.ID, AppuserID: user2.ID, AppserverSubID: sub2.ID, AppserverID: appserver.ID,
@@ -101,7 +102,7 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 		)
 
 		// ACT
-		response, err := TestAppserverRoleSubClient.GetAllAppserverUserRoleSubs(
+		response, err := testutil.TestAppserverRoleSubClient.GetAllAppserverUserRoleSubs(
 			ctx, &pb_appserverrolesub.GetAllAppserverUserRoleSubsRequest{AppserverId: appserver.ID.String()},
 		)
 		if err != nil {
@@ -116,13 +117,13 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 func TestDeleteAppserveRoleSub(t *testing.T) {
 	t.Run("roles_can_only_be_deleted_by_server_owner_only", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(ctxUserKey).(string))
-		appuser := testAppuser(t, &qx.Appuser{ID: parsedUid, Username: "delete role sub user"})
-		appserver := testAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID})
-		role := testAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID})
-		sub := testAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
-		roleSub := testAppserverRoleSub(
+		ctx := testutil.Setup(t, func() {})
+		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "delete role sub user"})
+		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID})
+		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID})
+		sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
+		roleSub := testutil.TestAppserverRoleSub(
 			t,
 			&qx.AppserverRoleSub{
 				AppserverRoleID: role.ID, AppuserID: appuser.ID, AppserverSubID: sub.ID, AppserverID: appserver.ID,
@@ -130,7 +131,7 @@ func TestDeleteAppserveRoleSub(t *testing.T) {
 		)
 
 		// ACT
-		response, err := TestAppserverRoleSubClient.DeleteAppserverRoleSub(
+		response, err := testutil.TestAppserverRoleSubClient.DeleteAppserverRoleSub(
 			ctx,
 			&pb_appserverrolesub.DeleteAppserverRoleSubRequest{Id: roleSub.ID.String()},
 		)
@@ -142,11 +143,11 @@ func TestDeleteAppserveRoleSub(t *testing.T) {
 
 	t.Run("cannot_be_deleted_by_non_owner", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		asrSub := testAppserverRoleSub(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		asrSub := testutil.TestAppserverRoleSub(t, nil)
 
 		// ACT
-		response, err := TestAppserverRoleSubClient.DeleteAppserverRoleSub(
+		response, err := testutil.TestAppserverRoleSubClient.DeleteAppserverRoleSub(
 			ctx,
 			&pb_appserverrolesub.DeleteAppserverRoleSubRequest{Id: asrSub.ID.String()},
 		)
@@ -159,10 +160,10 @@ func TestDeleteAppserveRoleSub(t *testing.T) {
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestAppserverRoleSubClient.DeleteAppserverRoleSub(
+		response, err := testutil.TestAppserverRoleSubClient.DeleteAppserverRoleSub(
 			ctx,
 			&pb_appserverrolesub.DeleteAppserverRoleSubRequest{Id: uuid.NewString()},
 		)

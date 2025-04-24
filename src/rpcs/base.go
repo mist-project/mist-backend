@@ -9,16 +9,19 @@ import (
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	pb_appuser "mist/src/protos/v1/appuser"
 	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 
 	"github.com/bufbuild/protovalidate-go"
 	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 )
 
 type AppserverGRPCService struct {
 	pb_appserver.UnimplementedAppserverServiceServer
-	DbConn qx.DBTX
+	DbConn *pgxpool.Pool
+	Db     db.Querier
 }
 
 type AppserverSubGRPCService struct {
@@ -43,12 +46,15 @@ type ChannelGRPCService struct {
 
 type AppuserGRPCService struct {
 	pb_appuser.UnimplementedAppuserServiceServer
-	Db qx.Querier
+	DbConn *pgxpool.Pool
+	Db     db.Querier
 }
 
-func RegisterGrpcServices(s *grpc.Server, dbConn qx.DBTX) {
-	pb_appuser.RegisterAppuserServiceServer(s, &AppuserGRPCService{Db: qx.New(dbConn)})
-	pb_appserver.RegisterAppserverServiceServer(s, &AppserverGRPCService{DbConn: dbConn})
+func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
+	querier := db.NewQuerier(qx.New(dbConn))
+
+	pb_appuser.RegisterAppuserServiceServer(s, &AppuserGRPCService{Db: querier, DbConn: dbConn})
+	pb_appserver.RegisterAppserverServiceServer(s, &AppserverGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{DbConn: dbConn})
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{DbConn: dbConn})
 	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{DbConn: dbConn})

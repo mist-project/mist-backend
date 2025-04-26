@@ -9,23 +9,18 @@ import (
 	"mist/src/service"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (s *AppserverGRPCService) CreateAppserver(
 	ctx context.Context, req *pb_appserver.CreateAppserverRequest,
 ) (*pb_appserver.CreateAppserverResponse, error) {
 
-	// TODO: replace for a function to start transactions
 	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	claims, err := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 
-	appserver, err := serverS.Create(
-		qx.CreateAppserverParams{
-			Name:      req.Name,
-			AppuserID: userId,
-		},
-	)
+	appserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
 
 	if err != nil {
 		return nil, ErrorHandler(err)
@@ -34,9 +29,7 @@ func (s *AppserverGRPCService) CreateAppserver(
 	res := serverS.PgTypeToPb(appserver)
 	res.IsOwner = appserver.AppuserID == userId
 
-	return &pb_appserver.CreateAppserverResponse{
-		Appserver: res,
-	}, nil
+	return &pb_appserver.CreateAppserverResponse{Appserver: res}, nil
 }
 
 func (s *AppserverGRPCService) GetByIdAppserver(
@@ -65,10 +58,16 @@ func (s *AppserverGRPCService) ListAppservers(
 ) (*pb_appserver.ListAppserversResponse, error) {
 	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
+	userId, _ := uuid.Parse(claims.UserID)
 
-	// TODO: Figure out what can go wrong to add error handler
-	appservers, _ := as.List(req.GetName(), claims.UserID)
+	var name = pgtype.Text{Valid: false, String: ""}
 
+	if req.Name != nil {
+		name.Valid = true
+		name.String = req.Name.Value
+	}
+
+	appservers, _ := as.List(qx.ListUserAppserversParams{Name: name, AppuserID: userId})
 	response := &pb_appserver.ListAppserversResponse{}
 
 	// Resize the array

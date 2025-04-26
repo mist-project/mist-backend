@@ -19,6 +19,7 @@ type ChannelService struct {
 	ctx    context.Context
 }
 
+// Creates a new ChannelService struct
 func NewChannelService(dbConn qx.DBTX, ctx context.Context) *ChannelService {
 	return &ChannelService{dbConn: dbConn, ctx: ctx}
 }

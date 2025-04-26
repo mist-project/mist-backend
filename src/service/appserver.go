@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -27,6 +25,7 @@ func NewAppserverService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querie
 	return &AppserverService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
+// Converts a database appserver object to protobuff appserver object
 func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_appserver.Appserver {
 	return &pb_appserver.Appserver{
 		Id:        a.ID.String(),
@@ -35,66 +34,66 @@ func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_appserver.Appserver {
 	}
 }
 
+// Creates an appserver, uses CreateWithTx helper function to wrap creation in transaction
+// Note: the transaction will be committed in CreateWithTx.
 func (s *AppserverService) Create(obj qx.CreateAppserverParams) (*qx.Appserver, error) {
 	tx, err := s.dbConn.BeginTx(s.ctx, pgx.TxOptions{})
-	fmt.Printf("boom")
 	if err != nil {
-		return nil, fmt.Errorf("(%d): failed to start transaction- %v", DatabaseError, err)
+		return nil, fmt.Errorf("(%d) tx initialization: %v", DatabaseError, err)
 	}
 	defer tx.Rollback(s.ctx)
+
+	response, err := s.CreateWithTx(obj, tx)
+
+	return response, err
+}
+
+// Creates an appserver with provided transaction. This function will commit the transaction.
+func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx) (*qx.Appserver, error) {
 	txQ := s.db.WithTx(tx)
 
 	appserver, err := txQ.CreateAppserver(s.ctx, obj)
+
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error- %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) create appserver: %v", DatabaseError, err))
 	}
 
 	// once the appserver is created, add user as a subscriber
-	_, err = NewAppserverSubService(tx, s.ctx).Create(
-		qx.CreateAppserverSubParams{
-			AppserverID: appserver.ID,
-			AppuserID:   obj.AppuserID,
-		},
+	_, err = TempNewAppserverSubService(s.ctx, s.dbConn, s.db).CreateWithTx(
+		qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: obj.AppuserID},
+		tx,
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error- %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) create appserver sub: %v", DatabaseError, err))
 	}
 
 	if err := tx.Commit(s.ctx); err != nil {
-		return nil, fmt.Errorf("(%d): database error- %v", DatabaseError, err)
+		return nil, fmt.Errorf("(%d): commit - %v", DatabaseError, err)
 	}
 
 	return &appserver, err
 }
 
+// Gets an appserver details by its id.
 func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
 	appserver, err := s.db.GetAppserverById(s.ctx, id)
 
 	if err != nil {
+		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return nil, fmt.Errorf(fmt.Sprintf("(%d): resource not found", NotFoundError))
 		}
 
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
 	return &appserver, nil
 }
 
-func (s *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]qx.Appserver, error) {
-	// To query remember do to: {"name": {"value": "boo"}}
-	var fName = pgtype.Text{Valid: false}
-
-	if name != nil {
-		fName.Valid = true
-		fName.String = name.Value
-	}
-
-	parsedOwnerUuid, _ := uuid.Parse(ownerId)
-	appservers, err := s.db.ListUserAppservers(
-		s.ctx, qx.ListUserAppserversParams{Name: fName, AppuserID: parsedOwnerUuid},
-	)
+// Lists all appservers based on the owner. Name filter is also added but it may get deprecated.
+func (s *AppserverService) List(params qx.ListUserAppserversParams) ([]qx.Appserver, error) {
+	appservers, err := s.db.ListUserAppservers(s.ctx, params)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
@@ -103,6 +102,7 @@ func (s *AppserverService) List(name *wrappers.StringValue, ownerId string) ([]q
 	return appservers, nil
 }
 
+// Delete appserver object, for now only owners can delete an appserver.
 func (s *AppserverService) Delete(obj qx.DeleteAppserverParams) error {
 	deleted, err := s.db.DeleteAppserver(s.ctx, obj)
 

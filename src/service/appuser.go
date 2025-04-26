@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -31,7 +30,6 @@ func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *pb_appuser.Appuser {
 }
 
 func (s *AppuserService) Create(obj qx.CreateAppuserParams) (*qx.Appuser, error) {
-	fmt.Printf("boom%v\n", obj)
 	as, err := s.db.CreateAppuser(s.ctx, obj)
 	return &as, err
 }

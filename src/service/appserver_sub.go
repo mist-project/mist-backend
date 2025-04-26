@@ -5,21 +5,29 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverSubService struct {
 	dbConn qx.DBTX
 	ctx    context.Context
+	db     db.Querier
 }
 
 func NewAppserverSubService(dbConn qx.DBTX, ctx context.Context) *AppserverSubService {
 	return &AppserverSubService{dbConn: dbConn, ctx: ctx}
+}
+
+func TempNewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverSubService {
+	return &AppserverSubService{dbConn: dbConn, ctx: ctx, db: db}
 }
 
 func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserversub.AppserverSub {
@@ -61,6 +69,13 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsR
 
 func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.AppserverSub, error) {
 	appserverSub, err := qx.New(s.dbConn).CreateAppserverSub(s.ctx, obj)
+
+	return &appserverSub, err
+}
+
+func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx pgx.Tx) (*qx.AppserverSub, error) {
+	txQ := s.db.WithTx(tx)
+	appserverSub, err := txQ.CreateAppserverSub(s.ctx, obj)
 
 	return &appserverSub, err
 }

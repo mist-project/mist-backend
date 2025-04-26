@@ -43,11 +43,11 @@ func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*
 }
 
 // Get all the roles each user has in a server.
-func (s *AppserverRoleSubService) GetAppserverAllUserRoleSubs(
+func (s *AppserverRoleSubService) ListServerRoleSubs(
 	appserverId uuid.UUID,
-) ([]qx.GetAppserverAllUserRoleSubsRow, error) {
+) ([]qx.ListServerRoleSubsRow, error) {
 
-	rows, err := s.db.GetAppserverAllUserRoleSubs(s.ctx, appserverId)
+	rows, err := s.db.ListServerRoleSubs(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))

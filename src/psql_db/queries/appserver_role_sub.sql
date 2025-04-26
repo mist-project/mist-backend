@@ -18,7 +18,7 @@ INSERT INTO appserver_role_sub (
 )
 RETURNING *;
 
--- name: GetAppserverAllUserRoleSubs :many
+-- name: ListServerRoleSubs :many
 SELECT
   role_sub.id,
   role_sub.appuser_id,
@@ -28,7 +28,7 @@ SELECT
 FROM appserver_role_sub AS role_sub
 WHERE role_sub.appserver_id=$1;
 
--- name: GetAppuserRoleSubs :many
+-- name: ListAppuserRoleSubs :many
 SELECT
   role_sub.id,
   role_sub.appuser_id,

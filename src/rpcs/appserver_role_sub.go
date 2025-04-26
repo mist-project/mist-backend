@@ -48,7 +48,7 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 
 	// Initialize the service for AppserveRole
 	serverId, _ := uuid.Parse(req.AppserverId)
-	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db).GetAppserverAllUserRoleSubs(serverId)
+	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db).ListServerRoleSubs(serverId)
 
 	// Construct the response
 	response := &pb_appserverrolesub.ListServerRoleSubsResponse{

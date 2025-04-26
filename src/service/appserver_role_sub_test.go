@@ -86,22 +86,22 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 	})
 }
 
-func TestAppserverRoleSubService_GetAppserverAllUserRoleSubs(t *testing.T) {
+func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 	t.Run("Successful:fetch_role_subs", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
-		expected := []qx.GetAppserverAllUserRoleSubsRow{
+		expected := []qx.ListServerRoleSubsRow{
 			{AppuserID: uuid.New(), AppserverRoleID: uuid.New()},
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverAllUserRoleSubs", ctx, appserverID).Return(expected, nil)
+		mockQuerier.On("ListServerRoleSubs", ctx, appserverID).Return(expected, nil)
 
 		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		res, err := svc.GetAppserverAllUserRoleSubs(appserverID)
+		res, err := svc.ListServerRoleSubs(appserverID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -114,14 +114,14 @@ func TestAppserverRoleSubService_GetAppserverAllUserRoleSubs(t *testing.T) {
 		appserverID := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverAllUserRoleSubs", ctx, appserverID).Return(
-			[]qx.GetAppserverAllUserRoleSubsRow{}, fmt.Errorf("db fail"),
+		mockQuerier.On("ListServerRoleSubs", ctx, appserverID).Return(
+			[]qx.ListServerRoleSubsRow{}, fmt.Errorf("db fail"),
 		)
 
 		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.GetAppserverAllUserRoleSubs(appserverID)
+		_, err := svc.ListServerRoleSubs(appserverID)
 
 		// ASSERT
 		assert.Error(t, err)

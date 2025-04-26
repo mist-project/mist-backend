@@ -79,9 +79,9 @@ func (m *MockQuerier) ListAppserverUserSubs(ctx context.Context, appserverID uui
 	return args.Get(0).([]qx.ListAppserverUserSubsRow), args.Error(1)
 }
 
-func (m *MockQuerier) GetAppserverAllUserRoleSubs(ctx context.Context, appserverID uuid.UUID) ([]qx.GetAppserverAllUserRoleSubsRow, error) {
+func (m *MockQuerier) ListServerRoleSubs(ctx context.Context, appserverID uuid.UUID) ([]qx.ListServerRoleSubsRow, error) {
 	args := m.Called(ctx, appserverID)
-	return args.Get(0).([]qx.GetAppserverAllUserRoleSubsRow), args.Error(1)
+	return args.Get(0).([]qx.ListServerRoleSubsRow), args.Error(1)
 }
 
 func (m *MockQuerier) GetAppserverById(ctx context.Context, id uuid.UUID) (qx.Appserver, error) {
@@ -114,9 +114,9 @@ func (m *MockQuerier) GetAppuserById(ctx context.Context, id uuid.UUID) (qx.Appu
 	return args.Get(0).(qx.Appuser), args.Error(1)
 }
 
-func (m *MockQuerier) GetAppuserRoleSubs(ctx context.Context, arg qx.GetAppuserRoleSubsParams) ([]qx.GetAppuserRoleSubsRow, error) {
+func (m *MockQuerier) ListAppuserRoleSubs(ctx context.Context, arg qx.ListAppuserRoleSubsParams) ([]qx.ListAppuserRoleSubsRow, error) {
 	args := m.Called(ctx, arg)
-	return args.Get(0).([]qx.GetAppuserRoleSubsRow), args.Error(1)
+	return args.Get(0).([]qx.ListAppuserRoleSubsRow), args.Error(1)
 }
 
 func (m *MockQuerier) GetChannelById(ctx context.Context, id uuid.UUID) (qx.Channel, error) {

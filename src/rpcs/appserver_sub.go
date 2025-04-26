@@ -15,20 +15,14 @@ func (s *AppserverSubGRPCService) CreateAppserverSub(
 	ctx context.Context, req *pb_appserversub.CreateAppserverSubRequest,
 ) (*pb_appserversub.CreateAppserverSubResponse, error) {
 
-	// Initialize the service for AppserverSub
-	subService := service.NewAppserverSubService(s.DbConn, ctx)
-
+	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
+
 	serverId, _ := uuid.Parse(req.AppserverId)
 	userId, _ := uuid.Parse(claims.UserID)
-	appserverSub, err := subService.Create(
-		qx.CreateAppserverSubParams{
-			AppserverID: serverId,
-			AppuserID:   userId,
-		},
-	)
 
-	// Error handling
+	appserverSub, err := subService.Create(qx.CreateAppserverSubParams{AppserverID: serverId, AppuserID: userId})
+
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
@@ -44,7 +38,7 @@ func (s *AppserverSubGRPCService) GetUserAppserverSubs(
 ) (*pb_appserversub.GetUserAppserverSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
-	subService := service.NewAppserverSubService(s.DbConn, ctx)
+	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
 
 	claims, _ := middleware.GetJWTClaims(ctx)
 
@@ -72,7 +66,7 @@ func (s *AppserverSubGRPCService) GetAllUsersAppserverSubs(
 ) (*pb_appserversub.GetAllUsersAppserverSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
-	subService := service.NewAppserverSubService(s.DbConn, ctx)
+	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
 	serverId, _ := uuid.Parse((req.AppserverId))
 
 	results, _ := subService.ListAllUsersAppserverAndSub(serverId)
@@ -94,13 +88,12 @@ func (s *AppserverSubGRPCService) DeleteAppserverSub(
 	ctx context.Context, req *pb_appserversub.DeleteAppserverSubRequest,
 ) (*pb_appserversub.DeleteAppserverSubResponse, error) {
 
-	// Initialize the service for AppserverSub
 	id, _ := uuid.Parse((req.Id))
-	// Call delete service method
-	err := service.NewAppserverSubService(s.DbConn, ctx).DeleteByAppserver(id)
+	err := service.NewAppserverSubService(ctx, s.DbConn, s.Db).DeleteByAppserver(id)
 
 	// Error handling
 	if err != nil {
+		
 		return nil, ErrorHandler(err)
 	}
 

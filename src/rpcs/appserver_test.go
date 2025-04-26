@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/service"
@@ -20,7 +21,7 @@ import (
 
 // ----- RPC Appservers -----
 func TestListAppServer(t *testing.T) {
-	t.Run("can_returns_nothing_successfully", func(t *testing.T) {
+	t.Run("Successful:can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -36,7 +37,7 @@ func TestListAppServer(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
-	t.Run("can_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
+	t.Run("Successful:can_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -57,7 +58,7 @@ func TestListAppServer(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetAppservers()))
 	})
 
-	t.Run("can_filter_successfully", func(t *testing.T) {
+	t.Run("Successful:can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -79,7 +80,7 @@ func TestListAppServer(t *testing.T) {
 }
 
 func TestGetByIdAppServer(t *testing.T) {
-	t.Run("returns_successfully", func(t *testing.T) {
+	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserver := testutil.TestAppserver(t, nil)
@@ -99,7 +100,7 @@ func TestGetByIdAppServer(t *testing.T) {
 		assert.Equal(t, appserver.Name, response.GetAppserver().Name)
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -116,7 +117,7 @@ func TestGetByIdAppServer(t *testing.T) {
 		assert.Contains(t, s.Message(), "resource not found")
 	})
 
-	t.Run("invalid_uuid_returns_parsing_error", func(t *testing.T) {
+	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -136,7 +137,7 @@ func TestGetByIdAppServer(t *testing.T) {
 
 func TestCreateAppserver(t *testing.T) {
 
-	t.Run("creates_successfully", func(t *testing.T) {
+	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
 		ctx := testutil.Setup(t, func() {})
@@ -155,13 +156,15 @@ func TestCreateAppserver(t *testing.T) {
 		// ASSERT
 		testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
 
-		serverSubs, _ := service.NewAppserverSubService(testutil.TestDbConn, ctx).ListUserAppserverAndSub(appuser.ID)
+		serverSubs, _ := service.NewAppserverSubService(
+			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)),
+		).ListUserAppserverAndSub(appuser.ID)
 		assert.NotNil(t, response.Appserver)
 		assert.Equal(t, 1, len(serverSubs))
 		assert.Equal(t, 1, count)
 	})
 
-	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
+	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -176,7 +179,7 @@ func TestCreateAppserver(t *testing.T) {
 		assert.Contains(t, s.Message(), "validation error:\n - name: value length must be at least 1 characters")
 	})
 
-	t.Run("error_on_db_exists_gracefully", func(t *testing.T) {
+	t.Run("Error:error_on_db_exists_gracefully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -206,7 +209,7 @@ func TestCreateAppserver(t *testing.T) {
 // ----- RPC Deleteappserver -----
 func TestDeleteAppserver(t *testing.T) {
 
-	t.Run("deletes_successfully", func(t *testing.T) {
+	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -214,7 +217,7 @@ func TestDeleteAppserver(t *testing.T) {
 		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid})
 		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid})
 
-		subService := service.NewAppserverSubService(testutil.TestDbConn, ctx)
+		subService := service.NewAppserverSubService(ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
 
 		// ASSERT
 		serverSubs, _ := subService.ListUserAppserverAndSub(appuser.ID)
@@ -232,7 +235,7 @@ func TestDeleteAppserver(t *testing.T) {
 		assert.Equal(t, 0, len(serverSubs))
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 

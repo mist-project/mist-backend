@@ -223,7 +223,7 @@ func TestAppserverService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2): resource not found")
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -346,7 +346,7 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2): no rows were deleted")
+		assert.Contains(t, err.Error(), "(-2) no rows were deleted")
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -361,6 +361,6 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3): database error")
+		assert.Contains(t, err.Error(), "(-3) database error")
 	})
 }

@@ -22,8 +22,8 @@ type AppserverSubService struct {
 	db     db.Querier
 }
 
-func NewAppserverSubService(dbConn qx.DBTX, ctx context.Context) *AppserverSubService {
-	return &AppserverSubService{dbConn: dbConn, ctx: ctx}
+func NewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverSubService {
+	return &AppserverSubService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
 func TempNewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverSubService {
@@ -67,12 +67,18 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsR
 	}
 }
 
+// Creates a user to server subscription
 func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.AppserverSub, error) {
-	appserverSub, err := qx.New(s.dbConn).CreateAppserverSub(s.ctx, obj)
+	appserverSub, err := s.db.CreateAppserverSub(s.ctx, obj)
+
+	if err != nil {
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+	}
 
 	return &appserverSub, err
 }
 
+// Creates a user to server subscription using injected transaction, does not commit the transaction.
 func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx pgx.Tx) (*qx.AppserverSub, error) {
 	txQ := s.db.WithTx(tx)
 	appserverSub, err := txQ.CreateAppserverSub(s.ctx, obj)
@@ -80,40 +86,41 @@ func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx p
 	return &appserverSub, err
 }
 
+// Lists all the servers a user is subscribed to.
 func (s *AppserverSubService) ListUserAppserverAndSub(userId uuid.UUID) ([]qx.GetUserAppserverSubsRow, error) {
 	/* Returns all servers a user belongs to. */
 
-	aSubs, err := qx.New(s.dbConn).GetUserAppserverSubs(s.ctx, userId)
+	subs, err := s.db.GetUserAppserverSubs(s.ctx, userId)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
-	return aSubs, nil
+	return subs, nil
 }
 
+// Lists all the users in a server.
 func (s *AppserverSubService) ListAllUsersAppserverAndSub(
 	appserverId uuid.UUID,
 ) ([]qx.GetAllUsersAppserverSubsRow, error) {
 
-	aSubs, err := qx.New(s.dbConn).GetAllUsersAppserverSubs(s.ctx, appserverId)
+	subs, err := s.db.GetAllUsersAppserverSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
-	return aSubs, nil
+	return subs, nil
 }
 
+// Removes user from server.
 func (s *AppserverSubService) DeleteByAppserver(id uuid.UUID) error {
-	/* Removes a user from a server. */
-
-	deleted, err := qx.New(s.dbConn).DeleteAppserverSub(s.ctx, id)
+	deleted, err := s.db.DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 	}
 
 	return nil

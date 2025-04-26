@@ -26,7 +26,8 @@ type AppserverGRPCService struct {
 
 type AppserverSubGRPCService struct {
 	pb_appserversub.UnimplementedAppserverSubServiceServer
-	DbConn qx.DBTX
+	DbConn *pgxpool.Pool
+	Db     db.Querier
 }
 
 type AppserverRoleGRPCService struct {
@@ -56,7 +57,7 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 
 	pb_appuser.RegisterAppuserServiceServer(s, &AppuserGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserver.RegisterAppserverServiceServer(s, &AppserverGRPCService{Db: querier, DbConn: dbConn})
-	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{DbConn: dbConn})
+	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{DbConn: dbConn})
 	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{DbConn: dbConn})
 	pb_channel.RegisterChannelServiceServer(s, &ChannelGRPCService{Db: querier, DbConn: dbConn})

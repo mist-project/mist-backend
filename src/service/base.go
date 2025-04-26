@@ -18,9 +18,9 @@ const (
 )
 
 var (
-	DatabaseErrorString   string = fmt.Sprintf("(%d):", DatabaseError)
-	NotFoundErrorString   string = fmt.Sprintf("(%d):", NotFoundError)
-	validationErrorString string = fmt.Sprintf("(%d):", ValidationError)
+	DatabaseErrorString   string = fmt.Sprintf("(%d)", DatabaseError)
+	NotFoundErrorString   string = fmt.Sprintf("(%d)", NotFoundError)
+	validationErrorString string = fmt.Sprintf("(%d)", ValidationError)
 )
 
 func ParseServiceError(serviceErr string) CustomGRPCError {

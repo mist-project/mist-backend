@@ -71,7 +71,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	}
 
 	if err := tx.Commit(s.ctx); err != nil {
-		return nil, fmt.Errorf("(%d): commit - %v", DatabaseError, err)
+		return nil, fmt.Errorf("(%d) commit - %v", DatabaseError, err)
 	}
 
 	return &appserver, err
@@ -84,7 +84,7 @@ func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), "no rows in result set") {
-			return nil, fmt.Errorf(fmt.Sprintf("(%d): resource not found", NotFoundError))
+			return nil, fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 		}
 
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
@@ -109,9 +109,9 @@ func (s *AppserverService) Delete(obj qx.DeleteAppserverParams) error {
 	deleted, err := s.db.DeleteAppserver(s.ctx, obj)
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) no rows were deleted", NotFoundError))
 	}
 
 	return err

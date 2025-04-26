@@ -15,7 +15,7 @@ import (
 )
 
 func TestCreateAppuser(t *testing.T) {
-	t.Run("creates_successfully", func(t *testing.T) {
+	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
 		ctx := testutil.Setup(t, func() {})
@@ -36,7 +36,7 @@ func TestCreateAppuser(t *testing.T) {
 		assert.Equal(t, 1, count)
 	})
 
-	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
+	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -51,7 +51,7 @@ func TestCreateAppuser(t *testing.T) {
 		assert.Contains(t, s.Message(), "validation error")
 	})
 
-	t.Run("error_on_db_exists_gracefully", func(t *testing.T) {
+	t.Run("Error:error_on_db_exists_gracefully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		userId := uuid.New()

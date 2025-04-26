@@ -155,7 +155,7 @@ func TestDeleteAppserveRoleSub(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-2): no rows were deleted")
+		assert.Contains(t, err.Error(), "(-2) no rows were deleted")
 	})
 
 	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {

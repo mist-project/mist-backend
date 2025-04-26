@@ -1,6 +1,7 @@
 package rpcs_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ import (
 )
 
 func TestGetUserAppserverSubs(t *testing.T) {
-	t.Run("can_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -30,7 +31,7 @@ func TestGetUserAppserverSubs(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
-	t.Run("can_return_all_users_appserver_subs_successfully", func(t *testing.T) {
+	t.Run("Successful:can_return_all_users_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -55,7 +56,7 @@ func TestGetUserAppserverSubs(t *testing.T) {
 }
 
 func TestGetAllUsersAppserverSubs(t *testing.T) {
-	t.Run("can_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -71,7 +72,7 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppusers()))
 	})
 
-	t.Run("can_return_all_appserver_subs_successfully", func(t *testing.T) {
+	t.Run("Successful:can_return_all_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		user1 := testutil.TestAppuser(t, &qx.Appuser{ID: uuid.New(), Username: "foo"})
@@ -97,7 +98,7 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 }
 
 func TestCreateAppserverSub(t *testing.T) {
-	t.Run("creates_successfully", func(t *testing.T) {
+	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -117,7 +118,24 @@ func TestCreateAppserverSub(t *testing.T) {
 		assert.NotNil(t, response.AppserverSub)
 	})
 
-	t.Run("invalid_arguments_return_error", func(t *testing.T) {
+	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+
+		// ACT
+		response, err := testutil.TestAppserverSubClient.CreateAppserverSub(
+			ctx, &pb_appserversub.CreateAppserverSubRequest{AppserverId: uuid.NewString()},
+		)
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Contains(t, s.Message(), "database error")
+	})
+
+	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -135,8 +153,8 @@ func TestCreateAppserverSub(t *testing.T) {
 	})
 }
 
-func TestDeleteAppserverSubs(t *testing.T) {
-	t.Run("deletes_successfully", func(t *testing.T) {
+func TestDeleteAppserverSub(t *testing.T) {
+	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -156,7 +174,7 @@ func TestDeleteAppserverSubs(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -164,12 +182,15 @@ func TestDeleteAppserverSubs(t *testing.T) {
 		response, err := testutil.TestAppserverSubClient.DeleteAppserverSub(
 			ctx, &pb_appserversub.DeleteAppserverSubRequest{Id: uuid.NewString()},
 		)
-		s, ok := status.FromError(err)
 
+		s, ok := status.FromError(err)
+		fmt.Println(err)
+		fmt.Println(codes.NotFound)
+		fmt.Println(s.Code())
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "no rows were deleted")
+		assert.Contains(t, s.Message(), "resource not found")
 	})
 }

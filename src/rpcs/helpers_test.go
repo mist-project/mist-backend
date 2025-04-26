@@ -20,15 +20,15 @@ func TestErrorHandler(t *testing.T) {
 	}{
 		{
 			name:         "ValidationError",
-			input:        fmt.Errorf("(-1): validation failed"),
+			input:        fmt.Errorf("(-1) validation failed"),
 			expectedCode: codes.InvalidArgument,
-			expectedMsg:  "(-1): validation failed",
+			expectedMsg:  "(-1) validation failed",
 		},
 		{
 			name:         "NotFoundError",
-			input:        fmt.Errorf("(-2): item not found"),
+			input:        fmt.Errorf("(-2) item not found"),
 			expectedCode: codes.NotFound,
-			expectedMsg:  "(-2): item not found",
+			expectedMsg:  "(-2) item not found",
 		},
 		{
 			name:         "UnknownError",

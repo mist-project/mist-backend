@@ -131,7 +131,10 @@ func TestCreateChannel(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestChannelClient.CreateChannel(
-			ctx, &pb_channel.CreateChannelRequest{Name: "new channel", AppserverId: appserver.ID.String()})
+			ctx,
+			&pb_channel.CreateChannelRequest{Name: "new channel", AppserverId: appserver.ID.String()},
+		)
+
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}

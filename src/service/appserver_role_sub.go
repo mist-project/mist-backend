@@ -34,7 +34,7 @@ func (s *AppserverRoleSubService) Create(
 	appserverRole, err := qx.New(s.dbConn).CreateAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
 	return &appserverRole, err
@@ -47,7 +47,7 @@ func (s *AppserverRoleSubService) GetAppserverAllUserRoleSubs(
 	rows, err := qx.New(s.dbConn).GetAppserverAllUserRoleSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
 	return rows, nil
@@ -57,9 +57,9 @@ func (s *AppserverRoleSubService) DeleteRoleSub(obj qx.DeleteAppserverRoleSubPar
 	deleted, err := qx.New(s.dbConn).DeleteAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) no rows were deleted", NotFoundError))
 	}
 
 	return nil

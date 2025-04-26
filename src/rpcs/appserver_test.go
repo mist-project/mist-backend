@@ -19,7 +19,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestListAppServer(t *testing.T) {
+func TestAppserverService_List(t *testing.T) {
 	t.Run("Successful:can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -78,7 +78,7 @@ func TestListAppServer(t *testing.T) {
 	})
 }
 
-func TestGetByIdAppServer(t *testing.T) {
+func TestAppserverSubService_GetById(t *testing.T) {
 	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -134,7 +134,7 @@ func TestGetByIdAppServer(t *testing.T) {
 	})
 }
 
-func TestCreate(t *testing.T) {
+func TestAppserverService_Create(t *testing.T) {
 
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -205,8 +205,7 @@ func TestCreate(t *testing.T) {
 	})
 }
 
-// ----- RPC Deleteappserver -----
-func TestDelete(t *testing.T) {
+func TestAppserverService_Delete(t *testing.T) {
 
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE

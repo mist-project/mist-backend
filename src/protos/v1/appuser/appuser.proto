@@ -9,7 +9,7 @@ import "google/protobuf/wrappers.proto";
 
 service AppuserService {
   // ----- APPUSER ----
-  rpc CreateAppuser(CreateAppuserRequest) returns (CreateAppuserResponse);
+  rpc Create(CreateRequest) returns (CreateResponse);
 }
 
 // RESOURCES
@@ -30,7 +30,7 @@ message Appuser {
 }
 
 // ----- APPUSER -----
-message CreateAppuserRequest {
+message CreateRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
   string username = 2 [
     (buf.validate.field).string.min_len = 1,
@@ -38,4 +38,4 @@ message CreateAppuserRequest {
   ];
 }
 
-message CreateAppuserResponse {}
+message CreateResponse {}

@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AppuserService_CreateAppuser_FullMethodName = "/v1.appuser.AppuserService/CreateAppuser"
+	AppuserService_Create_FullMethodName = "/v1.appuser.AppuserService/Create"
 )
 
 // AppuserServiceClient is the client API for AppuserService service.
@@ -27,7 +27,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AppuserServiceClient interface {
 	// ----- APPUSER ----
-	CreateAppuser(ctx context.Context, in *CreateAppuserRequest, opts ...grpc.CallOption) (*CreateAppuserResponse, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 }
 
 type appuserServiceClient struct {
@@ -38,10 +38,10 @@ func NewAppuserServiceClient(cc grpc.ClientConnInterface) AppuserServiceClient {
 	return &appuserServiceClient{cc}
 }
 
-func (c *appuserServiceClient) CreateAppuser(ctx context.Context, in *CreateAppuserRequest, opts ...grpc.CallOption) (*CreateAppuserResponse, error) {
+func (c *appuserServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateAppuserResponse)
-	err := c.cc.Invoke(ctx, AppuserService_CreateAppuser_FullMethodName, in, out, cOpts...)
+	out := new(CreateResponse)
+	err := c.cc.Invoke(ctx, AppuserService_Create_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (c *appuserServiceClient) CreateAppuser(ctx context.Context, in *CreateAppu
 // for forward compatibility.
 type AppuserServiceServer interface {
 	// ----- APPUSER ----
-	CreateAppuser(context.Context, *CreateAppuserRequest) (*CreateAppuserResponse, error)
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	mustEmbedUnimplementedAppuserServiceServer()
 }
 
@@ -64,8 +64,8 @@ type AppuserServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAppuserServiceServer struct{}
 
-func (UnimplementedAppuserServiceServer) CreateAppuser(context.Context, *CreateAppuserRequest) (*CreateAppuserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateAppuser not implemented")
+func (UnimplementedAppuserServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedAppuserServiceServer) mustEmbedUnimplementedAppuserServiceServer() {}
 func (UnimplementedAppuserServiceServer) testEmbeddedByValue()                        {}
@@ -88,20 +88,20 @@ func RegisterAppuserServiceServer(s grpc.ServiceRegistrar, srv AppuserServiceSer
 	s.RegisterService(&AppuserService_ServiceDesc, srv)
 }
 
-func _AppuserService_CreateAppuser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateAppuserRequest)
+func _AppuserService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppuserServiceServer).CreateAppuser(ctx, in)
+		return srv.(AppuserServiceServer).Create(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppuserService_CreateAppuser_FullMethodName,
+		FullMethod: AppuserService_Create_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppuserServiceServer).CreateAppuser(ctx, req.(*CreateAppuserRequest))
+		return srv.(AppuserServiceServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -114,8 +114,8 @@ var AppuserService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AppuserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateAppuser",
-			Handler:    _AppuserService_CreateAppuser_Handler,
+			MethodName: "Create",
+			Handler:    _AppuserService_Create_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

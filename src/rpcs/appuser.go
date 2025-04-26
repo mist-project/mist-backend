@@ -10,9 +10,9 @@ import (
 	"mist/src/service"
 )
 
-func (s *AppuserGRPCService) CreateAppuser(
-	ctx context.Context, req *pb_appuser.CreateAppuserRequest,
-) (*pb_appuser.CreateAppuserResponse, error) {
+func (s *AppuserGRPCService) Create(
+	ctx context.Context, req *pb_appuser.CreateRequest,
+) (*pb_appuser.CreateResponse, error) {
 
 	userId, _ := uuid.Parse(req.Id)
 	_, err := service.NewAppuserService(ctx, s.DbConn, s.Db).Create(
@@ -26,5 +26,5 @@ func (s *AppuserGRPCService) CreateAppuser(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_appuser.CreateAppuserResponse{}, nil
+	return &pb_appuser.CreateResponse{}, nil
 }

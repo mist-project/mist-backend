@@ -15,7 +15,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestCreateAppuser(t *testing.T) {
+func TestAppuserService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
@@ -23,9 +23,9 @@ func TestCreateAppuser(t *testing.T) {
 
 		// ACT
 
-		response, err := testutil.TestAppuserClient.CreateAppuser(
+		response, err := testutil.TestAppuserClient.Create(
 			ctx,
-			&pb_appuser.CreateAppuserRequest{Username: "someone", Id: uuid.NewString()})
+			&pb_appuser.CreateRequest{Username: "someone", Id: uuid.NewString()})
 
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -42,7 +42,7 @@ func TestCreateAppuser(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppuserClient.CreateAppuser(ctx, &pb_appuser.CreateAppuserRequest{})
+		response, err := testutil.TestAppuserClient.Create(ctx, &pb_appuser.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -65,7 +65,7 @@ func TestCreateAppuser(t *testing.T) {
 		svc := &rpcs.AppuserGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
 
 		// ACT
-		_, err := svc.CreateAppuser(ctx, &pb_appuser.CreateAppuserRequest{
+		_, err := svc.Create(ctx, &pb_appuser.CreateRequest{
 			Id:       userId.String(),
 			Username: "boo",
 		})

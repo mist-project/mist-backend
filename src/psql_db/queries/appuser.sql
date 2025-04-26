@@ -1,5 +1,4 @@
--- ----- APP USER QUERIES -----
--- name: GetAppuser :one
+-- name: GetAppuserById :one
 SELECT *
 FROM appuser
 WHERE id=$1

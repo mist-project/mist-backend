@@ -2,30 +2,32 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverSubService struct {
-	dbcPool *pgxpool.Pool
-	ctx     context.Context
+	ctx    context.Context
+	dbConn *pgxpool.Pool
+	db     db.Querier
 }
 
-func NewAppserverSubService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverSubService {
-	return &AppserverSubService{dbcPool: dbcPool, ctx: ctx}
+func NewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverSubService {
+	return &AppserverSubService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserver.AppserverSub {
-	return &pb_appserver.AppserverSub{
+func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserversub.AppserverSub {
+	return &pb_appserversub.AppserverSub{
 		Id:          aSub.ID.String(),
 		AppserverId: aSub.AppserverID.String(),
 		CreatedAt:   timestamppb.New(aSub.CreatedAt.Time),
@@ -33,7 +35,7 @@ func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserver.Ap
 	}
 }
 
-func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.GetUserAppserverSubsRow) *pb_appserver.AppserverAndSub {
+func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.ListUserServerSubsRow) *pb_appserversub.AppserverAndSub {
 	appserver := &pb_appserver.Appserver{
 		Id:        res.ID.String(),
 		Name:      res.Name,
@@ -41,13 +43,13 @@ func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.GetUserAppserverSubs
 		UpdatedAt: timestamppb.New(res.UpdatedAt.Time),
 	}
 
-	return &pb_appserver.AppserverAndSub{
+	return &pb_appserversub.AppserverAndSub{
 		Appserver: appserver,
 		SubId:     res.AppserverSubID.String(),
 	}
 }
 
-func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsRow) *pb_appserver.AppuserAndSub {
+func (s *AppserverSubService) PgUserSubRowToPb(res *qx.ListAppserverUserSubsRow) *pb_appserversub.AppuserAndSub {
 	appuser := &pb_appuser.Appuser{
 		Id:        res.ID.String(),
 		Username:  res.Username,
@@ -55,102 +57,66 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsR
 		UpdatedAt: timestamppb.New(res.UpdatedAt.Time),
 	}
 
-	return &pb_appserver.AppuserAndSub{
+	return &pb_appserversub.AppuserAndSub{
 		Appuser: appuser,
 		SubId:   res.AppserverSubID.String(),
 	}
 }
 
-func (s *AppserverSubService) Create(appserverId string, ownerId string) (*qx.AppserverSub, error) {
-	validationErr := []string{}
-
-	if appserverId == "" {
-		validationErr = AddValidationError("appserver_id", validationErr)
-	}
-
-	if ownerId == "" {
-		validationErr = AddValidationError("app_user_id", validationErr)
-	}
-
-	if len(validationErr) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ", ")))
-	}
-
-	pAId, err := uuid.Parse(appserverId)
+// Creates a user to server subscription
+func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.AppserverSub, error) {
+	appserverSub, err := s.db.CreateAppserverSub(s.ctx, obj)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
-
-	pUId, err := uuid.Parse(ownerId)
-	if err != nil {
-		return nil, err
-	}
-
-	appserverSub, err := qx.New(s.dbcPool).CreateAppserverSub(
-		s.ctx, qx.CreateAppserverSubParams{
-			AppserverID: pAId,
-			AppuserID:   pUId,
-		},
-	)
 
 	return &appserverSub, err
 }
 
-func (s *AppserverSubService) ListUserAppserverAndSub(userId string) ([]qx.GetUserAppserverSubsRow, error) {
+// Creates a user to server subscription using injected transaction, does not commit the transaction.
+func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx pgx.Tx) (*qx.AppserverSub, error) {
+	txQ := s.db.WithTx(tx)
+	appserverSub, err := txQ.CreateAppserverSub(s.ctx, obj)
+
+	return &appserverSub, err
+}
+
+// Lists all the servers a user is subscribed to.
+func (s *AppserverSubService) ListUserServerSubs(userId uuid.UUID) ([]qx.ListUserServerSubsRow, error) {
 	/* Returns all servers a user belongs to. */
 
-	parsedUuid, err := uuid.Parse(userId)
+	subs, err := s.db.ListUserServerSubs(s.ctx, userId)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
-	aSubs, err := qx.New(s.dbcPool).GetUserAppserverSubs(
-		s.ctx, parsedUuid,
-	)
-
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
-	}
-
-	return aSubs, nil
+	return subs, nil
 }
 
-func (s *AppserverSubService) ListAllUsersAppserverAndSub(
-	appserverId string,
-) ([]qx.GetAllUsersAppserverSubsRow, error) {
-	/* Returns all users in a server. */
-	parsedUuid, err := uuid.Parse(appserverId)
+// Lists all the users in a server.
+func (s *AppserverSubService) ListAppserverUserSubs(
+	appserverId uuid.UUID,
+) ([]qx.ListAppserverUserSubsRow, error) {
+
+	subs, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
-	aSubs, err := qx.New(s.dbcPool).GetAllUsersAppserverSubs(
-		s.ctx, parsedUuid,
-	)
-
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
-	}
-
-	return aSubs, nil
+	return subs, nil
 }
 
-func (s *AppserverSubService) DeleteByAppserver(id string) error {
-	/* Removes a user from a server. */
-	parsedUuid, err := uuid.Parse(id)
+// Removes user from server.
+func (s *AppserverSubService) Delete(id uuid.UUID) error {
+	deleted, err := s.db.DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {
-		return err
-	}
-
-	deleted, err := qx.New(s.dbcPool).DeleteAppserverSub(s.ctx, parsedUuid)
-	if err != nil {
-		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 	}
 
 	return nil

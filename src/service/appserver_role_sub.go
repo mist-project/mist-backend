@@ -2,28 +2,28 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverRoleSubService struct {
-	dbcPool *pgxpool.Pool
-	ctx     context.Context
+	ctx    context.Context
+	dbConn *pgxpool.Pool
+	db     db.Querier
 }
 
-func NewAppserverRoleSubService(dbcPool *pgxpool.Pool, ctx context.Context) *AppserverRoleSubService {
-	return &AppserverRoleSubService{dbcPool: dbcPool, ctx: ctx}
+func NewAppserverRoleSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverRoleSubService {
+	return &AppserverRoleSubService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_appserver.AppserverRoleSub {
-	return &pb_appserver.AppserverRoleSub{
+func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_appserverrolesub.AppserverRoleSub {
+	return &pb_appserverrolesub.AppserverRoleSub{
 		Id:              arSub.ID.String(),
 		AppserverRoleId: arSub.AppserverRoleID.String(),
 		AppuserId:       arSub.AppuserID.String(),
@@ -31,99 +31,39 @@ func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_app
 	}
 }
 
-func (s *AppserverRoleSubService) Create(
-	appserverRoleId string, appserverSubId string, appserverId string, appUserId string,
-) (*qx.AppserverRoleSub, error) {
-	validationErr := []string{}
+// Adds a server role to a user.
+func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*qx.AppserverRoleSub, error) {
+	appserverRole, err := s.db.CreateAppserverRoleSub(s.ctx, obj)
 
-	if appserverRoleId == "" {
-		validationErr = AddValidationError("appserver_role_id", validationErr)
-	}
-
-	if appserverSubId == "" {
-		validationErr = AddValidationError("appserver_sub_id", validationErr)
-	}
-
-	if appserverId == "" {
-		validationErr = AddValidationError("appserver_id", validationErr)
-	}
-
-	if len(validationErr) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ", ")))
-	}
-
-	pARId, err := uuid.Parse(appserverRoleId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
-
-	pASId, err := uuid.Parse(appserverSubId)
-	if err != nil {
-		return nil, err
-	}
-
-	pAUId, err := uuid.Parse(appUserId)
-	if err != nil {
-		return nil, err
-	}
-
-	aId, err := uuid.Parse(appserverId)
-	if err != nil {
-		return nil, err
-	}
-
-	appserverRole, err := qx.New(s.dbcPool).CreateAppserverRoleSub(
-		s.ctx, qx.CreateAppserverRoleSubParams{
-			AppserverSubID:  pASId,
-			AppserverRoleID: pARId,
-			AppuserID:       pAUId,
-			AppserverID:     aId,
-		},
-	)
 
 	return &appserverRole, err
 }
 
-func (s *AppserverRoleSubService) GetAppserverAllUserRoleSubs(
-	appserverId string) ([]qx.GetAppserverAllUserRoleSubsRow, error) {
-	aId, err := uuid.Parse(appserverId)
+// Get all the roles each user has in a server.
+func (s *AppserverRoleSubService) ListServerRoleSubs(
+	appserverId uuid.UUID,
+) ([]qx.ListServerRoleSubsRow, error) {
+
+	rows, err := s.db.ListServerRoleSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, err
-	}
-
-	rows, err := qx.New(s.dbcPool).GetAppserverAllUserRoleSubs(s.ctx,
-		aId,
-	)
-
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
 	return rows, nil
 }
 
-func (s *AppserverRoleSubService) DeleteRoleSub(id string, ownerId string) error {
-	parsedUuid, err := uuid.Parse(id)
+// Removes a role to a particular user.
+func (s *AppserverRoleSubService) Delete(obj qx.DeleteAppserverRoleSubParams) error {
+	deleted, err := s.db.DeleteAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
-		return err
-	}
-
-	parsedOwnerUuid, err := uuid.Parse(ownerId)
-
-	if err != nil {
-		return err
-	}
-
-	deleted, err := qx.New(s.dbcPool).DeleteAppserverRoleSub(s.ctx, qx.DeleteAppserverRoleSubParams{
-		ID: parsedUuid, AppuserID: parsedOwnerUuid,
-	})
-
-	if err != nil {
-		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 	}
 
 	return nil

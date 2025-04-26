@@ -19,21 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ChannelService_CreateChannel_FullMethodName  = "/v1.channel.ChannelService/CreateChannel"
-	ChannelService_GetByIdChannel_FullMethodName = "/v1.channel.ChannelService/GetByIdChannel"
-	ChannelService_ListChannels_FullMethodName   = "/v1.channel.ChannelService/ListChannels"
-	ChannelService_DeleteChannel_FullMethodName  = "/v1.channel.ChannelService/DeleteChannel"
+	ChannelService_Create_FullMethodName             = "/v1.channel.ChannelService/Create"
+	ChannelService_GetById_FullMethodName            = "/v1.channel.ChannelService/GetById"
+	ChannelService_ListServerChannels_FullMethodName = "/v1.channel.ChannelService/ListServerChannels"
+	ChannelService_Delete_FullMethodName             = "/v1.channel.ChannelService/Delete"
 )
 
 // ChannelServiceClient is the client API for ChannelService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChannelServiceClient interface {
-	// ----- CHANNEL ----
-	CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error)
-	GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error)
-	ListChannels(ctx context.Context, in *ListChannelsRequest, opts ...grpc.CallOption) (*ListChannelsResponse, error)
-	DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	GetById(ctx context.Context, in *GetByIdRequest, opts ...grpc.CallOption) (*GetByIdResponse, error)
+	ListServerChannels(ctx context.Context, in *ListServerChannelsRequest, opts ...grpc.CallOption) (*ListServerChannelsResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
 type channelServiceClient struct {
@@ -44,40 +43,40 @@ func NewChannelServiceClient(cc grpc.ClientConnInterface) ChannelServiceClient {
 	return &channelServiceClient{cc}
 }
 
-func (c *channelServiceClient) CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error) {
+func (c *channelServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateChannelResponse)
-	err := c.cc.Invoke(ctx, ChannelService_CreateChannel_FullMethodName, in, out, cOpts...)
+	out := new(CreateResponse)
+	err := c.cc.Invoke(ctx, ChannelService_Create_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *channelServiceClient) GetByIdChannel(ctx context.Context, in *GetByIdChannelRequest, opts ...grpc.CallOption) (*GetByIdChannelResponse, error) {
+func (c *channelServiceClient) GetById(ctx context.Context, in *GetByIdRequest, opts ...grpc.CallOption) (*GetByIdResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetByIdChannelResponse)
-	err := c.cc.Invoke(ctx, ChannelService_GetByIdChannel_FullMethodName, in, out, cOpts...)
+	out := new(GetByIdResponse)
+	err := c.cc.Invoke(ctx, ChannelService_GetById_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *channelServiceClient) ListChannels(ctx context.Context, in *ListChannelsRequest, opts ...grpc.CallOption) (*ListChannelsResponse, error) {
+func (c *channelServiceClient) ListServerChannels(ctx context.Context, in *ListServerChannelsRequest, opts ...grpc.CallOption) (*ListServerChannelsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListChannelsResponse)
-	err := c.cc.Invoke(ctx, ChannelService_ListChannels_FullMethodName, in, out, cOpts...)
+	out := new(ListServerChannelsResponse)
+	err := c.cc.Invoke(ctx, ChannelService_ListServerChannels_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *channelServiceClient) DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error) {
+func (c *channelServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteChannelResponse)
-	err := c.cc.Invoke(ctx, ChannelService_DeleteChannel_FullMethodName, in, out, cOpts...)
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, ChannelService_Delete_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,11 +87,10 @@ func (c *channelServiceClient) DeleteChannel(ctx context.Context, in *DeleteChan
 // All implementations must embed UnimplementedChannelServiceServer
 // for forward compatibility.
 type ChannelServiceServer interface {
-	// ----- CHANNEL ----
-	CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error)
-	GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error)
-	ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error)
-	DeleteChannel(context.Context, *DeleteChannelRequest) (*DeleteChannelResponse, error)
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	GetById(context.Context, *GetByIdRequest) (*GetByIdResponse, error)
+	ListServerChannels(context.Context, *ListServerChannelsRequest) (*ListServerChannelsResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	mustEmbedUnimplementedChannelServiceServer()
 }
 
@@ -103,17 +101,17 @@ type ChannelServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedChannelServiceServer struct{}
 
-func (UnimplementedChannelServiceServer) CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateChannel not implemented")
+func (UnimplementedChannelServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedChannelServiceServer) GetByIdChannel(context.Context, *GetByIdChannelRequest) (*GetByIdChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetByIdChannel not implemented")
+func (UnimplementedChannelServiceServer) GetById(context.Context, *GetByIdRequest) (*GetByIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetById not implemented")
 }
-func (UnimplementedChannelServiceServer) ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListChannels not implemented")
+func (UnimplementedChannelServiceServer) ListServerChannels(context.Context, *ListServerChannelsRequest) (*ListServerChannelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListServerChannels not implemented")
 }
-func (UnimplementedChannelServiceServer) DeleteChannel(context.Context, *DeleteChannelRequest) (*DeleteChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteChannel not implemented")
+func (UnimplementedChannelServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedChannelServiceServer) mustEmbedUnimplementedChannelServiceServer() {}
 func (UnimplementedChannelServiceServer) testEmbeddedByValue()                        {}
@@ -136,74 +134,74 @@ func RegisterChannelServiceServer(s grpc.ServiceRegistrar, srv ChannelServiceSer
 	s.RegisterService(&ChannelService_ServiceDesc, srv)
 }
 
-func _ChannelService_CreateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateChannelRequest)
+func _ChannelService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChannelServiceServer).CreateChannel(ctx, in)
+		return srv.(ChannelServiceServer).Create(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChannelService_CreateChannel_FullMethodName,
+		FullMethod: ChannelService_Create_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChannelServiceServer).CreateChannel(ctx, req.(*CreateChannelRequest))
+		return srv.(ChannelServiceServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChannelService_GetByIdChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetByIdChannelRequest)
+func _ChannelService_GetById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChannelServiceServer).GetByIdChannel(ctx, in)
+		return srv.(ChannelServiceServer).GetById(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChannelService_GetByIdChannel_FullMethodName,
+		FullMethod: ChannelService_GetById_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChannelServiceServer).GetByIdChannel(ctx, req.(*GetByIdChannelRequest))
+		return srv.(ChannelServiceServer).GetById(ctx, req.(*GetByIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChannelService_ListChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListChannelsRequest)
+func _ChannelService_ListServerChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListServerChannelsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChannelServiceServer).ListChannels(ctx, in)
+		return srv.(ChannelServiceServer).ListServerChannels(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChannelService_ListChannels_FullMethodName,
+		FullMethod: ChannelService_ListServerChannels_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChannelServiceServer).ListChannels(ctx, req.(*ListChannelsRequest))
+		return srv.(ChannelServiceServer).ListServerChannels(ctx, req.(*ListServerChannelsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChannelService_DeleteChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteChannelRequest)
+func _ChannelService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChannelServiceServer).DeleteChannel(ctx, in)
+		return srv.(ChannelServiceServer).Delete(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChannelService_DeleteChannel_FullMethodName,
+		FullMethod: ChannelService_Delete_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChannelServiceServer).DeleteChannel(ctx, req.(*DeleteChannelRequest))
+		return srv.(ChannelServiceServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -216,20 +214,20 @@ var ChannelService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ChannelServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateChannel",
-			Handler:    _ChannelService_CreateChannel_Handler,
+			MethodName: "Create",
+			Handler:    _ChannelService_Create_Handler,
 		},
 		{
-			MethodName: "GetByIdChannel",
-			Handler:    _ChannelService_GetByIdChannel_Handler,
+			MethodName: "GetById",
+			Handler:    _ChannelService_GetById_Handler,
 		},
 		{
-			MethodName: "ListChannels",
-			Handler:    _ChannelService_ListChannels_Handler,
+			MethodName: "ListServerChannels",
+			Handler:    _ChannelService_ListServerChannels_Handler,
 		},
 		{
-			MethodName: "DeleteChannel",
-			Handler:    _ChannelService_DeleteChannel_Handler,
+			MethodName: "Delete",
+			Handler:    _ChannelService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

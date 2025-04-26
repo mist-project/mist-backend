@@ -2,29 +2,30 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type ChannelService struct {
-	dbcPool *pgxpool.Pool
-	ctx     context.Context
+	ctx    context.Context
+	dbConn *pgxpool.Pool
+	db     db.Querier
 }
 
-func NewChannelService(dbcPool *pgxpool.Pool, ctx context.Context) *ChannelService {
-	return &ChannelService{dbcPool: dbcPool, ctx: ctx}
+// Creates a new ChannelService struct.
+func NewChannelService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *ChannelService {
+	return &ChannelService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
+// Convert Channel db object to Channel protobuff object.
 func (s *ChannelService) PgTypeToPb(c *qx.Channel) *pb_channel.Channel {
 	return &pb_channel.Channel{
 		Id:          c.ID.String(),
@@ -34,98 +35,54 @@ func (s *ChannelService) PgTypeToPb(c *qx.Channel) *pb_channel.Channel {
 	}
 }
 
-func (s *ChannelService) Create(name string, appserverId string) (*qx.Channel, error) {
-	validationErr := []string{}
-
-	if name == "" {
-		validationErr = AddValidationError("name", validationErr)
-	}
-
-	if appserverId == "" {
-		validationErr = AddValidationError("appserver_id", validationErr)
-	}
-
-	if len(validationErr) > 0 {
-		return nil, errors.New(fmt.Sprintf("(%d): %s", ValidationError, strings.Join(validationErr, ",")))
-	}
-
-	parsedUuid, err := uuid.Parse(appserverId)
+// Creates a new appuser.
+func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error) {
+	channel, err := s.db.CreateChannel(s.ctx, obj)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) create channel error: %v", DatabaseError, err))
 	}
 
-	channel, err := qx.New(s.dbcPool).CreateChannel(
-		s.ctx, qx.CreateChannelParams{Name: name, AppserverID: parsedUuid},
-	)
 	return &channel, err
 }
 
-func (s *ChannelService) GetById(id string) (*qx.Channel, error) {
-	parsedUuid, err := uuid.Parse(id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := qx.New(s.dbcPool).GetChannel(s.ctx, parsedUuid)
+// Gets an appserver detail by its id.
+func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
+	channel, err := s.db.GetChannelById(s.ctx, id)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
-			return nil, errors.New(fmt.Sprintf("(%d): resource not found", NotFoundError))
+			return nil, fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 		}
 
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
 	return &channel, nil
 }
 
-func (s *ChannelService) List(name *wrappers.StringValue, appserverId *wrappers.StringValue) ([]qx.Channel, error) {
-	// To query, remember to format the parameters
-	var (
-		fName pgtype.Text
-		fAId  pgtype.UUID
-	)
+// Lists all channels for an appserver. Name filter is also added but it may get deprecated.
 
-	if name != nil {
-		fName = pgtype.Text{Valid: true, String: name.Value}
-	}
+func (s *ChannelService) ListServerChannels(obj qx.ListServerChannelsParams) ([]qx.Channel, error) {
 
-	if appserverId != nil {
-		parsedUuid, err := uuid.Parse(appserverId.Value)
-		if err != nil {
-			return nil, err
-		}
-		fAId = pgtype.UUID{Valid: true, Bytes: parsedUuid}
-	} else {
-		fAId = pgtype.UUID{Valid: false}
-	}
-
-	channels, err := qx.New(s.dbcPool).ListChannels(
-		s.ctx, qx.ListChannelsParams{Name: fName, AppserverID: fAId},
-	)
+	channels, err := s.db.ListServerChannels(s.ctx, obj)
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
 	return channels, nil
 }
 
-func (s *ChannelService) Delete(id string) error {
-	parsedUuid, err := uuid.Parse(id)
+// Delete a channel object
+func (s *ChannelService) Delete(id uuid.UUID) error {
+	// TODO: add authorization layer before deleting
+	deleted, err := s.db.DeleteChannel(s.ctx, id)
 
 	if err != nil {
-		return err
-	}
-
-	deleted, err := qx.New(s.dbcPool).DeleteChannel(s.ctx, parsedUuid)
-
-	if err != nil {
-		return errors.New(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return errors.New(fmt.Sprintf("(%d): no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 	}
 
 	return err

@@ -11,17 +11,17 @@ import (
 
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
+	"mist/src/testutil"
 )
 
-// ----- RPC Channels -----
-func TestListChannels(t *testing.T) {
-	t.Run("returns_nothing_successfully", func(t *testing.T) {
+func TestChannelService_ListServerChannels(t *testing.T) {
+	t.Run("Successful:returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.ListChannels(
-			ctx, &pb_channel.ListChannelsRequest{Name: wrapperspb.String("random")},
+		response, err := testutil.TestChannelClient.ListServerChannels(
+			ctx, &pb_channel.ListServerChannelsRequest{Name: wrapperspb.String("random")},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -31,15 +31,15 @@ func TestListChannels(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetChannels()))
 	})
 
-	t.Run("returns_all_resources_successfully", func(t *testing.T) {
+	t.Run("Successful:returns_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		server := testAppserver(t, nil)
-		testChannel(t, &qx.Channel{Name: "foo", AppserverID: server.ID})
-		testChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
+		ctx := testutil.Setup(t, func() {})
+		server := testutil.TestAppserver(t, nil)
+		testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: server.ID})
+		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
 
 		// ACT
-		response, err := TestChannelClient.ListChannels(ctx, &pb_channel.ListChannelsRequest{})
+		response, err := testutil.TestChannelClient.ListServerChannels(ctx, &pb_channel.ListServerChannelsRequest{})
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -48,16 +48,16 @@ func TestListChannels(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetChannels()))
 	})
 
-	t.Run("can_filter_successfully", func(t *testing.T) {
+	t.Run("Successful:can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		server := testAppserver(t, nil)
-		testChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
-		testChannel(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		server := testutil.TestAppserver(t, nil)
+		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: server.ID})
+		testutil.TestChannel(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.ListChannels(
-			ctx, &pb_channel.ListChannelsRequest{AppserverId: wrapperspb.String(server.ID.String())},
+		response, err := testutil.TestChannelClient.ListServerChannels(
+			ctx, &pb_channel.ListServerChannelsRequest{AppserverId: wrapperspb.String(server.ID.String())},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -68,16 +68,15 @@ func TestListChannels(t *testing.T) {
 	})
 }
 
-// ----- RPC GetByIdChannel -----
-func TestGetByIdChannel(t *testing.T) {
-	t.Run("returns_successfully", func(t *testing.T) {
+func TestChannelService_GetById(t *testing.T) {
+	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		channel := testChannel(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		channel := testutil.TestChannel(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.GetByIdChannel(
-			ctx, &pb_channel.GetByIdChannelRequest{Id: channel.ID.String()},
+		response, err := testutil.TestChannelClient.GetById(
+			ctx, &pb_channel.GetByIdRequest{Id: channel.ID.String()},
 		)
 
 		if err != nil {
@@ -88,13 +87,13 @@ func TestGetByIdChannel(t *testing.T) {
 		assert.Equal(t, channel.ID.String(), response.GetChannel().Id)
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.GetByIdChannel(
-			ctx, &pb_channel.GetByIdChannelRequest{Id: uuid.NewString()},
+		response, err := testutil.TestChannelClient.GetById(
+			ctx, &pb_channel.GetByIdRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -105,34 +104,36 @@ func TestGetByIdChannel(t *testing.T) {
 		assert.Contains(t, s.Message(), "resource not found")
 	})
 
-	t.Run("invalid_uuid_returns_parsing_error", func(t *testing.T) {
+	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.GetByIdChannel(
-			ctx, &pb_channel.GetByIdChannelRequest{Id: "foo"},
+		response, err := testutil.TestChannelClient.GetById(
+			ctx, &pb_channel.GetByIdRequest{Id: "foo"},
 		)
 		s, ok := status.FromError(err)
 
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.Unknown, s.Code())
-		assert.Contains(t, s.Message(), "invalid UUID")
+		assert.Equal(t, codes.InvalidArgument, s.Code())
+		assert.Contains(t, s.Message(), "validation error:\n - id: value must be a valid UUID")
 	})
 }
 
-// ----- RPC CreateChannel -----
-func TestCreateChannel(t *testing.T) {
-	t.Run("creates_successfully", func(t *testing.T) {
+func TestChannelService_Create(t *testing.T) {
+	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		appserver := testAppserver(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.CreateChannel(
-			ctx, &pb_channel.CreateChannelRequest{Name: "new channel", AppserverId: appserver.ID.String()})
+		response, err := testutil.TestChannelClient.Create(
+			ctx,
+			&pb_channel.CreateRequest{Name: "new channel", AppserverId: appserver.ID.String()},
+		)
+
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
 		}
@@ -141,49 +142,69 @@ func TestCreateChannel(t *testing.T) {
 		assert.NotNil(t, response.Channel)
 	})
 
-	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
+	t.Run("Error:when_create_fails_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.CreateChannel(ctx, &pb_channel.CreateChannelRequest{})
+		response, err := testutil.TestChannelClient.Create(
+			ctx,
+			&pb_channel.CreateRequest{Name: "new channel", AppserverId: uuid.NewString()},
+		)
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Unknown, s.Code())
+	})
+
+	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+
+		// ACT
+		response, err := testutil.TestChannelClient.Create(ctx, &pb_channel.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.InvalidArgument, s.Code())
-		assert.Contains(t, s.Message(), "missing name attribute")
+		assert.Contains(t, s.Message(), "validation error")
 	})
 }
 
-// ----- RPC DeleteChannel -----
-func TestDeleteChannel(t *testing.T) {
-	t.Run("deletes_successfully", func(t *testing.T) {
+func TestChannelService_Delete(t *testing.T) {
+	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
-		channel := testChannel(t, nil)
+		ctx := testutil.Setup(t, func() {})
+		channel := testutil.TestChannel(t, nil)
 
 		// ACT
-		response, err := TestChannelClient.DeleteChannel(ctx, &pb_channel.DeleteChannelRequest{Id: channel.ID.String()})
+		response, err := testutil.TestChannelClient.Delete(
+			ctx, &pb_channel.DeleteRequest{Id: channel.ID.String()},
+		)
 
 		// ASSERT
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := setup(t, func() {})
+		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := TestChannelClient.DeleteChannel(ctx, &pb_channel.DeleteChannelRequest{Id: uuid.NewString()})
+		response, err := testutil.TestChannelClient.Delete(
+			ctx, &pb_channel.DeleteRequest{Id: uuid.NewString()},
+		)
 		s, ok := status.FromError(err)
 
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "no rows were deleted")
+		assert.Contains(t, s.Message(), "resource not found")
 	})
 }

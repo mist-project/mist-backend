@@ -1,9 +1,9 @@
 
------ APP SERVER ROLES -----
--- name: GetAppserverRoles :many
+-- name: GetAppserverRoleById :one
 SELECT *
 FROM appserver_role
-WHERE appserver_id=$1;
+WHERE id=$1
+LIMIT 1;
 
 -- name: CreateAppserverRole :one
 INSERT INTO appserver_role (
@@ -14,6 +14,11 @@ INSERT INTO appserver_role (
   $2
 )
 RETURNING *;
+
+-- name: ListAppserverRoles :many
+SELECT *
+FROM appserver_role
+WHERE appserver_id=$1;
 
 -- name: DeleteAppserverRole :execrows
 DELETE FROM appserver_role as ar

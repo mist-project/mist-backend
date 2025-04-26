@@ -10,30 +10,28 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 
-	"mist/src/middleware"
-	pb_appserver "mist/src/protos/v1/appserver"
-	pb_appuser "mist/src/protos/v1/appuser"
-	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/rpcs"
 )
 
 func InitializeServer() {
-	dbcPool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-	defer dbcPool.Close()
+	dbConn, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	defer dbConn.Close()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer(grpc.ChainUnaryInterceptor(middleware.AuthJwtInterceptor))
+	interceptors, err := rpcs.BaseInterceptors()
 
-	pb_appserver.RegisterAppserverServiceServer(s, &rpcs.AppserverGRPCService{DbcPool: dbcPool})
-	pb_channel.RegisterChannelServiceServer(s, &rpcs.ChannelGRPCService{DbcPool: dbcPool})
-	pb_appuser.RegisterAppuserServiceServer(s, &rpcs.AppuserGRPCService{DbcPool: dbcPool})
+	if err != nil {
+		log.Fatalf("failed to start interceptors: %v", err)
+	}
+
+	s := grpc.NewServer(interceptors)
+	rpcs.RegisterGrpcServices(s, dbConn)
 
 	log.Printf("server listening at %v", lis.Addr())
-
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

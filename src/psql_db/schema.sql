@@ -12,7 +12,7 @@ CREATE TYPE public.appuser_online_status AS ENUM (
 
 CREATE TABLE public.appserver (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
-    name character varying(255) NOT NULL,
+    name character varying(64) NOT NULL,
     appuser_id uuid NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
@@ -21,7 +21,7 @@ CREATE TABLE public.appserver (
 CREATE TABLE public.appserver_role (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     appserver_id uuid NOT NULL,
-    name character varying(255) NOT NULL,
+    name character varying(64) NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
 );
@@ -54,7 +54,7 @@ CREATE TABLE public.appuser (
 
 CREATE TABLE public.channel (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
-    name character varying(255) NOT NULL,
+    name character varying(64) NOT NULL,
     appserver_id uuid NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()

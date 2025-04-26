@@ -13,7 +13,6 @@ import (
 )
 
 const createAppserver = `-- name: CreateAppserver :one
-
 INSERT INTO appserver (
   name,
   appuser_id
@@ -29,7 +28,6 @@ type CreateAppserverParams struct {
 	AppuserID uuid.UUID
 }
 
-// This query might be removed. Hence the 1=0. So it returns no data.
 func (q *Queries) CreateAppserver(ctx context.Context, arg CreateAppserverParams) (Appserver, error) {
 	row := q.db.QueryRow(ctx, createAppserver, arg.Name, arg.AppuserID)
 	var i Appserver
@@ -62,16 +60,15 @@ func (q *Queries) DeleteAppserver(ctx context.Context, arg DeleteAppserverParams
 	return result.RowsAffected(), nil
 }
 
-const getAppserver = `-- name: GetAppserver :one
+const getAppserverById = `-- name: GetAppserverById :one
 SELECT id, name, appuser_id, created_at, updated_at
 FROM appserver
 WHERE id=$1
 LIMIT 1
 `
 
-// --- APP SERVER QUERIES -----
-func (q *Queries) GetAppserver(ctx context.Context, id uuid.UUID) (Appserver, error) {
-	row := q.db.QueryRow(ctx, getAppserver, id)
+func (q *Queries) GetAppserverById(ctx context.Context, id uuid.UUID) (Appserver, error) {
+	row := q.db.QueryRow(ctx, getAppserverById, id)
 	var i Appserver
 	err := row.Scan(
 		&i.ID,
@@ -83,20 +80,20 @@ func (q *Queries) GetAppserver(ctx context.Context, id uuid.UUID) (Appserver, er
 	return i, err
 }
 
-const listUserAppservers = `-- name: ListUserAppservers :many
+const listAppservers = `-- name: ListAppservers :many
 SELECT id, name, appuser_id, created_at, updated_at
 FROM appserver
 WHERE name=COALESCE($2, name)
   AND appuser_id = $1
 `
 
-type ListUserAppserversParams struct {
+type ListAppserversParams struct {
 	AppuserID uuid.UUID
 	Name      pgtype.Text
 }
 
-func (q *Queries) ListUserAppservers(ctx context.Context, arg ListUserAppserversParams) ([]Appserver, error) {
-	rows, err := q.db.Query(ctx, listUserAppservers, arg.AppuserID, arg.Name)
+func (q *Queries) ListAppservers(ctx context.Context, arg ListAppserversParams) ([]Appserver, error) {
+	rows, err := q.db.Query(ctx, listAppservers, arg.AppuserID, arg.Name)
 	if err != nil {
 		return nil, err
 	}

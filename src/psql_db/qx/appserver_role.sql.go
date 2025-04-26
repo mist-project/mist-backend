@@ -61,15 +61,34 @@ func (q *Queries) DeleteAppserverRole(ctx context.Context, arg DeleteAppserverRo
 	return result.RowsAffected(), nil
 }
 
-const getAppserverRoles = `-- name: GetAppserverRoles :many
+const getAppserverRoleById = `-- name: GetAppserverRoleById :one
+SELECT id, appserver_id, name, created_at, updated_at
+FROM appserver_role
+WHERE id=$1
+LIMIT 1
+`
+
+func (q *Queries) GetAppserverRoleById(ctx context.Context, id uuid.UUID) (AppserverRole, error) {
+	row := q.db.QueryRow(ctx, getAppserverRoleById, id)
+	var i AppserverRole
+	err := row.Scan(
+		&i.ID,
+		&i.AppserverID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const listAppserverRoles = `-- name: ListAppserverRoles :many
 SELECT id, appserver_id, name, created_at, updated_at
 FROM appserver_role
 WHERE appserver_id=$1
 `
 
-// --- APP SERVER ROLES -----
-func (q *Queries) GetAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error) {
-	rows, err := q.db.Query(ctx, getAppserverRoles, appserverID)
+func (q *Queries) ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error) {
+	rows, err := q.db.Query(ctx, listAppserverRoles, appserverID)
 	if err != nil {
 		return nil, err
 	}

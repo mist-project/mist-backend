@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package v1.appserverrolesub;
+option go_package = "mist/src/protos/v1/appserverrolesub;appserverrolesub";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "v1/appuser/appuser.proto";
+import "v1/appserver/appserver.proto";
+
+service AppserverRoleSubService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc ListServerRoleSubs(ListServerRoleSubsRequest)
+      returns (ListServerRoleSubsResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+}
+
+// ----- STRUCTURES -----
+message AppserverRoleSub {
+  string id = 1;
+  string appuser_id = 2;
+  string appserver_role_id = 3;
+  string appserver_id = 4;
+}
+
+// ----- REQUEST/RESPONSE -----
+message CreateRequest {
+  string appserver_role_id = 1 [ (buf.validate.field).string.uuid = true ];
+  string appserver_sub_id = 2 [ (buf.validate.field).string.uuid = true ];
+  string appserver_id = 3 [ (buf.validate.field).string.uuid = true ];
+  string appuser_id = 4 [ (buf.validate.field).string.uuid = true ];
+}
+message CreateResponse { AppserverRoleSub appserver_role_sub = 1; }
+
+message ListServerRoleSubsRequest {
+  string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message ListServerRoleSubsResponse {
+  repeated AppserverRoleSub appserver_role_subs = 1;
+}
+
+message DeleteRequest {
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message DeleteResponse {}

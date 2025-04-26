@@ -3,17 +3,21 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"mist/src/middleware"
-	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverrole "mist/src/protos/v1/appserver_role"
+	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
-func (s *AppserverGRPCService) CreateAppserverRole(
-	ctx context.Context, req *pb_appserver.CreateAppserverRoleRequest,
-) (*pb_appserver.CreateAppserverRoleResponse, error) {
+func (s *AppserverRoleGRPCService) Create(
+	ctx context.Context, req *pb_appserverrole.CreateRequest,
+) (*pb_appserverrole.CreateResponse, error) {
 
-	ars := service.NewAppserverRoleService(s.DbcPool, ctx)
-	aRole, err := ars.Create(req.GetAppserverId(), req.Name)
+	serverId, _ := uuid.Parse(req.AppserverId)
+	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
+	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{Name: req.Name, AppserverID: serverId})
 
 	// Error handling
 	if err != nil {
@@ -21,41 +25,50 @@ func (s *AppserverGRPCService) CreateAppserverRole(
 	}
 
 	// Return response
-	return &pb_appserver.CreateAppserverRoleResponse{
-		AppserverRole: ars.PgTypeToPb(aRole),
+	return &pb_appserverrole.CreateResponse{
+		AppserverRole: roleService.PgTypeToPb(aRole),
 	}, nil
 }
 
-func (s *AppserverGRPCService) GetAllAppserverRoles(
-	ctx context.Context, req *pb_appserver.GetAllAppserverRolesRequest,
-) (*pb_appserver.GetAllAppserverRolesResponse, error) {
+func (s *AppserverRoleGRPCService) ListServerRoles(
+	ctx context.Context, req *pb_appserverrole.ListServerRolesRequest,
+) (*pb_appserverrole.ListServerRolesResponse, error) {
 
 	// Initialize the service for AppserveRole
-	ars := service.NewAppserverRoleService(s.DbcPool, ctx)
-	results, _ := ars.ListAppserverRoles(req.GetAppserverId())
+	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
+	serverId, _ := uuid.Parse(req.AppserverId)
+	results, err := roleService.ListAppserverRoles(serverId)
+
+	// Error handling
+	if err != nil {
+		return nil, ErrorHandler(err)
+	}
 
 	// Construct the response
-	response := &pb_appserver.GetAllAppserverRolesResponse{
-		AppserverRoles: make([]*pb_appserver.AppserverRole, 0, len(results)),
+	response := &pb_appserverrole.ListServerRolesResponse{
+		AppserverRoles: make([]*pb_appserverrole.AppserverRole, 0, len(results)),
 	}
 	// Convert list of AppserveRoles to protobuf
 	for _, result := range results {
-		response.AppserverRoles = append(response.AppserverRoles, ars.PgTypeToPb(&result))
+		response.AppserverRoles = append(response.AppserverRoles, roleService.PgTypeToPb(&result))
 	}
 
 	return response, nil
 }
 
-func (s *AppserverGRPCService) DeleteAppserverRole(
-	ctx context.Context, req *pb_appserver.DeleteAppserverRoleRequest,
-) (*pb_appserver.DeleteAppserverRoleResponse, error) {
+func (s *AppserverRoleGRPCService) Delete(
+	ctx context.Context, req *pb_appserverrole.DeleteRequest,
+) (*pb_appserverrole.DeleteResponse, error) {
 
 	// Initialize the service for AppserveRole
-	ars := service.NewAppserverRoleService(s.DbcPool, ctx)
 	claims, _ := middleware.GetJWTClaims(ctx)
+	userId, _ := uuid.Parse(claims.UserID)
+	roleId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err := ars.DeleteByAppserver(req.GetId(), claims.UserID)
+	err := service.NewAppserverRoleService(ctx, s.DbConn, s.Db).Delete(
+		qx.DeleteAppserverRoleParams{AppuserID: userId, ID: roleId},
+	)
 
 	// Error handling
 	if err != nil {
@@ -63,5 +76,5 @@ func (s *AppserverGRPCService) DeleteAppserverRole(
 	}
 
 	// Return success response
-	return &pb_appserver.DeleteAppserverRoleResponse{}, nil
+	return &pb_appserverrole.DeleteResponse{}, nil
 }

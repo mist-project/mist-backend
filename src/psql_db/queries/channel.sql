@@ -1,11 +1,10 @@
------ CHANNEL QUERIES -----
--- name: GetChannel :one
+-- name: GetChannelById :one
 SELECT *
 FROM channel
 WHERE id=$1
 LIMIT 1;
 
--- name: ListChannels :many
+-- name: ListServerChannels :many
 SELECT *
 FROM channel
 WHERE name=COALESCE(sqlc.narg('name'), name)

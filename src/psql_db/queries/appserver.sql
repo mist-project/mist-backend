@@ -1,16 +1,9 @@
 
------ APP SERVER QUERIES -----
--- name: GetAppserver :one
+-- name: GetAppserverById :one
 SELECT *
 FROM appserver
 WHERE id=$1
 LIMIT 1;
-
--- name: ListUserAppservers :many
-SELECT *
-FROM appserver
-WHERE name=COALESCE(sqlc.narg('name'), name)
-  AND appuser_id = $1; -- This query might be removed. Hence the 1=0. So it returns no data.
 
 -- name: CreateAppserver :one
 INSERT INTO appserver (
@@ -21,6 +14,14 @@ INSERT INTO appserver (
   $2
 )
 RETURNING *;
+
+-- name: ListAppservers :many
+SELECT *
+FROM appserver
+WHERE name=COALESCE(sqlc.narg('name'), name)
+  AND appuser_id = $1;
+
+
 
 -- name: DeleteAppserver :execrows
 DELETE FROM appserver

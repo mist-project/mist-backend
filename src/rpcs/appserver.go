@@ -3,63 +3,72 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"mist/src/middleware"
 	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
-func (s *AppserverGRPCService) CreateAppserver(
-	ctx context.Context, req *pb_appserver.CreateAppserverRequest,
-) (*pb_appserver.CreateAppserverResponse, error) {
+func (s *AppserverGRPCService) Create(
+	ctx context.Context, req *pb_appserver.CreateRequest,
+) (*pb_appserver.CreateResponse, error) {
 
-	as := service.NewAppserverService(s.DbcPool, ctx)
-	claims, _ := middleware.GetJWTClaims(ctx)
-	appserver, err := service.NewAppserverService(s.DbcPool, ctx).Create(req.GetName(), claims.UserID)
+	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
+	claims, err := middleware.GetJWTClaims(ctx)
+	userId, _ := uuid.Parse(claims.UserID)
+
+	appserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
 
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	service.NewAppserverSubService(s.DbcPool, ctx).Create(appserver.ID.String(), claims.UserID)
+	res := serverS.PgTypeToPb(appserver)
+	res.IsOwner = appserver.AppuserID == userId
 
-	pbA := as.PgTypeToPb(appserver)
-	pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
-	return &pb_appserver.CreateAppserverResponse{
-		Appserver: pbA,
-	}, nil
+	return &pb_appserver.CreateResponse{Appserver: res}, nil
 }
 
-func (s *AppserverGRPCService) GetByIdAppserver(
-	ctx context.Context, req *pb_appserver.GetByIdAppserverRequest,
-) (*pb_appserver.GetByIdAppserverResponse, error) {
+func (s *AppserverGRPCService) GetById(
+	ctx context.Context, req *pb_appserver.GetByIdRequest,
+) (*pb_appserver.GetByIdResponse, error) {
 
 	var (
 		err       error
 		appserver *qx.Appserver
 	)
 	claims, _ := middleware.GetJWTClaims(ctx)
-	as := service.NewAppserverService(s.DbcPool, ctx)
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 
-	if appserver, err = as.GetById(req.GetId()); err != nil {
+	id, _ := uuid.Parse(req.Id)
+	if appserver, err = as.GetById(id); err != nil {
 		return nil, ErrorHandler(err)
 	}
 
 	pbA := as.PgTypeToPb(appserver)
 	pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
-	return &pb_appserver.GetByIdAppserverResponse{Appserver: pbA}, nil
+	return &pb_appserver.GetByIdResponse{Appserver: pbA}, nil
 }
 
-func (s *AppserverGRPCService) ListAppservers(
-	ctx context.Context, req *pb_appserver.ListAppserversRequest,
-) (*pb_appserver.ListAppserversResponse, error) {
-	as := service.NewAppserverService(s.DbcPool, ctx)
+func (s *AppserverGRPCService) List(
+	ctx context.Context, req *pb_appserver.ListRequest,
+) (*pb_appserver.ListResponse, error) {
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
+	userId, _ := uuid.Parse(claims.UserID)
 
-	// TODO: Figure out what can go wrong to add error handler
-	appservers, _ := as.List(req.GetName(), claims.UserID)
+	var name = pgtype.Text{Valid: false, String: ""}
 
-	response := &pb_appserver.ListAppserversResponse{}
+	if req.Name != nil {
+		name.Valid = true
+		name.String = req.Name.Value
+	}
+
+	appservers, _ := as.List(qx.ListAppserversParams{Name: name, AppuserID: userId})
+	response := &pb_appserver.ListResponse{}
 
 	// Resize the array
 	response.Appservers = make([]*pb_appserver.Appserver, 0, len(appservers))
@@ -73,17 +82,21 @@ func (s *AppserverGRPCService) ListAppservers(
 	return response, nil
 }
 
-func (s *AppserverGRPCService) DeleteAppserver(
-	ctx context.Context, req *pb_appserver.DeleteAppserverRequest,
-) (*pb_appserver.DeleteAppserverResponse, error) {
+func (s *AppserverGRPCService) Delete(
+	ctx context.Context, req *pb_appserver.DeleteRequest,
+) (*pb_appserver.DeleteResponse, error) {
 
 	claims, _ := middleware.GetJWTClaims(ctx)
-
-	err := service.NewAppserverService(s.DbcPool, ctx).Delete(req.GetId(), claims.UserID)
+	id, _ := uuid.Parse(req.Id)
+	userId, _ := uuid.Parse(claims.UserID)
+	err := service.NewAppserverService(ctx, s.DbConn, s.Db).Delete(qx.DeleteAppserverParams{
+		ID:        id,
+		AppuserID: userId,
+	})
 
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_appserver.DeleteAppserverResponse{}, nil
+	return &pb_appserver.DeleteResponse{}, nil
 }

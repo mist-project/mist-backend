@@ -74,6 +74,8 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 # update your PATH so that the protoc compiler can find the plugin
 export PATH="$PATH:$(go env GOPATH)/bin"
 
+# install protoc validate
+buf dep update
 ```
 
 ### Install live reloader

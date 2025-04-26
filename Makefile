@@ -18,7 +18,7 @@ endif
   build \
   live-run \
   compile-protos \
-  generate-migration \
+  create-migration \
   migrate \
   migrate-to \
   migrate-one \
@@ -45,7 +45,7 @@ generate-queries:
 	@sqlc generate
 
 # ----- DB Migrations -----
-generate-migration gm:
+create-migration gm:
 	goose create ${message} sql
 
 migrate:
@@ -75,9 +75,15 @@ dump-schema:
 
 
 # ----- TESTS -----
-run-tests t: generate-queries test-service test-middleware
+run-tests t: generate-queries test-rpcs test-middleware test-service
 
-test-service:
+all-tests: 
+	go test -cover ./... | grep -v 'testutil'
+
+tbreak:
+	go test ./... -run "$(t)"
+
+test-rpcs:
 	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
@@ -85,6 +91,12 @@ test-middleware:
 	@echo -----------------------------------------
 	@go test mist/src/middleware -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
+
+test-service:
+	@echo -----------------------------------------
+	@go test mist/src/service -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
 
 # ----- FORMAT -----
 lint:
@@ -97,3 +109,6 @@ lint-proto:
 psql:
 	# Make sure to have all roles for your user
 	@psql -U ${DATABASE_ROLE}
+
+update-all-deps:
+	go get -u ./...

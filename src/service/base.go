@@ -3,9 +3,6 @@ package service
 import (
 	"fmt"
 	"strings"
-
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type CustomGRPCError int
@@ -18,9 +15,9 @@ const (
 )
 
 var (
-	DatabaseErrorString   string = fmt.Sprintf("(%d):", DatabaseError)
-	NotFoundErrorString   string = fmt.Sprintf("(%d):", NotFoundError)
-	validationErrorString string = fmt.Sprintf("(%d):", ValidationError)
+	DatabaseErrorString   string = fmt.Sprintf("(%d)", DatabaseError)
+	NotFoundErrorString   string = fmt.Sprintf("(%d)", NotFoundError)
+	validationErrorString string = fmt.Sprintf("(%d)", ValidationError)
 )
 
 func ParseServiceError(serviceErr string) CustomGRPCError {
@@ -42,10 +39,4 @@ func ParseServiceError(serviceErr string) CustomGRPCError {
 
 func AddValidationError(attribute string, validationErr []string) []string {
 	return append(validationErr, fmt.Sprintf("missing %s attribute", attribute))
-}
-
-func ConvertUUID(u uuid.UUID) pgtype.UUID {
-	pgUUID := pgtype.UUID{}
-	pgUUID.Scan(u)
-	return pgUUID
 }

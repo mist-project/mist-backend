@@ -54,7 +54,27 @@ func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, 
 	return result.RowsAffected(), nil
 }
 
-const getAllUsersAppserverSubs = `-- name: GetAllUsersAppserverSubs :many
+const getAppserverSubById = `-- name: GetAppserverSubById :one
+SELECT id, appserver_id, appuser_id, created_at, updated_at
+FROM appserver_sub
+WHERE id=$1
+LIMIT 1
+`
+
+func (q *Queries) GetAppserverSubById(ctx context.Context, id uuid.UUID) (AppserverSub, error) {
+	row := q.db.QueryRow(ctx, getAppserverSubById, id)
+	var i AppserverSub
+	err := row.Scan(
+		&i.ID,
+		&i.AppserverID,
+		&i.AppuserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const listAppserverUserSubs = `-- name: ListAppserverUserSubs :many
 SELECT
   asub.id as appserver_sub_id,
   auser.id,
@@ -66,7 +86,7 @@ JOIN appuser as auser ON asub.appuser_id=auser.id
 WHERE asub.appserver_id=$1
 `
 
-type GetAllUsersAppserverSubsRow struct {
+type ListAppserverUserSubsRow struct {
 	AppserverSubID uuid.UUID
 	ID             uuid.UUID
 	Username       string
@@ -74,15 +94,15 @@ type GetAllUsersAppserverSubsRow struct {
 	UpdatedAt      pgtype.Timestamp
 }
 
-func (q *Queries) GetAllUsersAppserverSubs(ctx context.Context, appserverID uuid.UUID) ([]GetAllUsersAppserverSubsRow, error) {
-	rows, err := q.db.Query(ctx, getAllUsersAppserverSubs, appserverID)
+func (q *Queries) ListAppserverUserSubs(ctx context.Context, appserverID uuid.UUID) ([]ListAppserverUserSubsRow, error) {
+	rows, err := q.db.Query(ctx, listAppserverUserSubs, appserverID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllUsersAppserverSubsRow
+	var items []ListAppserverUserSubsRow
 	for rows.Next() {
-		var i GetAllUsersAppserverSubsRow
+		var i ListAppserverUserSubsRow
 		if err := rows.Scan(
 			&i.AppserverSubID,
 			&i.ID,
@@ -100,28 +120,7 @@ func (q *Queries) GetAllUsersAppserverSubs(ctx context.Context, appserverID uuid
 	return items, nil
 }
 
-const getAppserverSub = `-- name: GetAppserverSub :one
-SELECT id, appserver_id, appuser_id, created_at, updated_at
-FROM appserver_sub
-WHERE id=$1
-LIMIT 1
-`
-
-// --- APPSERVER SUB QUERIES -----
-func (q *Queries) GetAppserverSub(ctx context.Context, id uuid.UUID) (AppserverSub, error) {
-	row := q.db.QueryRow(ctx, getAppserverSub, id)
-	var i AppserverSub
-	err := row.Scan(
-		&i.ID,
-		&i.AppserverID,
-		&i.AppuserID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getUserAppserverSubs = `-- name: GetUserAppserverSubs :many
+const listUserServerSubs = `-- name: ListUserServerSubs :many
 SELECT
   asub.id as appserver_sub_id,
   asub.appuser_id,
@@ -134,7 +133,7 @@ JOIN appserver as aserver ON asub.appserver_id=aserver.id
 WHERE asub.appuser_id=$1
 `
 
-type GetUserAppserverSubsRow struct {
+type ListUserServerSubsRow struct {
 	AppserverSubID uuid.UUID
 	AppuserID      uuid.UUID
 	ID             uuid.UUID
@@ -143,15 +142,15 @@ type GetUserAppserverSubsRow struct {
 	UpdatedAt      pgtype.Timestamp
 }
 
-func (q *Queries) GetUserAppserverSubs(ctx context.Context, appuserID uuid.UUID) ([]GetUserAppserverSubsRow, error) {
-	rows, err := q.db.Query(ctx, getUserAppserverSubs, appuserID)
+func (q *Queries) ListUserServerSubs(ctx context.Context, appuserID uuid.UUID) ([]ListUserServerSubsRow, error) {
+	rows, err := q.db.Query(ctx, listUserServerSubs, appuserID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUserAppserverSubsRow
+	var items []ListUserServerSubsRow
 	for rows.Next() {
-		var i GetUserAppserverSubsRow
+		var i ListUserServerSubsRow
 		if err := rows.Scan(
 			&i.AppserverSubID,
 			&i.AppuserID,

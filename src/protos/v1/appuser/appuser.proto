@@ -1,15 +1,13 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
-
 package v1.appuser;
 option go_package = "mist/src/protos/v1/appuser;appuser";
 
-service AppuserService {
-  // ----- APPUSER ----
-  rpc CreateAppuser(CreateAppuserRequest) returns (CreateAppuserResponse);
-}
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service AppuserService { rpc Create(CreateRequest) returns (CreateResponse); }
 
 // RESOURCES
 enum AppUserStatus {
@@ -20,6 +18,7 @@ enum AppUserStatus {
   APP_USER_STATUS_AWAY = 4;
 }
 
+// ----- STRUCTURES -----
 message Appuser {
   string id = 1;
   string username = 2;
@@ -28,9 +27,13 @@ message Appuser {
   google.protobuf.Timestamp updated_at = 5;
 }
 
-// ----- APPUSER -----
-message CreateAppuserRequest {
-  string id = 1;
-  string username = 2;
+// ----- REQUEST/RESPONSE -----
+message CreateRequest {
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+  string username = 2 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 255
+  ];
 }
-message CreateAppuserResponse {}
+
+message CreateResponse {}

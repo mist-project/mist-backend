@@ -3,52 +3,68 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+
 	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
-func (s *ChannelGRPCService) CreateChannel(
-	ctx context.Context, req *pb_channel.CreateChannelRequest,
-) (*pb_channel.CreateChannelResponse, error) {
+func (s *ChannelGRPCService) Create(
+	ctx context.Context, req *pb_channel.CreateRequest,
+) (*pb_channel.CreateResponse, error) {
 
-	cs := service.NewChannelService(s.DbcPool, ctx)
-	channel, err := cs.Create(req.GetName(), req.GetAppserverId())
+	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
+	serverId, _ := uuid.Parse(req.AppserverId)
+	channel, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId})
 
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_channel.CreateChannelResponse{
+	return &pb_channel.CreateResponse{
 		Channel: cs.PgTypeToPb(channel),
 	}, nil
 
 }
 
-func (s *ChannelGRPCService) GetByIdChannel(
-	ctx context.Context, req *pb_channel.GetByIdChannelRequest,
-) (*pb_channel.GetByIdChannelResponse, error) {
+func (s *ChannelGRPCService) GetById(
+	ctx context.Context, req *pb_channel.GetByIdRequest,
+) (*pb_channel.GetByIdResponse, error) {
 
-	cs := service.NewChannelService(s.DbcPool, ctx)
-	channel, err := cs.GetById(req.GetId())
+	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
+	id, err := uuid.Parse(req.Id)
+	channel, err := cs.GetById(id)
 
 	if err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_channel.GetByIdChannelResponse{Channel: cs.PgTypeToPb(channel)}, nil
+	return &pb_channel.GetByIdResponse{Channel: cs.PgTypeToPb(channel)}, nil
 }
 
-func (s *ChannelGRPCService) ListChannels(
-	ctx context.Context, req *pb_channel.ListChannelsRequest,
-) (*pb_channel.ListChannelsResponse, error) {
+func (s *ChannelGRPCService) ListServerChannels(
+	ctx context.Context, req *pb_channel.ListServerChannelsRequest,
+) (*pb_channel.ListServerChannelsResponse, error) {
 
-	cs := service.NewChannelService(s.DbcPool, ctx)
-	// TODO: Handle potential errors that can happen here
-	channels, _ := cs.List(req.GetName(), req.GetAppserverId())
+	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
+	var (
+		nameFilter   pgtype.Text
+		serverFilter pgtype.UUID
+	)
 
-	response := &pb_channel.ListChannelsResponse{}
+	if req.Name != nil {
+		nameFilter = pgtype.Text{Valid: true, String: req.Name.Value}
+	}
 
-	// Resize the array to the correct size
+	if req.AppserverId != nil {
+		serverId, _ := uuid.Parse(req.AppserverId.Value)
+		serverFilter = pgtype.UUID{Valid: true, Bytes: serverId}
+	}
+
+	channels, _ := cs.ListServerChannels(qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverFilter})
+	response := &pb_channel.ListServerChannelsResponse{}
 	response.Channels = make([]*pb_channel.Channel, 0, len(channels))
 
 	for _, channel := range channels {
@@ -58,13 +74,14 @@ func (s *ChannelGRPCService) ListChannels(
 	return response, nil
 }
 
-func (s *ChannelGRPCService) DeleteChannel(
-	ctx context.Context, req *pb_channel.DeleteChannelRequest,
-) (*pb_channel.DeleteChannelResponse, error) {
+func (s *ChannelGRPCService) Delete(
+	ctx context.Context, req *pb_channel.DeleteRequest,
+) (*pb_channel.DeleteResponse, error) {
 
-	if err := service.NewChannelService(s.DbcPool, ctx).Delete(req.GetId()); err != nil {
+	id, _ := uuid.Parse(req.Id)
+	if err := service.NewChannelService(ctx, s.DbConn, s.Db).Delete(id); err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_channel.DeleteChannelResponse{}, nil
+	return &pb_channel.DeleteResponse{}, nil
 }

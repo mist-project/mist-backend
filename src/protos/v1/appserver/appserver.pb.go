@@ -24,7 +24,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// RESOURCES
+// ----- STRUCTURES -----
 type Appserver struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -101,7 +101,7 @@ func (x *Appserver) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// RESPONSE/REQUEST
+// ----- REQUEST/RESPONSE -----
 type CreateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`

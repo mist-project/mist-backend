@@ -11,9 +11,9 @@ import (
 	"mist/src/service"
 )
 
-func (s *ChannelGRPCService) CreateChannel(
-	ctx context.Context, req *pb_channel.CreateChannelRequest,
-) (*pb_channel.CreateChannelResponse, error) {
+func (s *ChannelGRPCService) Create(
+	ctx context.Context, req *pb_channel.CreateRequest,
+) (*pb_channel.CreateResponse, error) {
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
 	serverId, _ := uuid.Parse(req.AppserverId)
@@ -23,15 +23,15 @@ func (s *ChannelGRPCService) CreateChannel(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_channel.CreateChannelResponse{
+	return &pb_channel.CreateResponse{
 		Channel: cs.PgTypeToPb(channel),
 	}, nil
 
 }
 
-func (s *ChannelGRPCService) GetByIdChannel(
-	ctx context.Context, req *pb_channel.GetByIdChannelRequest,
-) (*pb_channel.GetByIdChannelResponse, error) {
+func (s *ChannelGRPCService) GetById(
+	ctx context.Context, req *pb_channel.GetByIdRequest,
+) (*pb_channel.GetByIdResponse, error) {
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
 	id, err := uuid.Parse(req.Id)
@@ -41,12 +41,12 @@ func (s *ChannelGRPCService) GetByIdChannel(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_channel.GetByIdChannelResponse{Channel: cs.PgTypeToPb(channel)}, nil
+	return &pb_channel.GetByIdResponse{Channel: cs.PgTypeToPb(channel)}, nil
 }
 
-func (s *ChannelGRPCService) ListChannels(
-	ctx context.Context, req *pb_channel.ListChannelsRequest,
-) (*pb_channel.ListChannelsResponse, error) {
+func (s *ChannelGRPCService) ListServerChannels(
+	ctx context.Context, req *pb_channel.ListServerChannelsRequest,
+) (*pb_channel.ListServerChannelsResponse, error) {
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
 	var (
@@ -64,7 +64,7 @@ func (s *ChannelGRPCService) ListChannels(
 	}
 
 	channels, _ := cs.List(qx.ListChannelsParams{Name: nameFilter, AppserverID: serverFilter})
-	response := &pb_channel.ListChannelsResponse{}
+	response := &pb_channel.ListServerChannelsResponse{}
 	response.Channels = make([]*pb_channel.Channel, 0, len(channels))
 
 	for _, channel := range channels {
@@ -74,14 +74,14 @@ func (s *ChannelGRPCService) ListChannels(
 	return response, nil
 }
 
-func (s *ChannelGRPCService) DeleteChannel(
-	ctx context.Context, req *pb_channel.DeleteChannelRequest,
-) (*pb_channel.DeleteChannelResponse, error) {
+func (s *ChannelGRPCService) Delete(
+	ctx context.Context, req *pb_channel.DeleteRequest,
+) (*pb_channel.DeleteResponse, error) {
 
 	id, _ := uuid.Parse(req.Id)
 	if err := service.NewChannelService(ctx, s.DbConn, s.Db).Delete(id); err != nil {
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_channel.DeleteChannelResponse{}, nil
+	return &pb_channel.DeleteResponse{}, nil
 }

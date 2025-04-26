@@ -8,15 +8,14 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 service ChannelService {
-  // ----- CHANNEL ----
-  rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse);
-  rpc GetByIdChannel(GetByIdChannelRequest) returns (GetByIdChannelResponse);
-  rpc ListChannels(ListChannelsRequest) returns (ListChannelsResponse);
-  rpc DeleteChannel(DeleteChannelRequest) returns (DeleteChannelResponse);
+  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc GetById(GetByIdRequest) returns (GetByIdResponse);
+  rpc ListServerChannels(ListServerChannelsRequest)
+      returns (ListServerChannelsResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
 }
 
-// RESOURCES
-
+// ----- STRUCTURES -----
 message Channel {
   string id = 1;
   string name = 2;
@@ -25,28 +24,28 @@ message Channel {
   google.protobuf.Timestamp updated_at = 5;
 }
 
-// ----- Channel -----
-message CreateChannelRequest {
+// ----- REQUEST/RESPONSE -----
+message CreateRequest {
   string name = 1 [
     (buf.validate.field).string.min_len = 1,
     (buf.validate.field).string.max_len = 64
   ];
   string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
-message CreateChannelResponse { Channel channel = 1; }
+message CreateResponse { Channel channel = 1; }
 
-message GetByIdChannelRequest {
+message GetByIdRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message GetByIdChannelResponse { Channel channel = 1; }
+message GetByIdResponse { Channel channel = 1; }
 
-message ListChannelsRequest {
+message ListServerChannelsRequest {
   google.protobuf.StringValue name = 1;
   google.protobuf.StringValue appserver_id = 2;
 }
-message ListChannelsResponse { repeated Channel channels = 1; }
+message ListServerChannelsResponse { repeated Channel channels = 1; }
 
-message DeleteChannelRequest {
+message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message DeleteChannelResponse {}
+message DeleteResponse {}

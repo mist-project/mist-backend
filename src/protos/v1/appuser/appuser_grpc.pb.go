@@ -26,7 +26,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AppuserServiceClient interface {
-	// ----- APPUSER ----
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 }
 
@@ -52,7 +51,6 @@ func (c *appuserServiceClient) Create(ctx context.Context, in *CreateRequest, op
 // All implementations must embed UnimplementedAppuserServiceServer
 // for forward compatibility.
 type AppuserServiceServer interface {
-	// ----- APPUSER ----
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	mustEmbedUnimplementedAppuserServiceServer()
 }

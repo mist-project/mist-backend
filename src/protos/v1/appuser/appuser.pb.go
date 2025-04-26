@@ -79,6 +79,7 @@ func (AppUserStatus) EnumDescriptor() ([]byte, []int) {
 	return file_v1_appuser_appuser_proto_rawDescGZIP(), []int{0}
 }
 
+// ----- STRUCTURES -----
 type Appuser struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -155,7 +156,7 @@ func (x *Appuser) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// ----- APPUSER -----
+// ----- REQUEST/RESPONSE -----
 type CreateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`

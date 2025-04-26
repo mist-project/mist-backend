@@ -15,7 +15,7 @@ service AppserverService {
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }
 
-// RESOURCES
+// ----- STRUCTURES -----
 message Appserver {
   string id = 1;
   string name = 2;
@@ -24,7 +24,7 @@ message Appserver {
   google.protobuf.Timestamp updated_at = 5;
 }
 
-// RESPONSE/REQUEST
+// ----- REQUEST/RESPONSE -----
 message CreateRequest {
   string name = 1 [
     (buf.validate.field).string.min_len = 1,

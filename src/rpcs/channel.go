@@ -63,7 +63,7 @@ func (s *ChannelGRPCService) ListServerChannels(
 		serverFilter = pgtype.UUID{Valid: true, Bytes: serverId}
 	}
 
-	channels, _ := cs.List(qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverFilter})
+	channels, _ := cs.ListServerChannels(qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverFilter})
 	response := &pb_channel.ListServerChannelsResponse{}
 	response.Channels = make([]*pb_channel.Channel, 0, len(channels))
 

@@ -14,7 +14,7 @@ INSERT INTO appserver_sub (
 )
 RETURNING *;
 
--- name: GetUserAppserverSubs :many
+-- name: ListUserServerSubs :many
 SELECT
   asub.id as appserver_sub_id,
   asub.appuser_id,
@@ -26,7 +26,7 @@ FROM appserver_sub as asub
 JOIN appserver as aserver ON asub.appserver_id=aserver.id
 WHERE asub.appuser_id=$1;
 
--- name: GetAllUsersAppserverSubs :many
+-- name: ListAppserverUserSubs :many
 SELECT
   asub.id as appserver_sub_id,
   auser.id,

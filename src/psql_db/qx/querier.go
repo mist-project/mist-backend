@@ -22,7 +22,6 @@ type Querier interface {
 	DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserverRoleSubParams) (int64, error)
 	DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteChannel(ctx context.Context, id uuid.UUID) (int64, error)
-	GetAllUsersAppserverSubs(ctx context.Context, appserverID uuid.UUID) ([]GetAllUsersAppserverSubsRow, error)
 	GetAppserverAllUserRoleSubs(ctx context.Context, appserverID uuid.UUID) ([]GetAppserverAllUserRoleSubsRow, error)
 	GetAppserverById(ctx context.Context, id uuid.UUID) (Appserver, error)
 	GetAppserverRoleById(ctx context.Context, id uuid.UUID) (AppserverRole, error)
@@ -31,10 +30,11 @@ type Querier interface {
 	GetAppuserById(ctx context.Context, id uuid.UUID) (Appuser, error)
 	GetAppuserRoleSubs(ctx context.Context, arg GetAppuserRoleSubsParams) ([]GetAppuserRoleSubsRow, error)
 	GetChannelById(ctx context.Context, id uuid.UUID) (Channel, error)
-	GetUserAppserverSubs(ctx context.Context, appuserID uuid.UUID) ([]GetUserAppserverSubsRow, error)
 	ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error)
+	ListAppserverUserSubs(ctx context.Context, appserverID uuid.UUID) ([]ListAppserverUserSubsRow, error)
 	ListAppservers(ctx context.Context, arg ListAppserversParams) ([]Appserver, error)
 	ListServerChannels(ctx context.Context, arg ListServerChannelsParams) ([]Channel, error)
+	ListUserServerSubs(ctx context.Context, appuserID uuid.UUID) ([]ListUserServerSubsRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

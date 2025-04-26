@@ -44,7 +44,7 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 
 	// TODO: Handle potential errors that can happen here
 	userId, _ := uuid.Parse(claims.UserID)
-	results, _ := subService.ListUserAppserverAndSub(userId)
+	results, _ := subService.ListUserServerSubs(userId)
 
 	// Construct the response
 	response := &pb_appserversub.ListUserServerSubsResponse{
@@ -69,7 +69,7 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
 	serverId, _ := uuid.Parse((req.AppserverId))
 
-	results, _ := subService.ListAllUsersAppserverAndSub(serverId)
+	results, _ := subService.ListAppserverUserSubs(serverId)
 
 	// Construct the response
 	response := &pb_appserversub.ListAppserverUserSubsResponse{

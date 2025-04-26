@@ -162,7 +162,7 @@ func TestChannelService_List(t *testing.T) {
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		result, err := svc.List(queryParams)
+		result, err := svc.ListServerChannels(queryParams)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -181,7 +181,7 @@ func TestChannelService_List(t *testing.T) {
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.List(queryParams)
+		_, err := svc.ListServerChannels(queryParams)
 
 		// ASSERT
 		assert.Error(t, err)

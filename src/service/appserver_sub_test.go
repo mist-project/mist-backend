@@ -49,7 +49,7 @@ func TestAppserverSubService_PgTypeToPb(t *testing.T) {
 func TestAppserverSubService_PgAppserverSubRowToPb(t *testing.T) {
 	// ARRANGE
 	now := time.Now()
-	row := &qx.GetUserAppserverSubsRow{
+	row := &qx.ListUserServerSubsRow{
 		ID:             uuid.New(),
 		Name:           "Test Server",
 		AppserverSubID: uuid.New(),
@@ -70,7 +70,7 @@ func TestAppserverSubService_PgAppserverSubRowToPb(t *testing.T) {
 func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
 	// ARRANGE
 	now := time.Now()
-	row := &qx.GetAllUsersAppserverSubsRow{
+	row := &qx.ListAppserverUserSubsRow{
 		ID:             uuid.New(),
 		Username:       "tester",
 		AppserverSubID: uuid.New(),
@@ -127,12 +127,12 @@ func TestAppserverSubService_Create(t *testing.T) {
 	})
 }
 
-func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
+func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 	t.Run("Successful:list_subs_for_user", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		userID := uuid.New()
-		expected := []qx.GetUserAppserverSubsRow{
+		expected := []qx.ListUserServerSubsRow{
 			{
 				ID:             uuid.New(),
 				Name:           "Server1",
@@ -142,12 +142,12 @@ func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetUserAppserverSubs", ctx, userID).Return(expected, nil)
+		mockQuerier.On("ListUserServerSubs", ctx, userID).Return(expected, nil)
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		res, err := svc.ListUserAppserverAndSub(userID)
+		res, err := svc.ListUserServerSubs(userID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -160,14 +160,14 @@ func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
 		userID := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetUserAppserverSubs", ctx, userID).Return(
-			[]qx.GetUserAppserverSubsRow{}, fmt.Errorf("db boom error"),
+		mockQuerier.On("ListUserServerSubs", ctx, userID).Return(
+			[]qx.ListUserServerSubsRow{}, fmt.Errorf("db boom error"),
 		)
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.ListUserAppserverAndSub(userID)
+		_, err := svc.ListUserServerSubs(userID)
 
 		// ASSERT
 		assert.Error(t, err)
@@ -175,12 +175,12 @@ func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
 	})
 }
 
-func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
+func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 	t.Run("Successful:list_users_in_server", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		serverID := uuid.New()
-		expected := []qx.GetAllUsersAppserverSubsRow{
+		expected := []qx.ListAppserverUserSubsRow{
 			{
 				ID:             uuid.New(),
 				Username:       "user1",
@@ -190,12 +190,12 @@ func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAllUsersAppserverSubs", ctx, serverID).Return(expected, nil)
+		mockQuerier.On("ListAppserverUserSubs", ctx, serverID).Return(expected, nil)
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		res, err := svc.ListAllUsersAppserverAndSub(serverID)
+		res, err := svc.ListAppserverUserSubs(serverID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -208,12 +208,12 @@ func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
 		serverID := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAllUsersAppserverSubs", ctx, serverID).Return([]qx.GetAllUsersAppserverSubsRow{}, fmt.Errorf("query error"))
+		mockQuerier.On("ListAppserverUserSubs", ctx, serverID).Return([]qx.ListAppserverUserSubsRow{}, fmt.Errorf("query error"))
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.ListAllUsersAppserverAndSub(serverID)
+		_, err := svc.ListAppserverUserSubs(serverID)
 
 		// ASSERT
 		assert.Error(t, err)

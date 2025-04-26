@@ -35,7 +35,7 @@ func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserversub
 	}
 }
 
-func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.GetUserAppserverSubsRow) *pb_appserversub.AppserverAndSub {
+func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.ListUserServerSubsRow) *pb_appserversub.AppserverAndSub {
 	appserver := &pb_appserver.Appserver{
 		Id:        res.ID.String(),
 		Name:      res.Name,
@@ -49,7 +49,7 @@ func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.GetUserAppserverSubs
 	}
 }
 
-func (s *AppserverSubService) PgUserSubRowToPb(res *qx.GetAllUsersAppserverSubsRow) *pb_appserversub.AppuserAndSub {
+func (s *AppserverSubService) PgUserSubRowToPb(res *qx.ListAppserverUserSubsRow) *pb_appserversub.AppuserAndSub {
 	appuser := &pb_appuser.Appuser{
 		Id:        res.ID.String(),
 		Username:  res.Username,
@@ -83,10 +83,10 @@ func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx p
 }
 
 // Lists all the servers a user is subscribed to.
-func (s *AppserverSubService) ListUserAppserverAndSub(userId uuid.UUID) ([]qx.GetUserAppserverSubsRow, error) {
+func (s *AppserverSubService) ListUserServerSubs(userId uuid.UUID) ([]qx.ListUserServerSubsRow, error) {
 	/* Returns all servers a user belongs to. */
 
-	subs, err := s.db.GetUserAppserverSubs(s.ctx, userId)
+	subs, err := s.db.ListUserServerSubs(s.ctx, userId)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
@@ -96,11 +96,11 @@ func (s *AppserverSubService) ListUserAppserverAndSub(userId uuid.UUID) ([]qx.Ge
 }
 
 // Lists all the users in a server.
-func (s *AppserverSubService) ListAllUsersAppserverAndSub(
+func (s *AppserverSubService) ListAppserverUserSubs(
 	appserverId uuid.UUID,
-) ([]qx.GetAllUsersAppserverSubsRow, error) {
+) ([]qx.ListAppserverUserSubsRow, error) {
 
-	subs, err := s.db.GetAllUsersAppserverSubs(s.ctx, appserverId)
+	subs, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))

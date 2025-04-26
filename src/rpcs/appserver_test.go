@@ -157,7 +157,7 @@ func TestAppserverService_Create(t *testing.T) {
 
 		serverSubs, _ := service.NewAppserverSubService(
 			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)),
-		).ListUserAppserverAndSub(appuser.ID)
+		).ListUserServerSubs(appuser.ID)
 		assert.NotNil(t, response.Appserver)
 		assert.Equal(t, 1, len(serverSubs))
 		assert.Equal(t, 1, count)
@@ -218,7 +218,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		subService := service.NewAppserverSubService(ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
 
 		// ASSERT
-		serverSubs, _ := subService.ListUserAppserverAndSub(appuser.ID)
+		serverSubs, _ := subService.ListUserServerSubs(appuser.ID)
 		assert.Equal(t, 1, len(serverSubs))
 
 		// ACT
@@ -227,7 +227,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		)
 
 		// ASSERT
-		serverSubs, _ = subService.ListUserAppserverAndSub(appuser.ID)
+		serverSubs, _ = subService.ListUserServerSubs(appuser.ID)
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(serverSubs))

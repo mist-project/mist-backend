@@ -9,13 +9,10 @@ import "google/protobuf/wrappers.proto";
 import "v1/appuser/appuser.proto";
 
 service AppserverService {
-  rpc CreateAppserver(CreateAppserverRequest)
-      returns (CreateAppserverResponse) {}
-  rpc GetByIdAppserver(GetByIdAppserverRequest)
-      returns (GetByIdAppserverResponse) {}
-  rpc ListAppservers(ListAppserversRequest) returns (ListAppserversResponse) {}
-  rpc DeleteAppserver(DeleteAppserverRequest)
-      returns (DeleteAppserverResponse) {}
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc GetById(GetByIdRequest) returns (GetByIdResponse) {}
+  rpc List(ListRequest) returns (ListResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }
 
 // RESOURCES
@@ -28,23 +25,23 @@ message Appserver {
 }
 
 // RESPONSE/REQUEST
-message CreateAppserverRequest {
+message CreateRequest {
   string name = 1 [
     (buf.validate.field).string.min_len = 1,
     (buf.validate.field).string.max_len = 64
   ];
 }
-message CreateAppserverResponse { Appserver appserver = 1; }
+message CreateResponse { Appserver appserver = 1; }
 
-message GetByIdAppserverRequest {
+message GetByIdRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message GetByIdAppserverResponse { Appserver appserver = 1; }
+message GetByIdResponse { Appserver appserver = 1; }
 
-message ListAppserversRequest { google.protobuf.StringValue name = 1; }
-message ListAppserversResponse { repeated Appserver appservers = 1; }
+message ListRequest { google.protobuf.StringValue name = 1; }
+message ListResponse { repeated Appserver appservers = 1; }
 
-message DeleteAppserverRequest {
+message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message DeleteAppserverResponse {}
+message DeleteResponse {}

@@ -12,9 +12,9 @@ import (
 	"mist/src/service"
 )
 
-func (s *AppserverGRPCService) CreateAppserver(
-	ctx context.Context, req *pb_appserver.CreateAppserverRequest,
-) (*pb_appserver.CreateAppserverResponse, error) {
+func (s *AppserverGRPCService) Create(
+	ctx context.Context, req *pb_appserver.CreateRequest,
+) (*pb_appserver.CreateResponse, error) {
 
 	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	claims, err := middleware.GetJWTClaims(ctx)
@@ -29,12 +29,12 @@ func (s *AppserverGRPCService) CreateAppserver(
 	res := serverS.PgTypeToPb(appserver)
 	res.IsOwner = appserver.AppuserID == userId
 
-	return &pb_appserver.CreateAppserverResponse{Appserver: res}, nil
+	return &pb_appserver.CreateResponse{Appserver: res}, nil
 }
 
-func (s *AppserverGRPCService) GetByIdAppserver(
-	ctx context.Context, req *pb_appserver.GetByIdAppserverRequest,
-) (*pb_appserver.GetByIdAppserverResponse, error) {
+func (s *AppserverGRPCService) GetById(
+	ctx context.Context, req *pb_appserver.GetByIdRequest,
+) (*pb_appserver.GetByIdResponse, error) {
 
 	var (
 		err       error
@@ -50,12 +50,12 @@ func (s *AppserverGRPCService) GetByIdAppserver(
 
 	pbA := as.PgTypeToPb(appserver)
 	pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
-	return &pb_appserver.GetByIdAppserverResponse{Appserver: pbA}, nil
+	return &pb_appserver.GetByIdResponse{Appserver: pbA}, nil
 }
 
-func (s *AppserverGRPCService) ListAppservers(
-	ctx context.Context, req *pb_appserver.ListAppserversRequest,
-) (*pb_appserver.ListAppserversResponse, error) {
+func (s *AppserverGRPCService) List(
+	ctx context.Context, req *pb_appserver.ListRequest,
+) (*pb_appserver.ListResponse, error) {
 	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
@@ -68,7 +68,7 @@ func (s *AppserverGRPCService) ListAppservers(
 	}
 
 	appservers, _ := as.List(qx.ListUserAppserversParams{Name: name, AppuserID: userId})
-	response := &pb_appserver.ListAppserversResponse{}
+	response := &pb_appserver.ListResponse{}
 
 	// Resize the array
 	response.Appservers = make([]*pb_appserver.Appserver, 0, len(appservers))
@@ -82,9 +82,9 @@ func (s *AppserverGRPCService) ListAppservers(
 	return response, nil
 }
 
-func (s *AppserverGRPCService) DeleteAppserver(
-	ctx context.Context, req *pb_appserver.DeleteAppserverRequest,
-) (*pb_appserver.DeleteAppserverResponse, error) {
+func (s *AppserverGRPCService) Delete(
+	ctx context.Context, req *pb_appserver.DeleteRequest,
+) (*pb_appserver.DeleteResponse, error) {
 
 	claims, _ := middleware.GetJWTClaims(ctx)
 	id, _ := uuid.Parse(req.Id)
@@ -98,5 +98,5 @@ func (s *AppserverGRPCService) DeleteAppserver(
 		return nil, ErrorHandler(err)
 	}
 
-	return &pb_appserver.DeleteAppserverResponse{}, nil
+	return &pb_appserver.DeleteResponse{}, nil
 }

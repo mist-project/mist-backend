@@ -11,9 +11,9 @@ import (
 	"mist/src/service"
 )
 
-func (s *AppserverRoleGRPCService) CreateAppserverRole(
-	ctx context.Context, req *pb_appserverrole.CreateAppserverRoleRequest,
-) (*pb_appserverrole.CreateAppserverRoleResponse, error) {
+func (s *AppserverRoleGRPCService) Create(
+	ctx context.Context, req *pb_appserverrole.CreateRequest,
+) (*pb_appserverrole.CreateResponse, error) {
 
 	serverId, _ := uuid.Parse(req.AppserverId)
 	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
@@ -25,14 +25,14 @@ func (s *AppserverRoleGRPCService) CreateAppserverRole(
 	}
 
 	// Return response
-	return &pb_appserverrole.CreateAppserverRoleResponse{
+	return &pb_appserverrole.CreateResponse{
 		AppserverRole: roleService.PgTypeToPb(aRole),
 	}, nil
 }
 
-func (s *AppserverRoleGRPCService) GetAllAppserverRoles(
-	ctx context.Context, req *pb_appserverrole.GetAllAppserverRolesRequest,
-) (*pb_appserverrole.GetAllAppserverRolesResponse, error) {
+func (s *AppserverRoleGRPCService) ListServerRoles(
+	ctx context.Context, req *pb_appserverrole.ListServerRolesRequest,
+) (*pb_appserverrole.ListServerRolesResponse, error) {
 
 	// Initialize the service for AppserveRole
 	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
@@ -45,7 +45,7 @@ func (s *AppserverRoleGRPCService) GetAllAppserverRoles(
 	}
 
 	// Construct the response
-	response := &pb_appserverrole.GetAllAppserverRolesResponse{
+	response := &pb_appserverrole.ListServerRolesResponse{
 		AppserverRoles: make([]*pb_appserverrole.AppserverRole, 0, len(results)),
 	}
 	// Convert list of AppserveRoles to protobuf
@@ -56,9 +56,9 @@ func (s *AppserverRoleGRPCService) GetAllAppserverRoles(
 	return response, nil
 }
 
-func (s *AppserverRoleGRPCService) DeleteAppserverRole(
-	ctx context.Context, req *pb_appserverrole.DeleteAppserverRoleRequest,
-) (*pb_appserverrole.DeleteAppserverRoleResponse, error) {
+func (s *AppserverRoleGRPCService) Delete(
+	ctx context.Context, req *pb_appserverrole.DeleteRequest,
+) (*pb_appserverrole.DeleteResponse, error) {
 
 	// Initialize the service for AppserveRole
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -76,5 +76,5 @@ func (s *AppserverRoleGRPCService) DeleteAppserverRole(
 	}
 
 	// Return success response
-	return &pb_appserverrole.DeleteAppserverRoleResponse{}, nil
+	return &pb_appserverrole.DeleteResponse{}, nil
 }

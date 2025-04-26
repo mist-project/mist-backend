@@ -19,18 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AppserverRoleService_CreateAppserverRole_FullMethodName  = "/v1.appserverrole.AppserverRoleService/CreateAppserverRole"
-	AppserverRoleService_GetAllAppserverRoles_FullMethodName = "/v1.appserverrole.AppserverRoleService/GetAllAppserverRoles"
-	AppserverRoleService_DeleteAppserverRole_FullMethodName  = "/v1.appserverrole.AppserverRoleService/DeleteAppserverRole"
+	AppserverRoleService_Create_FullMethodName          = "/v1.appserverrole.AppserverRoleService/Create"
+	AppserverRoleService_ListServerRoles_FullMethodName = "/v1.appserverrole.AppserverRoleService/ListServerRoles"
+	AppserverRoleService_Delete_FullMethodName          = "/v1.appserverrole.AppserverRoleService/Delete"
 )
 
 // AppserverRoleServiceClient is the client API for AppserverRoleService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AppserverRoleServiceClient interface {
-	CreateAppserverRole(ctx context.Context, in *CreateAppserverRoleRequest, opts ...grpc.CallOption) (*CreateAppserverRoleResponse, error)
-	GetAllAppserverRoles(ctx context.Context, in *GetAllAppserverRolesRequest, opts ...grpc.CallOption) (*GetAllAppserverRolesResponse, error)
-	DeleteAppserverRole(ctx context.Context, in *DeleteAppserverRoleRequest, opts ...grpc.CallOption) (*DeleteAppserverRoleResponse, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	ListServerRoles(ctx context.Context, in *ListServerRolesRequest, opts ...grpc.CallOption) (*ListServerRolesResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
 type appserverRoleServiceClient struct {
@@ -41,30 +41,30 @@ func NewAppserverRoleServiceClient(cc grpc.ClientConnInterface) AppserverRoleSer
 	return &appserverRoleServiceClient{cc}
 }
 
-func (c *appserverRoleServiceClient) CreateAppserverRole(ctx context.Context, in *CreateAppserverRoleRequest, opts ...grpc.CallOption) (*CreateAppserverRoleResponse, error) {
+func (c *appserverRoleServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateAppserverRoleResponse)
-	err := c.cc.Invoke(ctx, AppserverRoleService_CreateAppserverRole_FullMethodName, in, out, cOpts...)
+	out := new(CreateResponse)
+	err := c.cc.Invoke(ctx, AppserverRoleService_Create_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *appserverRoleServiceClient) GetAllAppserverRoles(ctx context.Context, in *GetAllAppserverRolesRequest, opts ...grpc.CallOption) (*GetAllAppserverRolesResponse, error) {
+func (c *appserverRoleServiceClient) ListServerRoles(ctx context.Context, in *ListServerRolesRequest, opts ...grpc.CallOption) (*ListServerRolesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetAllAppserverRolesResponse)
-	err := c.cc.Invoke(ctx, AppserverRoleService_GetAllAppserverRoles_FullMethodName, in, out, cOpts...)
+	out := new(ListServerRolesResponse)
+	err := c.cc.Invoke(ctx, AppserverRoleService_ListServerRoles_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *appserverRoleServiceClient) DeleteAppserverRole(ctx context.Context, in *DeleteAppserverRoleRequest, opts ...grpc.CallOption) (*DeleteAppserverRoleResponse, error) {
+func (c *appserverRoleServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteAppserverRoleResponse)
-	err := c.cc.Invoke(ctx, AppserverRoleService_DeleteAppserverRole_FullMethodName, in, out, cOpts...)
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, AppserverRoleService_Delete_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +75,9 @@ func (c *appserverRoleServiceClient) DeleteAppserverRole(ctx context.Context, in
 // All implementations must embed UnimplementedAppserverRoleServiceServer
 // for forward compatibility.
 type AppserverRoleServiceServer interface {
-	CreateAppserverRole(context.Context, *CreateAppserverRoleRequest) (*CreateAppserverRoleResponse, error)
-	GetAllAppserverRoles(context.Context, *GetAllAppserverRolesRequest) (*GetAllAppserverRolesResponse, error)
-	DeleteAppserverRole(context.Context, *DeleteAppserverRoleRequest) (*DeleteAppserverRoleResponse, error)
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	ListServerRoles(context.Context, *ListServerRolesRequest) (*ListServerRolesResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	mustEmbedUnimplementedAppserverRoleServiceServer()
 }
 
@@ -88,14 +88,14 @@ type AppserverRoleServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAppserverRoleServiceServer struct{}
 
-func (UnimplementedAppserverRoleServiceServer) CreateAppserverRole(context.Context, *CreateAppserverRoleRequest) (*CreateAppserverRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateAppserverRole not implemented")
+func (UnimplementedAppserverRoleServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedAppserverRoleServiceServer) GetAllAppserverRoles(context.Context, *GetAllAppserverRolesRequest) (*GetAllAppserverRolesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllAppserverRoles not implemented")
+func (UnimplementedAppserverRoleServiceServer) ListServerRoles(context.Context, *ListServerRolesRequest) (*ListServerRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListServerRoles not implemented")
 }
-func (UnimplementedAppserverRoleServiceServer) DeleteAppserverRole(context.Context, *DeleteAppserverRoleRequest) (*DeleteAppserverRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserverRole not implemented")
+func (UnimplementedAppserverRoleServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedAppserverRoleServiceServer) mustEmbedUnimplementedAppserverRoleServiceServer() {}
 func (UnimplementedAppserverRoleServiceServer) testEmbeddedByValue()                              {}
@@ -118,56 +118,56 @@ func RegisterAppserverRoleServiceServer(s grpc.ServiceRegistrar, srv AppserverRo
 	s.RegisterService(&AppserverRoleService_ServiceDesc, srv)
 }
 
-func _AppserverRoleService_CreateAppserverRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateAppserverRoleRequest)
+func _AppserverRoleService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppserverRoleServiceServer).CreateAppserverRole(ctx, in)
+		return srv.(AppserverRoleServiceServer).Create(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppserverRoleService_CreateAppserverRole_FullMethodName,
+		FullMethod: AppserverRoleService_Create_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppserverRoleServiceServer).CreateAppserverRole(ctx, req.(*CreateAppserverRoleRequest))
+		return srv.(AppserverRoleServiceServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AppserverRoleService_GetAllAppserverRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllAppserverRolesRequest)
+func _AppserverRoleService_ListServerRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListServerRolesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppserverRoleServiceServer).GetAllAppserverRoles(ctx, in)
+		return srv.(AppserverRoleServiceServer).ListServerRoles(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppserverRoleService_GetAllAppserverRoles_FullMethodName,
+		FullMethod: AppserverRoleService_ListServerRoles_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppserverRoleServiceServer).GetAllAppserverRoles(ctx, req.(*GetAllAppserverRolesRequest))
+		return srv.(AppserverRoleServiceServer).ListServerRoles(ctx, req.(*ListServerRolesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AppserverRoleService_DeleteAppserverRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteAppserverRoleRequest)
+func _AppserverRoleService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppserverRoleServiceServer).DeleteAppserverRole(ctx, in)
+		return srv.(AppserverRoleServiceServer).Delete(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppserverRoleService_DeleteAppserverRole_FullMethodName,
+		FullMethod: AppserverRoleService_Delete_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppserverRoleServiceServer).DeleteAppserverRole(ctx, req.(*DeleteAppserverRoleRequest))
+		return srv.(AppserverRoleServiceServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -180,16 +180,16 @@ var AppserverRoleService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AppserverRoleServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateAppserverRole",
-			Handler:    _AppserverRoleService_CreateAppserverRole_Handler,
+			MethodName: "Create",
+			Handler:    _AppserverRoleService_Create_Handler,
 		},
 		{
-			MethodName: "GetAllAppserverRoles",
-			Handler:    _AppserverRoleService_GetAllAppserverRoles_Handler,
+			MethodName: "ListServerRoles",
+			Handler:    _AppserverRoleService_ListServerRoles_Handler,
 		},
 		{
-			MethodName: "DeleteAppserverRole",
-			Handler:    _AppserverRoleService_DeleteAppserverRole_Handler,
+			MethodName: "Delete",
+			Handler:    _AppserverRoleService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -23,8 +23,8 @@ func TestGetAllAppserverRole(t *testing.T) {
 		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.GetAllAppserverRoles(
-			ctx, &pb_appserverrole.GetAllAppserverRolesRequest{AppserverId: appserver.ID.String()},
+		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
+			ctx, &pb_appserverrole.ListServerRolesRequest{AppserverId: appserver.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -42,8 +42,8 @@ func TestGetAllAppserverRole(t *testing.T) {
 		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name #2", AppserverID: server.ID})
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.GetAllAppserverRoles(
-			ctx, &pb_appserverrole.GetAllAppserverRolesRequest{AppserverId: server.ID.String()},
+		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
+			ctx, &pb_appserverrole.ListServerRolesRequest{AppserverId: server.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -57,7 +57,7 @@ func TestGetAllAppserverRole(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.NewString()
-		request := &pb_appserverrole.GetAllAppserverRolesRequest{
+		request := &pb_appserverrole.ListServerRolesRequest{
 			AppserverId: appserverId,
 		}
 		mockQuerier := new(testutil.MockQuerier)
@@ -66,7 +66,7 @@ func TestGetAllAppserverRole(t *testing.T) {
 		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
 
 		// ACT
-		response, err := svc.GetAllAppserverRoles(ctx, request)
+		response, err := svc.ListServerRoles(ctx, request)
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -84,7 +84,7 @@ func TestCreateAppserveRole(t *testing.T) {
 		appserver := testutil.TestAppserver(t, nil)
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{
+		response, err := testutil.TestAppserverRoleClient.Create(ctx, &pb_appserverrole.CreateRequest{
 			AppserverId: appserver.ID.String(),
 			Name:        "foo",
 		})
@@ -101,8 +101,8 @@ func TestCreateAppserveRole(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.CreateAppserverRole(
-			ctx, &pb_appserverrole.CreateAppserverRoleRequest{Name: "foo", AppserverId: uuid.NewString()})
+		response, err := testutil.TestAppserverRoleClient.Create(
+			ctx, &pb_appserverrole.CreateRequest{Name: "foo", AppserverId: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -116,7 +116,7 @@ func TestCreateAppserveRole(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.CreateAppserverRole(ctx, &pb_appserverrole.CreateAppserverRoleRequest{})
+		response, err := testutil.TestAppserverRoleClient.Create(ctx, &pb_appserverrole.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -137,8 +137,8 @@ func TestDeleteAppserveRole(t *testing.T) {
 		aRole := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: server.ID, Name: "zoo"})
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.DeleteAppserverRole(
-			ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: aRole.ID.String()},
+		response, err := testutil.TestAppserverRoleClient.Delete(
+			ctx, &pb_appserverrole.DeleteRequest{Id: aRole.ID.String()},
 		)
 
 		// ASSERT
@@ -152,8 +152,8 @@ func TestDeleteAppserveRole(t *testing.T) {
 		aRole := testutil.TestAppserverRole(t, nil)
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.DeleteAppserverRole(
-			ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: aRole.ID.String()})
+		response, err := testutil.TestAppserverRoleClient.Delete(
+			ctx, &pb_appserverrole.DeleteRequest{Id: aRole.ID.String()})
 
 		// ASSERT
 		assert.Nil(t, response)
@@ -166,7 +166,7 @@ func TestDeleteAppserveRole(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.DeleteAppserverRole(ctx, &pb_appserverrole.DeleteAppserverRoleRequest{Id: uuid.NewString()})
+		response, err := testutil.TestAppserverRoleClient.Delete(ctx, &pb_appserverrole.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT

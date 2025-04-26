@@ -1,7 +1,6 @@
 package rpcs_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -184,9 +183,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		)
 
 		s, ok := status.FromError(err)
-		fmt.Println(err)
-		fmt.Println(codes.NotFound)
-		fmt.Println(s.Code())
+
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)

@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/errors/message"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -42,7 +43,7 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.A
 	aRoles, err := s.db.ListAppserverRoles(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return aRoles, nil
@@ -53,9 +54,9 @@ func (s *AppserverRoleService) Delete(obj qx.DeleteAppserverRoleParams) error {
 	deleted, err := s.db.DeleteAppserverRole(s.ctx, obj)
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
+		return message.NotFoundError(message.NotFound)
 	}
 	return nil
 }

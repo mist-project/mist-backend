@@ -75,7 +75,7 @@ dump-schema:
 
 
 # ----- TESTS -----
-run-tests t: generate-queries test-rpcs test-middleware test-service
+run-tests t: generate-queries test-rpcs test-middleware test-service test-permission test-errors test-message
 
 all-tests: 
 	go test -cover ./... | grep -v 'testutil'
@@ -97,6 +97,20 @@ test-service:
 	@go test mist/src/service -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
+test-permission:
+	@echo -----------------------------------------
+	@go test mist/src/permission -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
+test-errors:
+	@echo -----------------------------------------
+	@go test mist/src/errors -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
+test-message:
+	@echo -----------------------------------------
+	@go test mist/src/errors/message -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
 
 # ----- FORMAT -----
 lint:

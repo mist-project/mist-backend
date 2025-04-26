@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/errors/message"
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -116,7 +117,7 @@ func TestChannelService_GetById(t *testing.T) {
 		channel := testutil.TestChannel(t, nil)
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(*channel, fmt.Errorf("no rows in result set"))
+		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(*channel, fmt.Errorf(message.DbNotFound))
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT

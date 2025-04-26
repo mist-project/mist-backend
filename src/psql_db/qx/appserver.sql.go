@@ -44,16 +44,10 @@ func (q *Queries) CreateAppserver(ctx context.Context, arg CreateAppserverParams
 const deleteAppserver = `-- name: DeleteAppserver :execrows
 DELETE FROM appserver
 WHERE id=$1
-  AND appuser_id=$2
 `
 
-type DeleteAppserverParams struct {
-	ID        uuid.UUID
-	AppuserID uuid.UUID
-}
-
-func (q *Queries) DeleteAppserver(ctx context.Context, arg DeleteAppserverParams) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteAppserver, arg.ID, arg.AppuserID)
+func (q *Queries) DeleteAppserver(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAppserver, id)
 	if err != nil {
 		return 0, err
 	}

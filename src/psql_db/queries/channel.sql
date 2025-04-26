@@ -1,3 +1,13 @@
+-- name: CreateChannel :one
+INSERT INTO channel (
+  name,
+  appserver_id
+) VALUES (
+  $1,
+  $2
+)
+RETURNING *;
+
 -- name: GetChannelById :one
 SELECT *
 FROM channel
@@ -10,15 +20,6 @@ FROM channel
 WHERE name=COALESCE(sqlc.narg('name'), name)
   AND appserver_id=COALESCE(sqlc.narg('appserver_id'), appserver_id);
 
--- name: CreateChannel :one
-INSERT INTO channel (
-  name,
-  appserver_id
-) VALUES (
-  $1,
-  $2
-)
-RETURNING *;
 
 -- name: DeleteChannel :execrows
 DELETE FROM channel

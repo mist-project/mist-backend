@@ -17,7 +17,7 @@ type Querier interface {
 	CreateAppserverSub(ctx context.Context, arg CreateAppserverSubParams) (AppserverSub, error)
 	CreateAppuser(ctx context.Context, arg CreateAppuserParams) (Appuser, error)
 	CreateChannel(ctx context.Context, arg CreateChannelParams) (Channel, error)
-	DeleteAppserver(ctx context.Context, arg DeleteAppserverParams) (int64, error)
+	DeleteAppserver(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteAppserverRole(ctx context.Context, arg DeleteAppserverRoleParams) (int64, error)
 	DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserverRoleSubParams) (int64, error)
 	DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, error)

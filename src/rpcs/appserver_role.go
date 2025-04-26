@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"mist/src/errors/message"
 	"mist/src/middleware"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
@@ -21,7 +22,7 @@ func (s *AppserverRoleGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	// Return response
@@ -41,7 +42,7 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 
 	// Error handling
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	// Construct the response
@@ -72,7 +73,7 @@ func (s *AppserverRoleGRPCService) Delete(
 
 	// Error handling
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	// Return success response

@@ -64,6 +64,17 @@ type Appserver struct {
 	UpdatedAt pgtype.Timestamp
 }
 
+type AppserverPermission struct {
+	ID          uuid.UUID
+	AppserverID uuid.UUID
+	AppuserID   uuid.UUID
+	ReadAll     pgtype.Bool
+	WriteAll    pgtype.Bool
+	DeleteAll   pgtype.Bool
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
 type AppserverRole struct {
 	ID          uuid.UUID
 	AppserverID uuid.UUID
@@ -104,6 +115,16 @@ type Channel struct {
 	AppserverID uuid.UUID
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
+}
+
+type ChannelPermission struct {
+	ID              uuid.UUID
+	ChannelID       uuid.UUID
+	AppserverRoleID uuid.UUID
+	ReadAll         pgtype.Bool
+	WriteAll        pgtype.Bool
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
 }
 
 type GooseDbVersion struct {

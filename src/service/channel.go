@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/errors/message"
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -40,7 +41,8 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 	channel, err := s.db.CreateChannel(s.ctx, obj)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) create channel error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("create channel error: %v", err))
+
 	}
 
 	return &channel, err
@@ -51,11 +53,11 @@ func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
 	channel, err := s.db.GetChannelById(s.ctx, id)
 
 	if err != nil {
-		if strings.Contains(err.Error(), "no rows in result set") {
-			return nil, fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
+		if strings.Contains(err.Error(), message.DbNotFound) {
+			return nil, message.NotFoundError(message.NotFound)
 		}
 
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return &channel, nil
@@ -68,7 +70,7 @@ func (s *ChannelService) ListServerChannels(obj qx.ListServerChannelsParams) ([]
 	channels, err := s.db.ListServerChannels(s.ctx, obj)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return channels, nil
@@ -80,9 +82,9 @@ func (s *ChannelService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteChannel(s.ctx, id)
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
+		return message.NotFoundError(message.NotFound)
 	}
 
 	return err

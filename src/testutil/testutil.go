@@ -150,13 +150,13 @@ func Setup(t *testing.T, cleanup func()) context.Context {
 		cancel()
 	})
 
-	token, claims := createJwtToken(
+	token, claims := CreateJwtToken(
 		t,
 		&CreateTokenParams{
-			iss:       os.Getenv("MIST_API_JWT_ISSUER"),
-			aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
-			secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
-			userId:    userRequestId,
+			Iss:       os.Getenv("MIST_API_JWT_ISSUER"),
+			Aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
+			SecretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
+			UserId:    userRequestId,
 		},
 	)
 
@@ -192,31 +192,31 @@ func teardown(ctx context.Context) {
 // ----- HELPER FUNCTIONS -----
 
 type CreateTokenParams struct {
-	iss       string
-	aud       []string
-	secretKey string
-	userId    string
+	Iss       string
+	Aud       []string
+	SecretKey string
+	UserId    string
 }
 
-func createJwtToken(t *testing.T, params *CreateTokenParams) (string, *middleware.CustomJWTClaims) {
+func CreateJwtToken(t *testing.T, params *CreateTokenParams) (string, *middleware.CustomJWTClaims) {
 	// Define secret key for signing the token
 
 	// Define JWT claims
 	c := &middleware.CustomJWTClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:   params.iss,
-			Audience: params.aud,
+			Issuer:   params.Iss,
+			Audience: params.Aud,
 
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		UserID: params.userId,
+		UserID: params.UserId,
 	}
 	// Create a new token with specified claims
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 
 	// Sign the token using the secret key
-	token, err := tok.SignedString([]byte(params.secretKey))
+	token, err := tok.SignedString([]byte(params.SecretKey))
 	if err != nil {
 		t.Fatalf("error signing the token %v", err)
 	}

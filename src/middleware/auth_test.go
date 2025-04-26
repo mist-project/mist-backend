@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mist/src/middleware"
+	"mist/src/testutil"
 	"os"
 	"testing"
 	"time"
@@ -22,11 +23,11 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("valid_token", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		token := createJwtToken(t,
-			&CreateTokenParams{
-				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
-				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
-				secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
+		token, _ := testutil.CreateJwtToken(t,
+			&testutil.CreateTokenParams{
+				Iss:       os.Getenv("MIST_API_JWT_ISSUER"),
+				Aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
+				SecretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
 			})
 		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
 		ctx = metadata.NewIncomingContext(ctx, headers)
@@ -41,11 +42,11 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("invalid_audience", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		token := createJwtToken(t,
-			&CreateTokenParams{
-				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
-				aud:       []string{"invalid-audience"},
-				secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
+		token, _ := testutil.CreateJwtToken(t,
+			&testutil.CreateTokenParams{
+				Iss:       os.Getenv("MIST_API_JWT_ISSUER"),
+				Aud:       []string{"invalid-audience"},
+				SecretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
 			})
 
 		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
@@ -62,10 +63,10 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("invalid_issuer", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		token := createJwtToken(t,
-			&CreateTokenParams{
-				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
-				secretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
+		token, _ := testutil.CreateJwtToken(t,
+			&testutil.CreateTokenParams{
+				Aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
+				SecretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
 			})
 
 		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
@@ -82,11 +83,11 @@ func TestAuthJwtInterceptor(t *testing.T) {
 	t.Run("invalid_secret_key", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
-		token := createJwtToken(t,
-			&CreateTokenParams{
-				iss:       os.Getenv("MIST_API_JWT_ISSUER"),
-				aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
-				secretKey: "wrong-secret-key",
+		token, _ := testutil.CreateJwtToken(t,
+			&testutil.CreateTokenParams{
+				Iss:       os.Getenv("MIST_API_JWT_ISSUER"),
+				Aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
+				SecretKey: "wrong-secret-key",
 			})
 
 		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"mist/src/errors/message"
 	"mist/src/middleware"
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
@@ -33,7 +34,7 @@ func (s *AppserverRoleSubGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	// Return response
@@ -86,7 +87,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 
 	// Error handling
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	// Return success response

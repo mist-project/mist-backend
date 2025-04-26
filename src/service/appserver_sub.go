@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/errors/message"
 	pb_appserver "mist/src/protos/v1/appserver"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	pb_appuser "mist/src/protos/v1/appuser"
@@ -68,7 +69,7 @@ func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.Appse
 	appserverSub, err := s.db.CreateAppserverSub(s.ctx, obj)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return &appserverSub, err
@@ -89,7 +90,7 @@ func (s *AppserverSubService) ListUserServerSubs(userId uuid.UUID) ([]qx.ListUse
 	subs, err := s.db.ListUserServerSubs(s.ctx, userId)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return subs, nil
@@ -103,7 +104,7 @@ func (s *AppserverSubService) ListAppserverUserSubs(
 	subs, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return subs, nil
@@ -114,9 +115,9 @@ func (s *AppserverSubService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
+		return message.NotFoundError(message.NotFound)
 	}
 
 	return nil

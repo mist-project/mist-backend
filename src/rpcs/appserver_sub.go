@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"mist/src/errors/message"
 	"mist/src/middleware"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
@@ -24,7 +25,7 @@ func (s *AppserverSubGRPCService) Create(
 	appserverSub, err := subService.Create(qx.CreateAppserverSubParams{AppserverID: serverId, AppuserID: userId})
 
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	// Return response
@@ -94,7 +95,7 @@ func (s *AppserverSubGRPCService) Delete(
 	// Error handling
 	if err != nil {
 
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	// Return success response

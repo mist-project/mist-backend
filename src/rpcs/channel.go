@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
+	"mist/src/errors/message"
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -20,7 +21,7 @@ func (s *ChannelGRPCService) Create(
 	channel, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId})
 
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	return &pb_channel.CreateResponse{
@@ -38,7 +39,7 @@ func (s *ChannelGRPCService) GetById(
 	channel, err := cs.GetById(id)
 
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	return &pb_channel.GetByIdResponse{Channel: cs.PgTypeToPb(channel)}, nil
@@ -80,7 +81,7 @@ func (s *ChannelGRPCService) Delete(
 
 	id, _ := uuid.Parse(req.Id)
 	if err := service.NewChannelService(ctx, s.DbConn, s.Db).Delete(id); err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	return &pb_channel.DeleteResponse{}, nil

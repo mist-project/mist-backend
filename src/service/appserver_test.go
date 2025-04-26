@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/errors/message"
 	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -215,7 +216,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		appserverID := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", ctx, appserverID).
-			Return(qx.Appserver{}, fmt.Errorf("no rows in result set"))
+			Return(qx.Appserver{}, fmt.Errorf(message.DbNotFound))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -318,18 +319,16 @@ func TestAppserverService_List(t *testing.T) {
 
 func TestAppserverService_Delete(t *testing.T) {
 	ctx := testutil.Setup(t, func() {})
-	parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 	appserverId := uuid.New()
-	params := qx.DeleteAppserverParams{ID: appserverId, AppuserID: parsedUid}
 
 	t.Run("Successful:deletion", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(1), nil)
+		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(1), nil)
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.Delete(params)
+		err := svc.Delete(appserverId)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -338,27 +337,27 @@ func TestAppserverService_Delete(t *testing.T) {
 	t.Run("Error:on_no_rows_deleted", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(0), nil)
+		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(0), nil)
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.Delete(params)
+		err := svc.Delete(appserverId)
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) no rows were deleted")
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(0), fmt.Errorf("db failure"))
+		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(0), fmt.Errorf("db failure"))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.Delete(params)
+		err := svc.Delete(appserverId)
 
 		// ASSERT
 		assert.Error(t, err)

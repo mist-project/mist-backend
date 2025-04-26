@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
+	"mist/src/permission"
 	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -185,9 +186,7 @@ func TestAppserverService_Create(t *testing.T) {
 		expectedRequest := qx.CreateAppserverParams{AppuserID: userId, Name: "boo"}
 
 		mockTxQuerier := new(testutil.MockQuerier)
-		mockTxQuerier.On(
-			"CreateAppserver", ctx, expectedRequest,
-		).Return(qx.Appserver{}, fmt.Errorf("a db error"))
+		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(qx.Appserver{}, fmt.Errorf("a db error"))
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
@@ -245,6 +244,22 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "no rows were deleted")
+		assert.Contains(t, s.Message(), "resource not found")
+	})
+
+	t.Run("Error:on_database_failure_it_returns_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete, "delete").Return(nil)
+		// ACT
+		svc := &rpcs.AppserverGRPCService{Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth}
+		_, err := svc.Delete(ctx, &pb_appserver.DeleteRequest{Id: uuid.NewString()})
+		s, ok := status.FromError(err)
+
+		// // ASSERT
+		assert.True(t, ok)
+		assert.Equal(t, codes.NotFound, s.Code())             // Check that the error code is NotFound
+		assert.Contains(t, s.Message(), "resource not found") // Check the error message
 	})
 }

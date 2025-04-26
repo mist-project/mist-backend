@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"mist/src/errors/message"
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -36,7 +37,7 @@ func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*
 	appserverRole, err := s.db.CreateAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return &appserverRole, err
@@ -50,7 +51,7 @@ func (s *AppserverRoleSubService) ListServerRoleSubs(
 	rows, err := s.db.ListServerRoleSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
 	return rows, nil
@@ -61,9 +62,9 @@ func (s *AppserverRoleSubService) Delete(obj qx.DeleteAppserverRoleSubParams) er
 	deleted, err := s.db.DeleteAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
+		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
+		return message.NotFoundError("resource not found")
 	}
 
 	return nil

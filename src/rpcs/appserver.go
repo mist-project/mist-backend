@@ -6,7 +6,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
+	"mist/src/errors/message"
 	"mist/src/middleware"
+	"mist/src/permission"
 	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -23,7 +25,7 @@ func (s *AppserverGRPCService) Create(
 	appserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
 
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	res := serverS.PgTypeToPb(appserver)
@@ -45,7 +47,7 @@ func (s *AppserverGRPCService) GetById(
 
 	id, _ := uuid.Parse(req.Id)
 	if appserver, err = as.GetById(id); err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	pbA := as.PgTypeToPb(appserver)
@@ -86,16 +88,21 @@ func (s *AppserverGRPCService) Delete(
 	ctx context.Context, req *pb_appserver.DeleteRequest,
 ) (*pb_appserver.DeleteResponse, error) {
 
-	claims, _ := middleware.GetJWTClaims(ctx)
-	id, _ := uuid.Parse(req.Id)
-	userId, _ := uuid.Parse(claims.UserID)
-	err := service.NewAppserverService(ctx, s.DbConn, s.Db).Delete(qx.DeleteAppserverParams{
-		ID:        id,
-		AppuserID: userId,
-	})
+	var (
+		err error
+		id  uuid.UUID
+	)
+
+	err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, "delete")
+	if err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
+	id, _ = uuid.Parse(req.Id)
+	err = service.NewAppserverService(ctx, s.DbConn, s.Db).Delete(id)
 
 	if err != nil {
-		return nil, ErrorHandler(err)
+		return nil, message.RpcErrorHandler(err)
 	}
 
 	return &pb_appserver.DeleteResponse{}, nil

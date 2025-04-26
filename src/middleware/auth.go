@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"mist/src/errors/message"
 	"os"
 	"strings"
 
@@ -64,7 +65,7 @@ func AuthJwtInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServe
 func GetJWTClaims(ctx context.Context) (*CustomJWTClaims, error) {
 	claims, ok := ctx.Value(JwtClaimsK).(*CustomJWTClaims)
 	if !ok {
-		return nil, fmt.Errorf("unable to get auth claims")
+		return nil, message.UnauthenticatedError("unable to get auth claims")
 	}
 
 	return claims, nil
@@ -75,14 +76,14 @@ func verifyJWT(token string) (*CustomJWTClaims, error) {
 	t, err := jwt.ParseWithClaims(token, &CustomJWTClaims{}, func(t *jwt.Token) (interface{}, error) {
 		// TODO: we will need this in the future, for now skip
 		// if token.Method != jwt.SigningMethodHS256 {
-		// 	return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		// 	return nil, message.UnauthenticatedError("unexpected signing method: %v", token.Header["alg"])
 		// }
 		// Return the secret key to validate the token's signature
 		return []byte(os.Getenv("MIST_API_JWT_SECRET_KEY")), nil
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error parsing token: %v", err)
+		return nil, message.UnauthenticatedError(fmt.Sprintf("error parsing token: %v", err))
 	}
 
 	// Now validate the token's claims
@@ -116,7 +117,7 @@ func verifyJWTTokenClaims(t *jwt.Token) (*CustomJWTClaims, error) {
 
 	// Validate the issuer (iss) claim
 	if claims.Issuer != os.Getenv("MIST_API_JWT_ISSUER") {
-		return nil, fmt.Errorf("invalid issuer claim")
+		return nil, message.UnauthenticatedError("invalid issuer claim")
 	}
 
 	// AuthJWTClaims

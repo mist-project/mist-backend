@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS appserver_role_sub (
     FOREIGN KEY (appserver_sub_id) REFERENCES appserver_sub(id) ON DELETE CASCADE,
     FOREIGN KEY (appserver_id) REFERENCES appserver(id) ON DELETE CASCADE,
     FOREIGN KEY (appuser_id) REFERENCES appuser(id) ON DELETE CASCADE,
+
     CONSTRAINT appserver_role_sub_uk_role_sub_server UNIQUE (appserver_role_id, appserver_sub_id, appserver_id)
 );
 -- +goose StatementEnd

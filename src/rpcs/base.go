@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 
 	"mist/src/middleware"
+	"mist/src/permission"
 	pb_appserver "mist/src/protos/v1/appserver"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
@@ -27,6 +28,7 @@ type AppserverGRPCService struct {
 	pb_appserver.UnimplementedAppserverServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
+	Auth   permission.Authorizer
 }
 
 type AppserverSubGRPCService struct {
@@ -56,8 +58,21 @@ type ChannelGRPCService struct {
 func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 	querier := db.NewQuerier(qx.New(dbConn))
 
-	pb_appuser.RegisterAppuserServiceServer(s, &AppuserGRPCService{Db: querier, DbConn: dbConn})
-	pb_appserver.RegisterAppserverServiceServer(s, &AppserverGRPCService{Db: querier, DbConn: dbConn})
+	pb_appuser.RegisterAppuserServiceServer(
+		s,
+		&AppuserGRPCService{
+			Db:     querier,
+			DbConn: dbConn,
+		},
+	)
+
+	pb_appserver.RegisterAppserverServiceServer(s,
+		&AppserverGRPCService{
+			Db:     querier,
+			DbConn: dbConn,
+			Auth:   permission.NewAppserverAuthorizer(dbConn, querier),
+		},
+	)
 	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{Db: querier, DbConn: dbConn})

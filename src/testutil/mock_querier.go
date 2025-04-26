@@ -49,7 +49,7 @@ func (m *MockQuerier) CreateChannel(ctx context.Context, arg qx.CreateChannelPar
 	return args.Get(0).(qx.Channel), args.Error(1)
 }
 
-func (m *MockQuerier) DeleteAppserver(ctx context.Context, arg qx.DeleteAppserverParams) (int64, error) {
+func (m *MockQuerier) DeleteAppserver(ctx context.Context, arg uuid.UUID) (int64, error) {
 	args := m.Called(ctx, arg)
 	return args.Get(0).(int64), args.Error(1)
 }

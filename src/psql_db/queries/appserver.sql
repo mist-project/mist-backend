@@ -21,9 +21,6 @@ FROM appserver
 WHERE name=COALESCE(sqlc.narg('name'), name)
   AND appuser_id = $1;
 
-
-
 -- name: DeleteAppserver :execrows
 DELETE FROM appserver
-WHERE id=$1
-  AND appuser_id=$2;
+WHERE id=$1;

@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-faker/faker/v4"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -234,7 +233,7 @@ func TestAppuser(t *testing.T, appuser *qx.Appuser) *qx.Appuser {
 		id, _ := uuid.NewUUID()
 		appuser = &qx.Appuser{
 			ID:       id,
-			Username: faker.Word(),
+			Username: uuid.NewString(),
 		}
 	}
 
@@ -256,7 +255,7 @@ func TestAppserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
 		// Custom values
 		appserver = &qx.Appserver{
 			AppuserID: TestAppuser(t, nil).ID,
-			Name:      faker.Word(),
+			Name:      uuid.NewString(),
 		}
 	}
 
@@ -302,7 +301,7 @@ func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole) *qx.AppserverRole 
 	if aRole == nil {
 		aRole = &qx.AppserverRole{
 			AppserverID: TestAppserver(t, nil).ID,
-			Name:        faker.Word(),
+			Name:        uuid.NewString(),
 		}
 	}
 
@@ -364,7 +363,7 @@ func TestChannel(t *testing.T, c *qx.Channel) *qx.Channel {
 	if c == nil {
 		// Default value
 		c = &qx.Channel{
-			Name:        faker.Word(),
+			Name:        uuid.NewString(),
 			AppserverID: TestAppserver(t, nil).ID,
 		}
 	}

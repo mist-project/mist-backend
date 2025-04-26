@@ -14,7 +14,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ----- RPC CreateAppuser -----
 func TestCreateAppuser(t *testing.T) {
 	t.Run("creates_successfully", func(t *testing.T) {
 		// ARRANGE

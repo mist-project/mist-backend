@@ -20,6 +20,7 @@ import (
 )
 
 func TestAppserverService_PgTypeToPb(t *testing.T) {
+	// ARANGE
 	ctx := context.Background()
 	svc := service.NewAppserverService(ctx, testutil.TestDbConn, new(testutil.MockQuerier))
 
@@ -41,8 +42,10 @@ func TestAppserverService_PgTypeToPb(t *testing.T) {
 		CreatedAt: timestamppb.New(now),
 	}
 
+	// ACT
 	result := svc.PgTypeToPb(appserver)
 
+	// ASSERT
 	assert.Equal(t, expected, result)
 }
 
@@ -319,33 +322,44 @@ func TestAppserverService_Delete(t *testing.T) {
 	params := qx.DeleteAppserverParams{ID: appserverId, AppuserID: parsedUid}
 
 	t.Run("successful_deletion", func(t *testing.T) {
+		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(1), nil)
-
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		err := svc.Delete(params)
+
+		// ASSERT
 		assert.NoError(t, err)
 	})
 
 	t.Run("error_on_no_rows_deleted", func(t *testing.T) {
+		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(0), nil)
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		err := svc.Delete(params)
+
+		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "(-2): no rows were deleted")
 	})
 
 	t.Run("error_on_db_failure", func(t *testing.T) {
+		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(0), fmt.Errorf("db failure"))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		err := svc.Delete(params)
+
+		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "(-3): database error")
 	})

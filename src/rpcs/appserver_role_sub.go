@@ -11,9 +11,9 @@ import (
 	"mist/src/service"
 )
 
-func (s *AppserverRoleSubGRPCService) CreateAppserverRoleSub(
-	ctx context.Context, req *pb_appserverrolesub.CreateAppserverRoleSubRequest,
-) (*pb_appserverrolesub.CreateAppserverRoleSubResponse, error) {
+func (s *AppserverRoleSubGRPCService) Create(
+	ctx context.Context, req *pb_appserverrolesub.CreateRequest,
+) (*pb_appserverrolesub.CreateResponse, error) {
 	roleSubS := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db)
 
 	// TODO: Figure out what can go wrong to add error handler
@@ -37,21 +37,21 @@ func (s *AppserverRoleSubGRPCService) CreateAppserverRoleSub(
 	}
 
 	// Return response
-	return &pb_appserverrolesub.CreateAppserverRoleSubResponse{
+	return &pb_appserverrolesub.CreateResponse{
 		AppserverRoleSub: roleSubS.PgTypeToPb(arSub),
 	}, nil
 }
 
-func (s *AppserverRoleSubGRPCService) GetAllAppserverUserRoleSubs(
-	ctx context.Context, req *pb_appserverrolesub.GetAllAppserverUserRoleSubsRequest,
-) (*pb_appserverrolesub.GetAllAppserverUserRoleSubsResponse, error) {
+func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
+	ctx context.Context, req *pb_appserverrolesub.ListServerRoleSubsRequest,
+) (*pb_appserverrolesub.ListServerRoleSubsResponse, error) {
 
 	// Initialize the service for AppserveRole
 	serverId, _ := uuid.Parse(req.AppserverId)
 	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db).GetAppserverAllUserRoleSubs(serverId)
 
 	// Construct the response
-	response := &pb_appserverrolesub.GetAllAppserverUserRoleSubsResponse{
+	response := &pb_appserverrolesub.ListServerRoleSubsResponse{
 		AppserverRoleSubs: make([]*pb_appserverrolesub.AppserverRoleSub, 0, len(results)),
 	}
 
@@ -68,9 +68,9 @@ func (s *AppserverRoleSubGRPCService) GetAllAppserverUserRoleSubs(
 	return response, nil
 }
 
-func (s *AppserverRoleSubGRPCService) DeleteAppserverRoleSub(
-	ctx context.Context, req *pb_appserverrolesub.DeleteAppserverRoleSubRequest,
-) (*pb_appserverrolesub.DeleteAppserverRoleSubResponse, error) {
+func (s *AppserverRoleSubGRPCService) Delete(
+	ctx context.Context, req *pb_appserverrolesub.DeleteRequest,
+) (*pb_appserverrolesub.DeleteResponse, error) {
 
 	// Initialize the service for AppserveRole
 	arss := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db)
@@ -90,5 +90,5 @@ func (s *AppserverRoleSubGRPCService) DeleteAppserverRoleSub(
 	}
 
 	// Return success response
-	return &pb_appserverrolesub.DeleteAppserverRoleSubResponse{}, nil
+	return &pb_appserverrolesub.DeleteResponse{}, nil
 }

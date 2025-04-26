@@ -10,12 +10,10 @@ import "v1/appuser/appuser.proto";
 import "v1/appserver/appserver.proto";
 
 service AppserverRoleSubService {
-  rpc CreateAppserverRoleSub(CreateAppserverRoleSubRequest)
-      returns (CreateAppserverRoleSubResponse) {}
-  rpc GetAllAppserverUserRoleSubs(GetAllAppserverUserRoleSubsRequest)
-      returns (GetAllAppserverUserRoleSubsResponse) {}
-  rpc DeleteAppserverRoleSub(DeleteAppserverRoleSubRequest)
-      returns (DeleteAppserverRoleSubResponse) {}
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc ListServerRoleSubs(ListServerRoleSubsRequest)
+      returns (ListServerRoleSubsResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }
 
 // ----- STRUCTURES -----
@@ -27,24 +25,22 @@ message AppserverRoleSub {
 }
 
 // ----- REQUEST/RESPONSE -----
-message CreateAppserverRoleSubRequest {
+message CreateRequest {
   string appserver_role_id = 1 [ (buf.validate.field).string.uuid = true ];
   string appserver_sub_id = 2 [ (buf.validate.field).string.uuid = true ];
   string appserver_id = 3 [ (buf.validate.field).string.uuid = true ];
   string appuser_id = 4 [ (buf.validate.field).string.uuid = true ];
 }
-message CreateAppserverRoleSubResponse {
-  AppserverRoleSub appserver_role_sub = 1;
-}
+message CreateResponse { AppserverRoleSub appserver_role_sub = 1; }
 
-message GetAllAppserverUserRoleSubsRequest {
+message ListServerRoleSubsRequest {
   string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message GetAllAppserverUserRoleSubsResponse {
+message ListServerRoleSubsResponse {
   repeated AppserverRoleSub appserver_role_subs = 1;
 }
 
-message DeleteAppserverRoleSubRequest {
+message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message DeleteAppserverRoleSubResponse {}
+message DeleteResponse {}

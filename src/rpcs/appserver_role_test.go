@@ -16,7 +16,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestGetAllAppserverRole(t *testing.T) {
+func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -61,7 +61,9 @@ func TestGetAllAppserverRole(t *testing.T) {
 			AppserverId: appserverId,
 		}
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverRoles", mock.Anything, mock.Anything).Return([]qx.AppserverRole{}, fmt.Errorf("db error"))
+		mockQuerier.On("GetAppserverRoles", mock.Anything, mock.Anything).Return(
+			[]qx.AppserverRole{}, fmt.Errorf("db error"),
+		)
 
 		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
 
@@ -77,7 +79,7 @@ func TestGetAllAppserverRole(t *testing.T) {
 	})
 }
 
-func TestCreateAppserveRole(t *testing.T) {
+func TestAppserveRoleService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -127,7 +129,7 @@ func TestCreateAppserveRole(t *testing.T) {
 	})
 }
 
-func TestDeleteAppserveRole(t *testing.T) {
+func TestAppserveRoleService_Delete(t *testing.T) {
 	t.Run("Successful:roles_can_only_be_deleted_by_server_owner_only", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})

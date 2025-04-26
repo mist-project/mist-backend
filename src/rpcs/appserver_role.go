@@ -16,11 +16,8 @@ func (s *AppserverRoleGRPCService) CreateAppserverRole(
 ) (*pb_appserverrole.CreateAppserverRoleResponse, error) {
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	roleService := service.NewAppserverRoleService(s.DbConn, ctx)
-	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{
-		Name:        req.Name,
-		AppserverID: serverId,
-	})
+	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
+	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{Name: req.Name, AppserverID: serverId})
 
 	// Error handling
 	if err != nil {
@@ -38,7 +35,7 @@ func (s *AppserverRoleGRPCService) GetAllAppserverRoles(
 ) (*pb_appserverrole.GetAllAppserverRolesResponse, error) {
 
 	// Initialize the service for AppserveRole
-	roleService := service.NewAppserverRoleService(s.DbConn, ctx)
+	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
 	serverId, _ := uuid.Parse(req.AppserverId)
 	results, err := roleService.ListAppserverRoles(serverId)
 
@@ -69,7 +66,7 @@ func (s *AppserverRoleGRPCService) DeleteAppserverRole(
 	roleId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err := service.NewAppserverRoleService(s.DbConn, ctx).DeleteByAppserver(
+	err := service.NewAppserverRoleService(ctx, s.DbConn, s.Db).DeleteByAppserver(
 		qx.DeleteAppserverRoleParams{AppuserID: userId, ID: roleId},
 	)
 

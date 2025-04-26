@@ -17,6 +17,7 @@ import (
 )
 
 func TestAppserverSubService_PgTypeToPb(t *testing.T) {
+	// ARRANGE
 	id := uuid.New()
 	appserverID := uuid.New()
 	now := time.Now()
@@ -37,12 +38,15 @@ func TestAppserverSubService_PgTypeToPb(t *testing.T) {
 
 	svc := service.NewAppserverSubService(context.Background(), testutil.TestDbConn, new(testutil.MockQuerier))
 
+	// ACT
 	result := svc.PgTypeToPb(sub)
 
+	// ASSERT
 	assert.Equal(t, expected, result)
 }
 
 func TestAppserverSubService_PgAppserverSubRowToPb(t *testing.T) {
+	// ARRANGE
 	now := time.Now()
 	row := &qx.GetUserAppserverSubsRow{
 		ID:             uuid.New(),
@@ -53,14 +57,17 @@ func TestAppserverSubService_PgAppserverSubRowToPb(t *testing.T) {
 
 	svc := service.NewAppserverSubService(context.Background(), testutil.TestDbConn, new(testutil.MockQuerier))
 
+	// ACT
 	pb := svc.PgAppserverSubRowToPb(row)
 
+	// ASSERT
 	assert.Equal(t, row.AppserverSubID.String(), pb.SubId)
 	assert.Equal(t, row.ID.String(), pb.Appserver.Id)
 	assert.Equal(t, row.Name, pb.Appserver.Name)
 }
 
 func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
+	// ARRANGE
 	now := time.Now()
 	row := &qx.GetAllUsersAppserverSubsRow{
 		ID:             uuid.New(),
@@ -71,8 +78,10 @@ func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
 
 	svc := service.NewAppserverSubService(context.Background(), testutil.TestDbConn, new(testutil.MockQuerier))
 
+	// ACT
 	pb := svc.PgUserSubRowToPb(row)
 
+	// ASSERT
 	assert.Equal(t, row.ID.String(), pb.Appuser.Id)
 	assert.Equal(t, row.Username, pb.Appuser.Username)
 	assert.Equal(t, row.AppserverSubID.String(), pb.SubId)
@@ -80,6 +89,7 @@ func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
 
 func TestAppserverSubService_Create(t *testing.T) {
 	t.Run("Successful:create_sub", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		obj := qx.CreateAppserverSubParams{AppserverID: uuid.New(), AppuserID: uuid.New()}
 		expected := qx.AppserverSub{ID: uuid.New(), AppserverID: obj.AppserverID, AppuserID: obj.AppuserID}
@@ -89,13 +99,16 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		result, err := svc.Create(obj)
 
+		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, result.ID)
 	})
 
 	t.Run("Error:failed_to_create", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		obj := qx.CreateAppserverSubParams{AppserverID: uuid.New(), AppuserID: uuid.New()}
 
@@ -104,8 +117,10 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		_, err := svc.Create(obj)
 
+		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "create error")
 	})
@@ -113,6 +128,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
 	t.Run("Successful:list_subs_for_user", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		expected := []qx.GetUserAppserverSubsRow{
@@ -129,13 +145,16 @@ func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		res, err := svc.ListUserAppserverAndSub(userID)
 
+		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, res)
 	})
 
 	t.Run("Error:on_db_error", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		userID := uuid.New()
 
@@ -146,8 +165,10 @@ func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		_, err := svc.ListUserAppserverAndSub(userID)
 
+		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "db boom error")
 	})
@@ -155,6 +176,7 @@ func TestAppserverSubService_ListUserAppserverAndSub(t *testing.T) {
 
 func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
 	t.Run("Successful:list_users_in_server", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		serverID := uuid.New()
 		expected := []qx.GetAllUsersAppserverSubsRow{
@@ -171,13 +193,16 @@ func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		res, err := svc.ListAllUsersAppserverAndSub(serverID)
 
+		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, res)
 	})
 
 	t.Run("Error:on_db_error", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		serverID := uuid.New()
 
@@ -186,8 +211,10 @@ func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		_, err := svc.ListAllUsersAppserverAndSub(serverID)
 
+		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "query error")
 	})
@@ -195,6 +222,7 @@ func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
 
 func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
 	t.Run("Successful:deletes_sub", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		subID := uuid.New()
 
@@ -203,12 +231,15 @@ func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		err := svc.DeleteByAppserver(subID)
 
+		// ASSERT
 		assert.NoError(t, err)
 	})
 
 	t.Run("Error:returns_not_found_if_no_rows_deleted", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		subID := uuid.New()
 
@@ -217,13 +248,16 @@ func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		err := svc.DeleteByAppserver(subID)
 
+		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "resource not found")
 	})
 
 	t.Run("Error:returns_error_on_db_fail", func(t *testing.T) {
+		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		subID := uuid.New()
 
@@ -232,8 +266,10 @@ func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
+		// ACT
 		err := svc.DeleteByAppserver(subID)
 
+		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "db error")
 	})

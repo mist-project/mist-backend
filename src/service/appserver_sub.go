@@ -17,17 +17,13 @@ import (
 )
 
 type AppserverSubService struct {
-	dbConn qx.DBTX
 	ctx    context.Context
+	dbConn *pgxpool.Pool
 	db     db.Querier
 }
 
 func NewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverSubService {
 	return &AppserverSubService{ctx: ctx, dbConn: dbConn, db: db}
-}
-
-func TempNewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverSubService {
-	return &AppserverSubService{dbConn: dbConn, ctx: ctx, db: db}
 }
 
 func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserversub.AppserverSub {

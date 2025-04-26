@@ -5,19 +5,22 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverRoleService struct {
-	dbConn qx.DBTX
 	ctx    context.Context
+	dbConn *pgxpool.Pool
+	db     db.Querier
 }
 
-func NewAppserverRoleService(dbConn qx.DBTX, ctx context.Context) *AppserverRoleService {
-	return &AppserverRoleService{dbConn: dbConn, ctx: ctx}
+func NewAppserverRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverRoleService {
+	return &AppserverRoleService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
 func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserverrole.AppserverRole {
@@ -31,12 +34,12 @@ func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserver
 }
 
 func (s *AppserverRoleService) Create(obj qx.CreateAppserverRoleParams) (*qx.AppserverRole, error) {
-	appserverRole, err := qx.New(s.dbConn).CreateAppserverRole(s.ctx, obj)
+	appserverRole, err := s.db.CreateAppserverRole(s.ctx, obj)
 	return &appserverRole, err
 }
 
 func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.AppserverRole, error) {
-	aRoles, err := qx.New(s.dbConn).GetAppserverRoles(s.ctx, appserverId)
+	aRoles, err := s.db.GetAppserverRoles(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
@@ -46,12 +49,12 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.A
 }
 
 func (s *AppserverRoleService) DeleteByAppserver(obj qx.DeleteAppserverRoleParams) error {
-	deleted, err := qx.New(s.dbConn).DeleteAppserverRole(s.ctx, obj)
+	deleted, err := s.db.DeleteAppserverRole(s.ctx, obj)
 
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d) no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 	}
 	return nil
 }

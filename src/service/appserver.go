@@ -61,7 +61,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	}
 
 	// once the appserver is created, add user as a subscriber
-	_, err = TempNewAppserverSubService(s.ctx, s.dbConn, s.db).CreateWithTx(
+	_, err = NewAppserverSubService(s.ctx, s.dbConn, s.db).CreateWithTx(
 		qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: obj.AppuserID},
 		tx,
 	)

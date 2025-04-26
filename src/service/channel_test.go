@@ -154,10 +154,10 @@ func TestChannelService_List(t *testing.T) {
 			{ID: uuid.New(), Name: "foo", AppserverID: uuid.New()},
 			{ID: uuid.New(), Name: "bar", AppserverID: uuid.New()},
 		}
-		queryParams := qx.ListChannelsParams{Name: nameFilter, AppserverID: serverFilter}
+		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverFilter}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListChannels", ctx, queryParams).Return(expected, nil)
+		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(expected, nil)
 
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -174,9 +174,9 @@ func TestChannelService_List(t *testing.T) {
 		appserverId := uuid.New()
 		var nameFilter = pgtype.Text{Valid: false, String: ""}
 		var serverFilter = pgtype.UUID{Valid: true, Bytes: appserverId}
-		queryParams := qx.ListChannelsParams{Name: nameFilter, AppserverID: serverFilter}
+		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverFilter}
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListChannels", ctx, queryParams).Return([]qx.Channel{}, fmt.Errorf("database error"))
+		mockQuerier.On("ListServerChannels", ctx, queryParams).Return([]qx.Channel{}, fmt.Errorf("database error"))
 
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 

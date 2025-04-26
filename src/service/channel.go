@@ -63,9 +63,9 @@ func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
 
 // Lists all channels for an appserver. Name filter is also added but it may get deprecated.
 
-func (s *ChannelService) List(obj qx.ListChannelsParams) ([]qx.Channel, error) {
+func (s *ChannelService) List(obj qx.ListServerChannelsParams) ([]qx.Channel, error) {
 
-	channels, err := s.db.ListChannels(s.ctx, obj)
+	channels, err := s.db.ListServerChannels(s.ctx, obj)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))

@@ -129,7 +129,7 @@ func (m *MockQuerier) GetUserAppserverSubs(ctx context.Context, appuserID uuid.U
 	return args.Get(0).([]qx.GetUserAppserverSubsRow), args.Error(1)
 }
 
-func (m *MockQuerier) ListChannels(ctx context.Context, arg qx.ListChannelsParams) ([]qx.Channel, error) {
+func (m *MockQuerier) ListServerChannels(ctx context.Context, arg qx.ListServerChannelsParams) ([]qx.Channel, error) {
 	args := m.Called(ctx, arg)
 	return args.Get(0).([]qx.Channel), args.Error(1)
 }

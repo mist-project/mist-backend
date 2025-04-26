@@ -33,7 +33,7 @@ type Querier interface {
 	GetAppuserRoleSubs(ctx context.Context, arg GetAppuserRoleSubsParams) ([]GetAppuserRoleSubsRow, error)
 	GetChannelById(ctx context.Context, id uuid.UUID) (Channel, error)
 	GetUserAppserverSubs(ctx context.Context, appuserID uuid.UUID) ([]GetUserAppserverSubsRow, error)
-	ListChannels(ctx context.Context, arg ListChannelsParams) ([]Channel, error)
+	ListServerChannels(ctx context.Context, arg ListServerChannelsParams) ([]Channel, error)
 	ListUserAppservers(ctx context.Context, arg ListUserAppserversParams) ([]Appserver, error)
 }
 

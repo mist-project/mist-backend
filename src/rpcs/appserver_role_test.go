@@ -61,7 +61,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 			AppserverId: appserverId,
 		}
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverRoles", mock.Anything, mock.Anything).Return(
+		mockQuerier.On("ListAppserverRoles", mock.Anything, mock.Anything).Return(
 			[]qx.AppserverRole{}, fmt.Errorf("db error"),
 		)
 

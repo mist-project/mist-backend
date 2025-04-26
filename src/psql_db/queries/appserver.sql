@@ -15,7 +15,7 @@ INSERT INTO appserver (
 )
 RETURNING *;
 
--- name: ListUserAppservers :many
+-- name: ListAppservers :many
 SELECT *
 FROM appserver
 WHERE name=COALESCE(sqlc.narg('name'), name)

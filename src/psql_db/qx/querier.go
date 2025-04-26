@@ -27,14 +27,14 @@ type Querier interface {
 	GetAppserverById(ctx context.Context, id uuid.UUID) (Appserver, error)
 	GetAppserverRoleById(ctx context.Context, id uuid.UUID) (AppserverRole, error)
 	GetAppserverRoleSubById(ctx context.Context, id uuid.UUID) (AppserverRoleSub, error)
-	GetAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error)
 	GetAppserverSubById(ctx context.Context, id uuid.UUID) (AppserverSub, error)
 	GetAppuserById(ctx context.Context, id uuid.UUID) (Appuser, error)
 	GetAppuserRoleSubs(ctx context.Context, arg GetAppuserRoleSubsParams) ([]GetAppuserRoleSubsRow, error)
 	GetChannelById(ctx context.Context, id uuid.UUID) (Channel, error)
 	GetUserAppserverSubs(ctx context.Context, appuserID uuid.UUID) ([]GetUserAppserverSubsRow, error)
+	ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error)
+	ListAppservers(ctx context.Context, arg ListAppserversParams) ([]Appserver, error)
 	ListServerChannels(ctx context.Context, arg ListServerChannelsParams) ([]Channel, error)
-	ListUserAppservers(ctx context.Context, arg ListUserAppserversParams) ([]Appserver, error)
 }
 
 var _ Querier = (*Queries)(nil)

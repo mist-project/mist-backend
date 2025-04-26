@@ -96,7 +96,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 		expected := []qx.AppserverRole{{ID: uuid.New(), AppserverID: appserverID, Name: "admin"}}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverRoles", ctx, appserverID).Return(expected, nil)
+		mockQuerier.On("ListAppserverRoles", ctx, appserverID).Return(expected, nil)
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -114,7 +114,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 		appserverID := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverRoles", ctx, appserverID).Return([]qx.AppserverRole{}, fmt.Errorf("db error"))
+		mockQuerier.On("ListAppserverRoles", ctx, appserverID).Return([]qx.AppserverRole{}, fmt.Errorf("db error"))
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 

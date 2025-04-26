@@ -99,7 +99,7 @@ func (m *MockQuerier) GetAppserverRoleSubById(ctx context.Context, id uuid.UUID)
 	return args.Get(0).(qx.AppserverRoleSub), args.Error(1)
 }
 
-func (m *MockQuerier) GetAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]qx.AppserverRole, error) {
+func (m *MockQuerier) ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]qx.AppserverRole, error) {
 	args := m.Called(ctx, appserverID)
 	return args.Get(0).([]qx.AppserverRole), args.Error(1)
 }
@@ -134,7 +134,7 @@ func (m *MockQuerier) ListServerChannels(ctx context.Context, arg qx.ListServerC
 	return args.Get(0).([]qx.Channel), args.Error(1)
 }
 
-func (m *MockQuerier) ListUserAppservers(ctx context.Context, arg qx.ListUserAppserversParams) ([]qx.Appserver, error) {
+func (m *MockQuerier) ListAppservers(ctx context.Context, arg qx.ListAppserversParams) ([]qx.Appserver, error) {
 	args := m.Called(ctx, arg)
 	return args.Get(0).([]qx.Appserver), args.Error(1)
 }

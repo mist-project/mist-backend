@@ -67,7 +67,7 @@ func (s *AppserverGRPCService) List(
 		name.String = req.Name.Value
 	}
 
-	appservers, _ := as.List(qx.ListUserAppserversParams{Name: name, AppuserID: userId})
+	appservers, _ := as.List(qx.ListAppserversParams{Name: name, AppuserID: userId})
 	response := &pb_appserver.ListResponse{}
 
 	// Resize the array

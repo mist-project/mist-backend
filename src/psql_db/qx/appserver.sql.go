@@ -80,20 +80,20 @@ func (q *Queries) GetAppserverById(ctx context.Context, id uuid.UUID) (Appserver
 	return i, err
 }
 
-const listUserAppservers = `-- name: ListUserAppservers :many
+const listAppservers = `-- name: ListAppservers :many
 SELECT id, name, appuser_id, created_at, updated_at
 FROM appserver
 WHERE name=COALESCE($2, name)
   AND appuser_id = $1
 `
 
-type ListUserAppserversParams struct {
+type ListAppserversParams struct {
 	AppuserID uuid.UUID
 	Name      pgtype.Text
 }
 
-func (q *Queries) ListUserAppservers(ctx context.Context, arg ListUserAppserversParams) ([]Appserver, error) {
-	rows, err := q.db.Query(ctx, listUserAppservers, arg.AppuserID, arg.Name)
+func (q *Queries) ListAppservers(ctx context.Context, arg ListAppserversParams) ([]Appserver, error) {
+	rows, err := q.db.Query(ctx, listAppservers, arg.AppuserID, arg.Name)
 	if err != nil {
 		return nil, err
 	}

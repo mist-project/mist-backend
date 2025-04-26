@@ -81,14 +81,14 @@ func (q *Queries) GetAppserverRoleById(ctx context.Context, id uuid.UUID) (Appse
 	return i, err
 }
 
-const getAppserverRoles = `-- name: GetAppserverRoles :many
+const listAppserverRoles = `-- name: ListAppserverRoles :many
 SELECT id, appserver_id, name, created_at, updated_at
 FROM appserver_role
 WHERE appserver_id=$1
 `
 
-func (q *Queries) GetAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error) {
-	rows, err := q.db.Query(ctx, getAppserverRoles, appserverID)
+func (q *Queries) ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error) {
+	rows, err := q.db.Query(ctx, listAppserverRoles, appserverID)
 	if err != nil {
 		return nil, err
 	}

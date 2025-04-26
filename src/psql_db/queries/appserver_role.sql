@@ -15,7 +15,7 @@ INSERT INTO appserver_role (
 )
 RETURNING *;
 
--- name: GetAppserverRoles :many
+-- name: ListAppserverRoles :many
 SELECT *
 FROM appserver_role
 WHERE appserver_id=$1;

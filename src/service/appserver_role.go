@@ -39,7 +39,7 @@ func (s *AppserverRoleService) Create(obj qx.CreateAppserverRoleParams) (*qx.App
 }
 
 func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.AppserverRole, error) {
-	aRoles, err := s.db.GetAppserverRoles(s.ctx, appserverId)
+	aRoles, err := s.db.ListAppserverRoles(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))

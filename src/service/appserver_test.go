@@ -257,7 +257,7 @@ func TestAppserverService_List(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListUserAppservers", ctx, mock.MatchedBy(func(p qx.ListUserAppserversParams) bool {
+		mockQuerier.On("ListAppservers", ctx, mock.MatchedBy(func(p qx.ListAppserversParams) bool {
 			return p.AppuserID == ownerID && p.Name.Valid && p.Name.String == nameFilter
 		})).Return(expected, nil)
 
@@ -265,7 +265,7 @@ func TestAppserverService_List(t *testing.T) {
 		var name = pgtype.Text{Valid: true, String: nameFilter}
 
 		// ACT
-		result, err := svc.List(qx.ListUserAppserversParams{Name: name, AppuserID: ownerID})
+		result, err := svc.List(qx.ListAppserversParams{Name: name, AppuserID: ownerID})
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -281,7 +281,7 @@ func TestAppserverService_List(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListUserAppservers", ctx, mock.MatchedBy(func(p qx.ListUserAppserversParams) bool {
+		mockQuerier.On("ListAppservers", ctx, mock.MatchedBy(func(p qx.ListAppserversParams) bool {
 			return p.AppuserID == ownerID && !p.Name.Valid
 		})).Return(expected, nil)
 
@@ -289,7 +289,7 @@ func TestAppserverService_List(t *testing.T) {
 		var name = pgtype.Text{Valid: false, String: ""}
 
 		// ACT
-		result, err := svc.List(qx.ListUserAppserversParams{Name: name, AppuserID: ownerID})
+		result, err := svc.List(qx.ListAppserversParams{Name: name, AppuserID: ownerID})
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -301,14 +301,14 @@ func TestAppserverService_List(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		ownerID := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListUserAppservers", ctx, mock.Anything).
+		mockQuerier.On("ListAppservers", ctx, mock.Anything).
 			Return([]qx.Appserver(nil), fmt.Errorf("some db error"))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 		var name = pgtype.Text{Valid: false, String: ""}
 
 		// ACT
-		_, err := svc.List(qx.ListUserAppserversParams{Name: name, AppuserID: ownerID})
+		_, err := svc.List(qx.ListAppserversParams{Name: name, AppuserID: ownerID})
 
 		// ASSERT
 		assert.Error(t, err)

@@ -94,8 +94,8 @@ func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
 }
 
 // Lists all appservers based on the owner. Name filter is also added but it may get deprecated.
-func (s *AppserverService) List(params qx.ListUserAppserversParams) ([]qx.Appserver, error) {
-	appservers, err := s.db.ListUserAppservers(s.ctx, params)
+func (s *AppserverService) List(params qx.ListAppserversParams) ([]qx.Appserver, error) {
+	appservers, err := s.db.ListAppservers(s.ctx, params)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))

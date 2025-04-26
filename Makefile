@@ -109,3 +109,6 @@ lint-proto:
 psql:
 	# Make sure to have all roles for your user
 	@psql -U ${DATABASE_ROLE}
+
+update-all-deps:
+	go get -u ./...

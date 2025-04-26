@@ -11,9 +11,9 @@ import (
 	"mist/src/service"
 )
 
-func (s *AppserverSubGRPCService) CreateAppserverSub(
-	ctx context.Context, req *pb_appserversub.CreateAppserverSubRequest,
-) (*pb_appserversub.CreateAppserverSubResponse, error) {
+func (s *AppserverSubGRPCService) Create(
+	ctx context.Context, req *pb_appserversub.CreateRequest,
+) (*pb_appserversub.CreateResponse, error) {
 
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -28,14 +28,14 @@ func (s *AppserverSubGRPCService) CreateAppserverSub(
 	}
 
 	// Return response
-	return &pb_appserversub.CreateAppserverSubResponse{
+	return &pb_appserversub.CreateResponse{
 		AppserverSub: subService.PgTypeToPb(appserverSub),
 	}, nil
 }
 
-func (s *AppserverSubGRPCService) GetUserAppserverSubs(
-	ctx context.Context, req *pb_appserversub.GetUserAppserverSubsRequest,
-) (*pb_appserversub.GetUserAppserverSubsResponse, error) {
+func (s *AppserverSubGRPCService) ListUserServerSubs(
+	ctx context.Context, req *pb_appserversub.ListUserServerSubsRequest,
+) (*pb_appserversub.ListUserServerSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
@@ -47,7 +47,7 @@ func (s *AppserverSubGRPCService) GetUserAppserverSubs(
 	results, _ := subService.ListUserAppserverAndSub(userId)
 
 	// Construct the response
-	response := &pb_appserversub.GetUserAppserverSubsResponse{
+	response := &pb_appserversub.ListUserServerSubsResponse{
 		Appservers: make([]*pb_appserversub.AppserverAndSub, 0, len(results)),
 	}
 
@@ -61,9 +61,9 @@ func (s *AppserverSubGRPCService) GetUserAppserverSubs(
 	return response, nil
 }
 
-func (s *AppserverSubGRPCService) GetAllUsersAppserverSubs(
-	ctx context.Context, req *pb_appserversub.GetAllUsersAppserverSubsRequest,
-) (*pb_appserversub.GetAllUsersAppserverSubsResponse, error) {
+func (s *AppserverSubGRPCService) ListAppserverUserSubs(
+	ctx context.Context, req *pb_appserversub.ListAppserverUserSubsRequest,
+) (*pb_appserversub.ListAppserverUserSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
@@ -72,7 +72,7 @@ func (s *AppserverSubGRPCService) GetAllUsersAppserverSubs(
 	results, _ := subService.ListAllUsersAppserverAndSub(serverId)
 
 	// Construct the response
-	response := &pb_appserversub.GetAllUsersAppserverSubsResponse{
+	response := &pb_appserversub.ListAppserverUserSubsResponse{
 		Appusers: make([]*pb_appserversub.AppuserAndSub, 0, len(results)),
 	}
 
@@ -84,9 +84,9 @@ func (s *AppserverSubGRPCService) GetAllUsersAppserverSubs(
 	return response, nil
 }
 
-func (s *AppserverSubGRPCService) DeleteAppserverSub(
-	ctx context.Context, req *pb_appserversub.DeleteAppserverSubRequest,
-) (*pb_appserversub.DeleteAppserverSubResponse, error) {
+func (s *AppserverSubGRPCService) Delete(
+	ctx context.Context, req *pb_appserversub.DeleteRequest,
+) (*pb_appserversub.DeleteResponse, error) {
 
 	id, _ := uuid.Parse((req.Id))
 	err := service.NewAppserverSubService(ctx, s.DbConn, s.Db).Delete(id)
@@ -98,5 +98,5 @@ func (s *AppserverSubGRPCService) DeleteAppserverSub(
 	}
 
 	// Return success response
-	return &pb_appserversub.DeleteAppserverSubResponse{}, nil
+	return &pb_appserversub.DeleteResponse{}, nil
 }

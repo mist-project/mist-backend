@@ -10,14 +10,12 @@ import "v1/appuser/appuser.proto";
 import "v1/appserver/appserver.proto";
 
 service AppserverSubService {
-  rpc CreateAppserverSub(CreateAppserverSubRequest)
-      returns (CreateAppserverSubResponse) {}
-  rpc GetUserAppserverSubs(GetUserAppserverSubsRequest)
-      returns (GetUserAppserverSubsResponse) {}
-  rpc GetAllUsersAppserverSubs(GetAllUsersAppserverSubsRequest)
-      returns (GetAllUsersAppserverSubsResponse) {}
-  rpc DeleteAppserverSub(DeleteAppserverSubRequest)
-      returns (DeleteAppserverSubResponse) {}
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc ListUserServerSubs(ListUserServerSubsRequest)
+      returns (ListUserServerSubsResponse) {}
+  rpc ListAppserverUserSubs(ListAppserverUserSubsRequest)
+      returns (ListAppserverUserSubsResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }
 
 // ----- STRUCTURES -----
@@ -39,24 +37,20 @@ message AppuserAndSub {
 }
 
 // ----- REQUEST/RESPONSE -----
-message CreateAppserverSubRequest {
+message CreateRequest {
   string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message CreateAppserverSubResponse { AppserverSub appserver_sub = 1; }
+message CreateResponse { AppserverSub appserver_sub = 1; }
 
-message GetUserAppserverSubsRequest {}
-message GetUserAppserverSubsResponse {
-  repeated AppserverAndSub appservers = 1;
-}
+message ListUserServerSubsRequest {}
+message ListUserServerSubsResponse { repeated AppserverAndSub appservers = 1; }
 
-message GetAllUsersAppserverSubsRequest {
+message ListAppserverUserSubsRequest {
   string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message GetAllUsersAppserverSubsResponse {
-  repeated AppuserAndSub appusers = 1;
-}
+message ListAppserverUserSubsResponse { repeated AppuserAndSub appusers = 1; }
 
-message DeleteAppserverSubRequest {
+message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message DeleteAppserverSubResponse {}
+message DeleteResponse {}

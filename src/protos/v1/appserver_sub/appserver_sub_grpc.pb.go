@@ -19,20 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AppserverSubService_CreateAppserverSub_FullMethodName       = "/v1.appserversub.AppserverSubService/CreateAppserverSub"
-	AppserverSubService_GetUserAppserverSubs_FullMethodName     = "/v1.appserversub.AppserverSubService/GetUserAppserverSubs"
-	AppserverSubService_GetAllUsersAppserverSubs_FullMethodName = "/v1.appserversub.AppserverSubService/GetAllUsersAppserverSubs"
-	AppserverSubService_DeleteAppserverSub_FullMethodName       = "/v1.appserversub.AppserverSubService/DeleteAppserverSub"
+	AppserverSubService_Create_FullMethodName                = "/v1.appserversub.AppserverSubService/Create"
+	AppserverSubService_ListUserServerSubs_FullMethodName    = "/v1.appserversub.AppserverSubService/ListUserServerSubs"
+	AppserverSubService_ListAppserverUserSubs_FullMethodName = "/v1.appserversub.AppserverSubService/ListAppserverUserSubs"
+	AppserverSubService_Delete_FullMethodName                = "/v1.appserversub.AppserverSubService/Delete"
 )
 
 // AppserverSubServiceClient is the client API for AppserverSubService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AppserverSubServiceClient interface {
-	CreateAppserverSub(ctx context.Context, in *CreateAppserverSubRequest, opts ...grpc.CallOption) (*CreateAppserverSubResponse, error)
-	GetUserAppserverSubs(ctx context.Context, in *GetUserAppserverSubsRequest, opts ...grpc.CallOption) (*GetUserAppserverSubsResponse, error)
-	GetAllUsersAppserverSubs(ctx context.Context, in *GetAllUsersAppserverSubsRequest, opts ...grpc.CallOption) (*GetAllUsersAppserverSubsResponse, error)
-	DeleteAppserverSub(ctx context.Context, in *DeleteAppserverSubRequest, opts ...grpc.CallOption) (*DeleteAppserverSubResponse, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	ListUserServerSubs(ctx context.Context, in *ListUserServerSubsRequest, opts ...grpc.CallOption) (*ListUserServerSubsResponse, error)
+	ListAppserverUserSubs(ctx context.Context, in *ListAppserverUserSubsRequest, opts ...grpc.CallOption) (*ListAppserverUserSubsResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
 type appserverSubServiceClient struct {
@@ -43,40 +43,40 @@ func NewAppserverSubServiceClient(cc grpc.ClientConnInterface) AppserverSubServi
 	return &appserverSubServiceClient{cc}
 }
 
-func (c *appserverSubServiceClient) CreateAppserverSub(ctx context.Context, in *CreateAppserverSubRequest, opts ...grpc.CallOption) (*CreateAppserverSubResponse, error) {
+func (c *appserverSubServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateAppserverSubResponse)
-	err := c.cc.Invoke(ctx, AppserverSubService_CreateAppserverSub_FullMethodName, in, out, cOpts...)
+	out := new(CreateResponse)
+	err := c.cc.Invoke(ctx, AppserverSubService_Create_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *appserverSubServiceClient) GetUserAppserverSubs(ctx context.Context, in *GetUserAppserverSubsRequest, opts ...grpc.CallOption) (*GetUserAppserverSubsResponse, error) {
+func (c *appserverSubServiceClient) ListUserServerSubs(ctx context.Context, in *ListUserServerSubsRequest, opts ...grpc.CallOption) (*ListUserServerSubsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserAppserverSubsResponse)
-	err := c.cc.Invoke(ctx, AppserverSubService_GetUserAppserverSubs_FullMethodName, in, out, cOpts...)
+	out := new(ListUserServerSubsResponse)
+	err := c.cc.Invoke(ctx, AppserverSubService_ListUserServerSubs_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *appserverSubServiceClient) GetAllUsersAppserverSubs(ctx context.Context, in *GetAllUsersAppserverSubsRequest, opts ...grpc.CallOption) (*GetAllUsersAppserverSubsResponse, error) {
+func (c *appserverSubServiceClient) ListAppserverUserSubs(ctx context.Context, in *ListAppserverUserSubsRequest, opts ...grpc.CallOption) (*ListAppserverUserSubsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetAllUsersAppserverSubsResponse)
-	err := c.cc.Invoke(ctx, AppserverSubService_GetAllUsersAppserverSubs_FullMethodName, in, out, cOpts...)
+	out := new(ListAppserverUserSubsResponse)
+	err := c.cc.Invoke(ctx, AppserverSubService_ListAppserverUserSubs_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *appserverSubServiceClient) DeleteAppserverSub(ctx context.Context, in *DeleteAppserverSubRequest, opts ...grpc.CallOption) (*DeleteAppserverSubResponse, error) {
+func (c *appserverSubServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteAppserverSubResponse)
-	err := c.cc.Invoke(ctx, AppserverSubService_DeleteAppserverSub_FullMethodName, in, out, cOpts...)
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, AppserverSubService_Delete_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +87,10 @@ func (c *appserverSubServiceClient) DeleteAppserverSub(ctx context.Context, in *
 // All implementations must embed UnimplementedAppserverSubServiceServer
 // for forward compatibility.
 type AppserverSubServiceServer interface {
-	CreateAppserverSub(context.Context, *CreateAppserverSubRequest) (*CreateAppserverSubResponse, error)
-	GetUserAppserverSubs(context.Context, *GetUserAppserverSubsRequest) (*GetUserAppserverSubsResponse, error)
-	GetAllUsersAppserverSubs(context.Context, *GetAllUsersAppserverSubsRequest) (*GetAllUsersAppserverSubsResponse, error)
-	DeleteAppserverSub(context.Context, *DeleteAppserverSubRequest) (*DeleteAppserverSubResponse, error)
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	ListUserServerSubs(context.Context, *ListUserServerSubsRequest) (*ListUserServerSubsResponse, error)
+	ListAppserverUserSubs(context.Context, *ListAppserverUserSubsRequest) (*ListAppserverUserSubsResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	mustEmbedUnimplementedAppserverSubServiceServer()
 }
 
@@ -101,17 +101,17 @@ type AppserverSubServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAppserverSubServiceServer struct{}
 
-func (UnimplementedAppserverSubServiceServer) CreateAppserverSub(context.Context, *CreateAppserverSubRequest) (*CreateAppserverSubResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateAppserverSub not implemented")
+func (UnimplementedAppserverSubServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedAppserverSubServiceServer) GetUserAppserverSubs(context.Context, *GetUserAppserverSubsRequest) (*GetUserAppserverSubsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserAppserverSubs not implemented")
+func (UnimplementedAppserverSubServiceServer) ListUserServerSubs(context.Context, *ListUserServerSubsRequest) (*ListUserServerSubsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserServerSubs not implemented")
 }
-func (UnimplementedAppserverSubServiceServer) GetAllUsersAppserverSubs(context.Context, *GetAllUsersAppserverSubsRequest) (*GetAllUsersAppserverSubsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllUsersAppserverSubs not implemented")
+func (UnimplementedAppserverSubServiceServer) ListAppserverUserSubs(context.Context, *ListAppserverUserSubsRequest) (*ListAppserverUserSubsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAppserverUserSubs not implemented")
 }
-func (UnimplementedAppserverSubServiceServer) DeleteAppserverSub(context.Context, *DeleteAppserverSubRequest) (*DeleteAppserverSubResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteAppserverSub not implemented")
+func (UnimplementedAppserverSubServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedAppserverSubServiceServer) mustEmbedUnimplementedAppserverSubServiceServer() {}
 func (UnimplementedAppserverSubServiceServer) testEmbeddedByValue()                             {}
@@ -134,74 +134,74 @@ func RegisterAppserverSubServiceServer(s grpc.ServiceRegistrar, srv AppserverSub
 	s.RegisterService(&AppserverSubService_ServiceDesc, srv)
 }
 
-func _AppserverSubService_CreateAppserverSub_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateAppserverSubRequest)
+func _AppserverSubService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppserverSubServiceServer).CreateAppserverSub(ctx, in)
+		return srv.(AppserverSubServiceServer).Create(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppserverSubService_CreateAppserverSub_FullMethodName,
+		FullMethod: AppserverSubService_Create_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppserverSubServiceServer).CreateAppserverSub(ctx, req.(*CreateAppserverSubRequest))
+		return srv.(AppserverSubServiceServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AppserverSubService_GetUserAppserverSubs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserAppserverSubsRequest)
+func _AppserverSubService_ListUserServerSubs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUserServerSubsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppserverSubServiceServer).GetUserAppserverSubs(ctx, in)
+		return srv.(AppserverSubServiceServer).ListUserServerSubs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppserverSubService_GetUserAppserverSubs_FullMethodName,
+		FullMethod: AppserverSubService_ListUserServerSubs_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppserverSubServiceServer).GetUserAppserverSubs(ctx, req.(*GetUserAppserverSubsRequest))
+		return srv.(AppserverSubServiceServer).ListUserServerSubs(ctx, req.(*ListUserServerSubsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AppserverSubService_GetAllUsersAppserverSubs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllUsersAppserverSubsRequest)
+func _AppserverSubService_ListAppserverUserSubs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAppserverUserSubsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppserverSubServiceServer).GetAllUsersAppserverSubs(ctx, in)
+		return srv.(AppserverSubServiceServer).ListAppserverUserSubs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppserverSubService_GetAllUsersAppserverSubs_FullMethodName,
+		FullMethod: AppserverSubService_ListAppserverUserSubs_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppserverSubServiceServer).GetAllUsersAppserverSubs(ctx, req.(*GetAllUsersAppserverSubsRequest))
+		return srv.(AppserverSubServiceServer).ListAppserverUserSubs(ctx, req.(*ListAppserverUserSubsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AppserverSubService_DeleteAppserverSub_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteAppserverSubRequest)
+func _AppserverSubService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppserverSubServiceServer).DeleteAppserverSub(ctx, in)
+		return srv.(AppserverSubServiceServer).Delete(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AppserverSubService_DeleteAppserverSub_FullMethodName,
+		FullMethod: AppserverSubService_Delete_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppserverSubServiceServer).DeleteAppserverSub(ctx, req.(*DeleteAppserverSubRequest))
+		return srv.(AppserverSubServiceServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -214,20 +214,20 @@ var AppserverSubService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AppserverSubServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateAppserverSub",
-			Handler:    _AppserverSubService_CreateAppserverSub_Handler,
+			MethodName: "Create",
+			Handler:    _AppserverSubService_Create_Handler,
 		},
 		{
-			MethodName: "GetUserAppserverSubs",
-			Handler:    _AppserverSubService_GetUserAppserverSubs_Handler,
+			MethodName: "ListUserServerSubs",
+			Handler:    _AppserverSubService_ListUserServerSubs_Handler,
 		},
 		{
-			MethodName: "GetAllUsersAppserverSubs",
-			Handler:    _AppserverSubService_GetAllUsersAppserverSubs_Handler,
+			MethodName: "ListAppserverUserSubs",
+			Handler:    _AppserverSubService_ListAppserverUserSubs_Handler,
 		},
 		{
-			MethodName: "DeleteAppserverSub",
-			Handler:    _AppserverSubService_DeleteAppserverSub_Handler,
+			MethodName: "Delete",
+			Handler:    _AppserverSubService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

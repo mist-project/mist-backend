@@ -14,14 +14,14 @@ import (
 	"mist/src/testutil"
 )
 
-func TestGetUserAppserverSubs(t *testing.T) {
+func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.GetUserAppserverSubs(
-			ctx, &pb_appserversub.GetUserAppserverSubsRequest{},
+		response, err := testutil.TestAppserverSubClient.ListUserServerSubs(
+			ctx, &pb_appserversub.ListUserServerSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -42,8 +42,8 @@ func TestGetUserAppserverSubs(t *testing.T) {
 		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver2.ID, AppuserID: appuser.ID})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.GetUserAppserverSubs(
-			ctx, &pb_appserversub.GetUserAppserverSubsRequest{},
+		response, err := testutil.TestAppserverSubClient.ListUserServerSubs(
+			ctx, &pb_appserversub.ListUserServerSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -55,14 +55,14 @@ func TestGetUserAppserverSubs(t *testing.T) {
 
 }
 
-func TestGetAllUsersAppserverSubs(t *testing.T) {
+func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.GetAllUsersAppserverSubs(
-			ctx, &pb_appserversub.GetAllUsersAppserverSubsRequest{AppserverId: uuid.NewString()},
+		response, err := testutil.TestAppserverSubClient.ListAppserverUserSubs(
+			ctx, &pb_appserversub.ListAppserverUserSubsRequest{AppserverId: uuid.NewString()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -82,9 +82,9 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user2.ID})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.GetAllUsersAppserverSubs(
+		response, err := testutil.TestAppserverSubClient.ListAppserverUserSubs(
 			ctx,
-			&pb_appserversub.GetAllUsersAppserverSubsRequest{AppserverId: server.ID.String()},
+			&pb_appserversub.ListAppserverUserSubsRequest{AppserverId: server.ID.String()},
 		)
 
 		if err != nil {
@@ -97,7 +97,7 @@ func TestGetAllUsersAppserverSubs(t *testing.T) {
 
 }
 
-func TestCreateAppserverSub(t *testing.T) {
+func TestAppserverSubService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -106,8 +106,8 @@ func TestCreateAppserverSub(t *testing.T) {
 		appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: appuser.ID})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.CreateAppserverSub(
-			ctx, &pb_appserversub.CreateAppserverSubRequest{AppserverId: appserver.ID.String()},
+		response, err := testutil.TestAppserverSubClient.Create(
+			ctx, &pb_appserversub.CreateRequest{AppserverId: appserver.ID.String()},
 		)
 
 		if err != nil {
@@ -123,8 +123,8 @@ func TestCreateAppserverSub(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.CreateAppserverSub(
-			ctx, &pb_appserversub.CreateAppserverSubRequest{AppserverId: uuid.NewString()},
+		response, err := testutil.TestAppserverSubClient.Create(
+			ctx, &pb_appserversub.CreateRequest{AppserverId: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -140,8 +140,8 @@ func TestCreateAppserverSub(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.CreateAppserverSub(
-			ctx, &pb_appserversub.CreateAppserverSubRequest{},
+		response, err := testutil.TestAppserverSubClient.Create(
+			ctx, &pb_appserversub.CreateRequest{},
 		)
 		s, ok := status.FromError(err)
 
@@ -153,7 +153,7 @@ func TestCreateAppserverSub(t *testing.T) {
 	})
 }
 
-func TestDeleteAppserverSub(t *testing.T) {
+func TestAppserverSubService_Delete(t *testing.T) {
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -166,8 +166,8 @@ func TestDeleteAppserverSub(t *testing.T) {
 		})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.DeleteAppserverSub(
-			ctx, &pb_appserversub.DeleteAppserverSubRequest{Id: appserverSub.ID.String()})
+		response, err := testutil.TestAppserverSubClient.Delete(
+			ctx, &pb_appserversub.DeleteRequest{Id: appserverSub.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -179,8 +179,8 @@ func TestDeleteAppserverSub(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverSubClient.DeleteAppserverSub(
-			ctx, &pb_appserversub.DeleteAppserverSubRequest{Id: uuid.NewString()},
+		response, err := testutil.TestAppserverSubClient.Delete(
+			ctx, &pb_appserversub.DeleteRequest{Id: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)

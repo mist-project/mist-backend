@@ -51,7 +51,7 @@ func TestAppserverService_PgTypeToPb(t *testing.T) {
 
 func TestAppserverService_Create(t *testing.T) {
 
-	t.Run("successful_creation_on_valid_ops", func(t *testing.T) {
+	t.Run("Successful:creation_on_valid_ops", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -82,7 +82,7 @@ func TestAppserverService_Create(t *testing.T) {
 		assert.Equal(t, appserver.ID, response.ID)
 	})
 
-	t.Run("error_is_returned_when_starting_tx_fails", func(t *testing.T) {
+	t.Run("Error:is_returned_when_starting_tx_fails", func(t *testing.T) {
 		// ARRANGE
 		badConnection, err := pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
 		badConnection.Close()
@@ -103,10 +103,10 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// // ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) tx initialization: closed pool")
+		assert.Contains(t, err.Error(), "(-3) tx initialization error: closed pool")
 	})
 
-	t.Run("error_is_returned_when_creating_server_fails", func(t *testing.T) {
+	t.Run("Error:is_returned_when_creating_server_fails", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -124,10 +124,10 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// // ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) create appserver:")
+		assert.Contains(t, err.Error(), "(-3) create appserver error:")
 	})
 
-	t.Run("error_is_returned_when_creating_appserver_sub_fails", func(t *testing.T) {
+	t.Run("Error:is_returned_when_creating_appserver_sub_fails", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -148,10 +148,10 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// // ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) create appserver sub:")
+		assert.Contains(t, err.Error(), "(-3) create appserver sub error:")
 	})
 
-	t.Run("commit_fails_with_error", func(t *testing.T) {
+	t.Run("Error:commit_fails_with_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -188,7 +188,7 @@ func TestAppserverService_Create(t *testing.T) {
 }
 
 func TestAppserverService_GetById(t *testing.T) {
-	t.Run("successful_appserver_return", func(t *testing.T) {
+	t.Run("Successful:appserver_return", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
@@ -208,7 +208,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		assert.Equal(t, expected.Name, actual.Name)
 	})
 
-	t.Run("returns_not_found_when_no_rows", func(t *testing.T) {
+	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
@@ -226,7 +226,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		assert.Contains(t, err.Error(), "(-2): resource not found")
 	})
 
-	t.Run("returns_database_error_on_failure", func(t *testing.T) {
+	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
@@ -246,7 +246,7 @@ func TestAppserverService_GetById(t *testing.T) {
 }
 
 func TestAppserverService_List(t *testing.T) {
-	t.Run("success_with_name_filter", func(t *testing.T) {
+	t.Run("Successful:with_name_filter", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ownerID := uuid.New()
@@ -271,7 +271,7 @@ func TestAppserverService_List(t *testing.T) {
 		assert.Equal(t, expected, result)
 	})
 
-	t.Run("success_without_name_filter", func(t *testing.T) {
+	t.Run("Successful:without_name_filter", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ownerID := uuid.New()
@@ -295,7 +295,7 @@ func TestAppserverService_List(t *testing.T) {
 		assert.Equal(t, expected, result)
 	})
 
-	t.Run("failure_on_db_error", func(t *testing.T) {
+	t.Run("Error:failure_on_db_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ownerID := uuid.New()
@@ -311,7 +311,7 @@ func TestAppserverService_List(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3): database error")
+		assert.Contains(t, err.Error(), "(-3) database error")
 	})
 }
 
@@ -321,7 +321,7 @@ func TestAppserverService_Delete(t *testing.T) {
 	appserverId := uuid.New()
 	params := qx.DeleteAppserverParams{ID: appserverId, AppuserID: parsedUid}
 
-	t.Run("successful_deletion", func(t *testing.T) {
+	t.Run("Successful:deletion", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(1), nil)
@@ -334,7 +334,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("error_on_no_rows_deleted", func(t *testing.T) {
+	t.Run("Error:on_no_rows_deleted", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(0), nil)
@@ -349,7 +349,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.Contains(t, err.Error(), "(-2): no rows were deleted")
 	})
 
-	t.Run("error_on_db_failure", func(t *testing.T) {
+	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, params).Return(int64(0), fmt.Errorf("db failure"))

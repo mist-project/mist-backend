@@ -18,10 +18,12 @@ type AppuserService struct {
 	db     db.Querier
 }
 
+// Creates a new AppuserService struct.
 func NewAppuserService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppuserService {
 	return &AppuserService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
+// Convert Appuser db object to Appuser protobuff object.
 func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *pb_appuser.Appuser {
 	return &pb_appuser.Appuser{
 		Id:        a.ID.String(),
@@ -30,6 +32,7 @@ func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *pb_appuser.Appuser {
 	}
 }
 
+// Creates a new appuser.
 func (s *AppuserService) Create(obj qx.CreateAppuserParams) (*qx.Appuser, error) {
 	as, err := s.db.CreateAppuser(s.ctx, obj)
 

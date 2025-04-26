@@ -41,7 +41,8 @@ type AppserverRoleSubGRPCService struct {
 
 type ChannelGRPCService struct {
 	pb_channel.UnimplementedChannelServiceServer
-	DbConn qx.DBTX
+	DbConn *pgxpool.Pool
+	Db     db.Querier
 }
 
 type AppuserGRPCService struct {
@@ -58,7 +59,7 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{DbConn: dbConn})
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{DbConn: dbConn})
 	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{DbConn: dbConn})
-	pb_channel.RegisterChannelServiceServer(s, &ChannelGRPCService{DbConn: dbConn})
+	pb_channel.RegisterChannelServiceServer(s, &ChannelGRPCService{Db: querier, DbConn: dbConn})
 }
 
 func BaseInterceptors() grpc.ServerOption {

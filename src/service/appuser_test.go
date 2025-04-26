@@ -24,20 +24,8 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 	id := uuid.New()
 	now := time.Now()
 
-	appuser := &qx.Appuser{
-		ID:       id,
-		Username: "testuser",
-		CreatedAt: pgtype.Timestamp{
-			Time:  now,
-			Valid: true,
-		},
-	}
-
-	expected := &pb_appuser.Appuser{
-		Id:        id.String(),
-		Username:  "testuser",
-		CreatedAt: timestamppb.New(now),
-	}
+	appuser := &qx.Appuser{ID: id, Username: "testuser", CreatedAt: pgtype.Timestamp{Time: now, Valid: true}}
+	expected := &pb_appuser.Appuser{Id: id.String(), Username: "testuser", CreatedAt: timestamppb.New(now)}
 
 	// ACT
 	result := svc.PgTypeToPb(appuser)
@@ -47,13 +35,10 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 }
 
 func TestAppuserService_Create(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
+	t.Run("Successful:can_create_user", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		expectedUser := qx.Appuser{
-			ID:       uuid.New(),
-			Username: "testuser",
-		}
+		expectedUser := qx.Appuser{ID: uuid.New(), Username: "testuser"}
 		params := qx.CreateAppuserParams{Username: expectedUser.Username}
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -70,7 +55,7 @@ func TestAppuserService_Create(t *testing.T) {
 		assert.Equal(t, expectedUser.Username, result.Username)
 	})
 
-	t.Run("failure_on_db_error", func(t *testing.T) {
+	t.Run("Error:failure_on_db_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		params := qx.CreateAppuserParams{Username: "baduser"}

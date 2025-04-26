@@ -21,6 +21,7 @@ type AppserverService struct {
 	db     db.Querier
 }
 
+// Creates a new AppserverService struct.
 func NewAppserverService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverService {
 	return &AppserverService{ctx: ctx, dbConn: dbConn, db: db}
 }
@@ -35,11 +36,12 @@ func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_appserver.Appserver {
 }
 
 // Creates an appserver, uses CreateWithTx helper function to wrap creation in transaction
-// Note: the transaction will be committed in CreateWithTx.
+// Note: the transaction will be committed in CreateWithTx. The creator of the server gets automatically assigned
+// an appserver sub.
 func (s *AppserverService) Create(obj qx.CreateAppserverParams) (*qx.Appserver, error) {
 	tx, err := s.dbConn.BeginTx(s.ctx, pgx.TxOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("(%d) tx initialization: %v", DatabaseError, err)
+		return nil, fmt.Errorf("(%d) tx initialization error: %v", DatabaseError, err)
 	}
 	defer tx.Rollback(s.ctx)
 
@@ -55,7 +57,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	appserver, err := txQ.CreateAppserver(s.ctx, obj)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) create appserver: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) create appserver error: %v", DatabaseError, err))
 	}
 
 	// once the appserver is created, add user as a subscriber
@@ -65,7 +67,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d) create appserver sub: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) create appserver sub error: %v", DatabaseError, err))
 	}
 
 	if err := tx.Commit(s.ctx); err != nil {
@@ -75,7 +77,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	return &appserver, err
 }
 
-// Gets an appserver details by its id.
+// Gets an appserver detail by its id.
 func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
 	appserver, err := s.db.GetAppserverById(s.ctx, id)
 
@@ -96,7 +98,7 @@ func (s *AppserverService) List(params qx.ListUserAppserversParams) ([]qx.Appser
 	appservers, err := s.db.ListUserAppservers(s.ctx, params)
 
 	if err != nil {
-		return nil, fmt.Errorf(fmt.Sprintf("(%d): database error: %v", DatabaseError, err))
+		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	}
 
 	return appservers, nil

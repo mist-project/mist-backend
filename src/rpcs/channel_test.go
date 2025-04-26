@@ -14,9 +14,8 @@ import (
 	"mist/src/testutil"
 )
 
-// ----- RPC Channels -----
 func TestListChannels(t *testing.T) {
-	t.Run("returns_nothing_successfully", func(t *testing.T) {
+	t.Run("Successful:returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -32,7 +31,7 @@ func TestListChannels(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetChannels()))
 	})
 
-	t.Run("returns_all_resources_successfully", func(t *testing.T) {
+	t.Run("Successful:returns_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil)
@@ -49,7 +48,7 @@ func TestListChannels(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetChannels()))
 	})
 
-	t.Run("can_filter_successfully", func(t *testing.T) {
+	t.Run("Successful:can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil)
@@ -69,9 +68,8 @@ func TestListChannels(t *testing.T) {
 	})
 }
 
-// ----- RPC GetByIdChannel -----
 func TestGetByIdChannel(t *testing.T) {
-	t.Run("returns_successfully", func(t *testing.T) {
+	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		channel := testutil.TestChannel(t, nil)
@@ -89,7 +87,7 @@ func TestGetByIdChannel(t *testing.T) {
 		assert.Equal(t, channel.ID.String(), response.GetChannel().Id)
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -106,7 +104,7 @@ func TestGetByIdChannel(t *testing.T) {
 		assert.Contains(t, s.Message(), "resource not found")
 	})
 
-	t.Run("invalid_uuid_returns_parsing_error", func(t *testing.T) {
+	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -126,7 +124,7 @@ func TestGetByIdChannel(t *testing.T) {
 
 // ----- RPC CreateChannel -----
 func TestCreateChannel(t *testing.T) {
-	t.Run("creates_successfully", func(t *testing.T) {
+	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserver := testutil.TestAppserver(t, nil)
@@ -142,7 +140,24 @@ func TestCreateChannel(t *testing.T) {
 		assert.NotNil(t, response.Channel)
 	})
 
-	t.Run("invalid_arguments_returns_error", func(t *testing.T) {
+	t.Run("Error:when_create_fails_it_errors", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+
+		// ACT
+		response, err := testutil.TestChannelClient.CreateChannel(
+			ctx,
+			&pb_channel.CreateChannelRequest{Name: "new channel", AppserverId: uuid.NewString()},
+		)
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Unknown, s.Code())
+	})
+
+	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -158,9 +173,8 @@ func TestCreateChannel(t *testing.T) {
 	})
 }
 
-// ----- RPC DeleteChannel -----
 func TestDeleteChannel(t *testing.T) {
-	t.Run("deletes_successfully", func(t *testing.T) {
+	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		channel := testutil.TestChannel(t, nil)
@@ -173,7 +187,7 @@ func TestDeleteChannel(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -185,6 +199,6 @@ func TestDeleteChannel(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "no rows were deleted")
+		assert.Contains(t, s.Message(), "resource not found")
 	})
 }

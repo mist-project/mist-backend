@@ -3,9 +3,6 @@ package service_test
 import (
 	"context"
 	"fmt"
-	"mist/src/psql_db/qx"
-	"mist/src/service"
-	"mist/src/testutil"
 	"testing"
 	"time"
 
@@ -15,6 +12,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
+	"mist/src/psql_db/qx"
+	"mist/src/service"
+	"mist/src/testutil"
 )
 
 func TestAppserverRoleService_PgTypeToPb(t *testing.T) {
@@ -127,7 +127,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 	})
 }
 
-func TestAppserverRoleService_DeleteByAppserver(t *testing.T) {
+func TestAppserverRoleService_Delete(t *testing.T) {
 	t.Run("Successful:delete_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -139,7 +139,7 @@ func TestAppserverRoleService_DeleteByAppserver(t *testing.T) {
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.DeleteByAppserver(params)
+		err := svc.Delete(params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -156,7 +156,7 @@ func TestAppserverRoleService_DeleteByAppserver(t *testing.T) {
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.DeleteByAppserver(params)
+		err := svc.Delete(params)
 
 		// ASSERT
 		assert.Error(t, err)
@@ -174,7 +174,7 @@ func TestAppserverRoleService_DeleteByAppserver(t *testing.T) {
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.DeleteByAppserver(params)
+		err := svc.Delete(params)
 
 		// ASSERT
 		assert.Error(t, err)

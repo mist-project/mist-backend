@@ -3,10 +3,6 @@ package service_test
 import (
 	"context"
 	"fmt"
-	pb_channel "mist/src/protos/v1/channel"
-	"mist/src/psql_db/qx"
-	"mist/src/service"
-	"mist/src/testutil"
 	"testing"
 	"time"
 
@@ -14,6 +10,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/psql_db/qx"
+	"mist/src/service"
+	"mist/src/testutil"
 )
 
 func TestChannelService_PgTypeToPb(t *testing.T) {

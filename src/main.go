@@ -22,8 +22,13 @@ func InitializeServer() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	//TODO: add these registers to its own function
-	s := grpc.NewServer(rpcs.BaseInterceptors())
+	interceptors, err := rpcs.BaseInterceptors()
+
+	if err != nil {
+		log.Fatalf("failed to start interceptors: %v", err)
+	}
+
+	s := grpc.NewServer(interceptors)
 	rpcs.RegisterGrpcServices(s, dbConn)
 
 	log.Printf("server listening at %v", lis.Addr())

@@ -48,7 +48,8 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.A
 	return aRoles, nil
 }
 
-func (s *AppserverRoleService) DeleteByAppserver(obj qx.DeleteAppserverRoleParams) error {
+// Deletes a role from a server, only owner of server and delete role
+func (s *AppserverRoleService) Delete(obj qx.DeleteAppserverRoleParams) error {
 	deleted, err := s.db.DeleteAppserverRole(s.ctx, obj)
 
 	if err != nil {

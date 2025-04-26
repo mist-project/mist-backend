@@ -3,11 +3,11 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	pb_appuser "mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
-
-	"github.com/google/uuid"
 )
 
 func (s *AppuserGRPCService) CreateAppuser(

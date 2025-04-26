@@ -3,13 +3,13 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"mist/src/middleware"
 	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
-
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (s *AppserverGRPCService) CreateAppserver(

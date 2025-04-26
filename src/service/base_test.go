@@ -2,8 +2,9 @@ package service_test
 
 import (
 	"fmt"
-	"mist/src/service"
 	"testing"
+
+	"mist/src/service"
 
 	"github.com/stretchr/testify/assert"
 )

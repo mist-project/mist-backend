@@ -95,7 +95,9 @@ func SetupTestGRPCServicesAndClient() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	testServer = grpc.NewServer(rpcs.BaseInterceptors())
+	interceptors, err := rpcs.BaseInterceptors()
+
+	testServer = grpc.NewServer(interceptors)
 	rpcs.RegisterGrpcServices(testServer, TestDbConn)
 
 	go func() {

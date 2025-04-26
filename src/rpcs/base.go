@@ -1,7 +1,11 @@
 package rpcs
 
 import (
-	"log"
+	"github.com/bufbuild/protovalidate-go"
+	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/grpc"
+
 	"mist/src/middleware"
 	pb_appserver "mist/src/protos/v1/appserver"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
@@ -11,12 +15,13 @@ import (
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
-
-	"github.com/bufbuild/protovalidate-go"
-	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"google.golang.org/grpc"
 )
+
+type AppuserGRPCService struct {
+	pb_appuser.UnimplementedAppuserServiceServer
+	DbConn *pgxpool.Pool
+	Db     db.Querier
+}
 
 type AppserverGRPCService struct {
 	pb_appserver.UnimplementedAppserverServiceServer
@@ -38,17 +43,12 @@ type AppserverRoleGRPCService struct {
 
 type AppserverRoleSubGRPCService struct {
 	pb_appserverrolesub.UnimplementedAppserverRoleSubServiceServer
-	DbConn qx.DBTX
-}
-
-type ChannelGRPCService struct {
-	pb_channel.UnimplementedChannelServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
 }
 
-type AppuserGRPCService struct {
-	pb_appuser.UnimplementedAppuserServiceServer
+type ChannelGRPCService struct {
+	pb_channel.UnimplementedChannelServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
 }
@@ -60,18 +60,23 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 	pb_appserver.RegisterAppserverServiceServer(s, &AppserverGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{Db: querier, DbConn: dbConn})
-	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{DbConn: dbConn})
+	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{Db: querier, DbConn: dbConn})
 	pb_channel.RegisterChannelServiceServer(s, &ChannelGRPCService{Db: querier, DbConn: dbConn})
 }
 
-func BaseInterceptors() grpc.ServerOption {
-	validator, err := protovalidate.New()
+var NewValidator = func() (protovalidate.Validator, error) {
+	return protovalidate.New()
+}
+
+func BaseInterceptors() (grpc.ServerOption, error) {
+	validator, err := NewValidator()
+
 	if err != nil {
-		log.Fatalf("failed to create protovalidate validator")
+		return nil, err
 	}
 
 	return grpc.ChainUnaryInterceptor(
 		middleware.AuthJwtInterceptor,
 		protovalidate_middleware.UnaryServerInterceptor(validator),
-	)
+	), nil
 }

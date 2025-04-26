@@ -110,7 +110,7 @@ func (s *AppserverSubService) ListAllUsersAppserverAndSub(
 }
 
 // Removes user from server.
-func (s *AppserverSubService) DeleteByAppserver(id uuid.UUID) error {
+func (s *AppserverSubService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {

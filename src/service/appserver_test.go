@@ -3,10 +3,6 @@ package service_test
 import (
 	"context"
 	"fmt"
-	pb_appserver "mist/src/protos/v1/appserver"
-	"mist/src/psql_db/qx"
-	"mist/src/service"
-	"mist/src/testutil"
 	"os"
 	"testing"
 	"time"
@@ -17,6 +13,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/psql_db/qx"
+	"mist/src/service"
+	"mist/src/testutil"
 )
 
 func TestAppserverService_PgTypeToPb(t *testing.T) {

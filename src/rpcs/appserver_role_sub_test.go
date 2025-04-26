@@ -14,7 +14,7 @@ import (
 )
 
 func TestCreateAppserveRoleSub(t *testing.T) {
-	t.Run("creates_successfully", func(t *testing.T) {
+	t.Run("Successfulcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appuser := testutil.TestAppuser(t, nil)
@@ -40,7 +40,28 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 		assert.NotNil(t, response.AppserverRoleSub)
 	})
 
-	t.Run("invalid_arguments_return_error", func(t *testing.T) {
+	t.Run("Error:on_database_failure_returns_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+
+		// ACT
+		response, err := testutil.TestAppserverRoleSubClient.CreateAppserverRoleSub(
+			ctx, &pb_appserverrolesub.CreateAppserverRoleSubRequest{
+				AppserverRoleId: uuid.NewString(),
+				AppserverSubId:  uuid.NewString(),
+				AppserverId:     uuid.NewString(),
+				AppuserId:       uuid.NewString(),
+			},
+		)
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Unknown, s.Code())
+	})
+
+	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -59,7 +80,7 @@ func TestCreateAppserveRoleSub(t *testing.T) {
 }
 
 func TestGetAllAppserverUserRoleSubs(t *testing.T) {
-	t.Run("can_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserver := testutil.TestAppserver(t, nil)
@@ -76,7 +97,7 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppserverRoleSubs()))
 	})
 
-	t.Run("can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
+	t.Run("Successful:can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
 
 		ctx := testutil.Setup(t, func() {})
@@ -115,7 +136,7 @@ func TestGetAllAppserverUserRoleSubs(t *testing.T) {
 }
 
 func TestDeleteAppserveRoleSub(t *testing.T) {
-	t.Run("roles_can_only_be_deleted_by_server_owner_only", func(t *testing.T) {
+	t.Run("Successful:role_sub_can_only_be_deleted_by_server_owner_only", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -141,7 +162,7 @@ func TestDeleteAppserveRoleSub(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("cannot_be_deleted_by_non_owner", func(t *testing.T) {
+	t.Run("Error:cannot_be_deleted_by_non_owner", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		asrSub := testutil.TestAppserverRoleSub(t, nil)
@@ -155,10 +176,10 @@ func TestDeleteAppserveRoleSub(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-2) no rows were deleted")
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
-	t.Run("invalid_id_returns_not_found_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -173,6 +194,6 @@ func TestDeleteAppserveRoleSub(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "no rows were deleted")
+		assert.Contains(t, s.Message(), "resource not found")
 	})
 }

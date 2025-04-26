@@ -3,12 +3,13 @@ package service_test
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	pb_appuser "mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
-	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"

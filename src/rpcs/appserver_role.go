@@ -3,12 +3,12 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"mist/src/middleware"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
-
-	"github.com/google/uuid"
 )
 
 func (s *AppserverRoleGRPCService) CreateAppserverRole(
@@ -66,7 +66,7 @@ func (s *AppserverRoleGRPCService) DeleteAppserverRole(
 	roleId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err := service.NewAppserverRoleService(ctx, s.DbConn, s.Db).DeleteByAppserver(
+	err := service.NewAppserverRoleService(ctx, s.DbConn, s.Db).Delete(
 		qx.DeleteAppserverRoleParams{AppuserID: userId, ID: roleId},
 	)
 

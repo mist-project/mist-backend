@@ -3,10 +3,6 @@ package service_test
 import (
 	"context"
 	"fmt"
-	pb_appserversub "mist/src/protos/v1/appserver_sub"
-	"mist/src/psql_db/qx"
-	"mist/src/service"
-	"mist/src/testutil"
 	"testing"
 	"time"
 
@@ -14,6 +10,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pb_appserversub "mist/src/protos/v1/appserver_sub"
+	"mist/src/psql_db/qx"
+	"mist/src/service"
+	"mist/src/testutil"
 )
 
 func TestAppserverSubService_PgTypeToPb(t *testing.T) {
@@ -220,7 +221,7 @@ func TestAppserverSubService_ListAllUsersAppserverAndSub(t *testing.T) {
 	})
 }
 
-func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
+func TestAppserverSubService_Delete(t *testing.T) {
 	t.Run("Successful:deletes_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -232,7 +233,7 @@ func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.DeleteByAppserver(subID)
+		err := svc.Delete(subID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -249,7 +250,7 @@ func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.DeleteByAppserver(subID)
+		err := svc.Delete(subID)
 
 		// ASSERT
 		assert.Error(t, err)
@@ -267,7 +268,7 @@ func TestAppserverSubService_DeleteByAppserver(t *testing.T) {
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		err := svc.DeleteByAppserver(subID)
+		err := svc.Delete(subID)
 
 		// ASSERT
 		assert.Error(t, err)

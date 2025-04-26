@@ -5,18 +5,21 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverRoleSubService struct {
-	dbConn qx.DBTX
 	ctx    context.Context
+	dbConn *pgxpool.Pool
+	db     db.Querier
 }
 
-func NewAppserverRoleSubService(dbConn qx.DBTX, ctx context.Context) *AppserverRoleSubService {
-	return &AppserverRoleSubService{dbConn: dbConn, ctx: ctx}
+func NewAppserverRoleSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverRoleSubService {
+	return &AppserverRoleSubService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
 func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_appserverrolesub.AppserverRoleSub {
@@ -28,10 +31,9 @@ func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_app
 	}
 }
 
-func (s *AppserverRoleSubService) Create(
-	obj qx.CreateAppserverRoleSubParams,
-) (*qx.AppserverRoleSub, error) {
-	appserverRole, err := qx.New(s.dbConn).CreateAppserverRoleSub(s.ctx, obj)
+// Adds a server role to a user.
+func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*qx.AppserverRoleSub, error) {
+	appserverRole, err := s.db.CreateAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
@@ -40,11 +42,12 @@ func (s *AppserverRoleSubService) Create(
 	return &appserverRole, err
 }
 
+// Get all the roles each user has in a server.
 func (s *AppserverRoleSubService) GetAppserverAllUserRoleSubs(
 	appserverId uuid.UUID,
 ) ([]qx.GetAppserverAllUserRoleSubsRow, error) {
 
-	rows, err := qx.New(s.dbConn).GetAppserverAllUserRoleSubs(s.ctx, appserverId)
+	rows, err := s.db.GetAppserverAllUserRoleSubs(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
@@ -53,13 +56,14 @@ func (s *AppserverRoleSubService) GetAppserverAllUserRoleSubs(
 	return rows, nil
 }
 
-func (s *AppserverRoleSubService) DeleteRoleSub(obj qx.DeleteAppserverRoleSubParams) error {
-	deleted, err := qx.New(s.dbConn).DeleteAppserverRoleSub(s.ctx, obj)
+// Removes a role to a particular user.
+func (s *AppserverRoleSubService) Delete(obj qx.DeleteAppserverRoleSubParams) error {
+	deleted, err := s.db.DeleteAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("(%d) database error: %v", DatabaseError, err))
 	} else if deleted == 0 {
-		return fmt.Errorf(fmt.Sprintf("(%d) no rows were deleted", NotFoundError))
+		return fmt.Errorf(fmt.Sprintf("(%d) resource not found", NotFoundError))
 	}
 
 	return nil

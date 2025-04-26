@@ -3,12 +3,12 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"mist/src/middleware"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
-
-	"github.com/google/uuid"
 )
 
 func (s *AppserverSubGRPCService) CreateAppserverSub(
@@ -89,11 +89,11 @@ func (s *AppserverSubGRPCService) DeleteAppserverSub(
 ) (*pb_appserversub.DeleteAppserverSubResponse, error) {
 
 	id, _ := uuid.Parse((req.Id))
-	err := service.NewAppserverSubService(ctx, s.DbConn, s.Db).DeleteByAppserver(id)
+	err := service.NewAppserverSubService(ctx, s.DbConn, s.Db).Delete(id)
 
 	// Error handling
 	if err != nil {
-		
+
 		return nil, ErrorHandler(err)
 	}
 

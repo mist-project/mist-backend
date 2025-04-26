@@ -1,10 +1,10 @@
 package rpcs
 
 import (
-	"mist/src/service"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"mist/src/service"
 )
 
 func ErrorHandler(err error) error {

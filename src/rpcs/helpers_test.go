@@ -2,11 +2,12 @@ package rpcs_test
 
 import (
 	"fmt"
-	"mist/src/rpcs"
 	"testing"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"mist/src/rpcs"
 )
 
 func TestErrorHandler(t *testing.T) {

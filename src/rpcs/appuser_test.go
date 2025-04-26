@@ -2,16 +2,17 @@ package rpcs_test
 
 import (
 	"fmt"
-	pb_appuser "mist/src/protos/v1/appuser"
-	"mist/src/psql_db/qx"
-	"mist/src/rpcs"
-	"mist/src/testutil"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/psql_db/qx"
+	"mist/src/rpcs"
+	"mist/src/testutil"
 )
 
 func TestCreateAppuser(t *testing.T) {

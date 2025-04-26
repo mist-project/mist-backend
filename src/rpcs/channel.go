@@ -3,12 +3,12 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
-
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (s *ChannelGRPCService) CreateChannel(

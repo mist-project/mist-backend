@@ -3,18 +3,18 @@ package rpcs
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"mist/src/middleware"
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
-
-	"github.com/google/uuid"
 )
 
 func (s *AppserverRoleSubGRPCService) CreateAppserverRoleSub(
 	ctx context.Context, req *pb_appserverrolesub.CreateAppserverRoleSubRequest,
 ) (*pb_appserverrolesub.CreateAppserverRoleSubResponse, error) {
-	roleSubS := service.NewAppserverRoleSubService(s.DbConn, ctx)
+	roleSubS := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db)
 
 	// TODO: Figure out what can go wrong to add error handler
 	subId, _ := uuid.Parse(req.AppserverSubId)
@@ -48,7 +48,7 @@ func (s *AppserverRoleSubGRPCService) GetAllAppserverUserRoleSubs(
 
 	// Initialize the service for AppserveRole
 	serverId, _ := uuid.Parse(req.AppserverId)
-	results, _ := service.NewAppserverRoleSubService(s.DbConn, ctx).GetAppserverAllUserRoleSubs(serverId)
+	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db).GetAppserverAllUserRoleSubs(serverId)
 
 	// Construct the response
 	response := &pb_appserverrolesub.GetAllAppserverUserRoleSubsResponse{
@@ -73,13 +73,13 @@ func (s *AppserverRoleSubGRPCService) DeleteAppserverRoleSub(
 ) (*pb_appserverrolesub.DeleteAppserverRoleSubResponse, error) {
 
 	// Initialize the service for AppserveRole
-	arss := service.NewAppserverRoleSubService(s.DbConn, ctx)
+	arss := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 	roleSubId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err := arss.DeleteRoleSub(qx.DeleteAppserverRoleSubParams{
+	err := arss.Delete(qx.DeleteAppserverRoleSubParams{
 		ID:        roleSubId,
 		AppuserID: userId,
 	})

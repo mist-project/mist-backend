@@ -76,7 +76,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	}
 
 	if err := tx.Commit(s.ctx); err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("commit: %v", err))
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 
 	}
 

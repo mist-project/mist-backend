@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/errors/message"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -21,12 +22,12 @@ func TestAppserverRoleService_PgTypeToPb(t *testing.T) {
 
 	// ARRANGE
 	id := uuid.New()
-	appserverID := uuid.New()
+	appserverId := uuid.New()
 	now := time.Now()
 
 	role := &qx.AppserverRole{
 		ID:          id,
-		AppserverID: appserverID,
+		AppserverID: appserverId,
 		Name:        "admin",
 		CreatedAt:   pgtype.Timestamp{Time: now, Valid: true},
 		UpdatedAt:   pgtype.Timestamp{Time: now, Valid: true},
@@ -34,7 +35,7 @@ func TestAppserverRoleService_PgTypeToPb(t *testing.T) {
 
 	expected := &pb_appserverrole.AppserverRole{
 		Id:          id.String(),
-		AppserverId: appserverID.String(),
+		AppserverId: appserverId.String(),
 		Name:        "admin",
 		CreatedAt:   timestamppb.New(now),
 		UpdatedAt:   timestamppb.New(now),
@@ -86,7 +87,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "creation failed")
+		assert.Contains(t, err.Error(), "(-3) database error: creation failed")
 	})
 }
 
@@ -95,16 +96,16 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 	t.Run("Successful:list_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserverID := uuid.New()
-		expected := []qx.AppserverRole{{ID: uuid.New(), AppserverID: appserverID, Name: "admin"}}
+		appserverId := uuid.New()
+		expected := []qx.AppserverRole{{ID: uuid.New(), AppserverID: appserverId, Name: "admin"}}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListAppserverRoles", ctx, appserverID).Return(expected, nil)
+		mockQuerier.On("ListAppserverRoles", ctx, appserverId).Return(expected, nil)
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		roles, err := svc.ListAppserverRoles(appserverID)
+		roles, err := svc.ListAppserverRoles(appserverId)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -114,19 +115,78 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserverID := uuid.New()
+		appserverId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListAppserverRoles", ctx, appserverID).Return(nil, fmt.Errorf("db error"))
+		mockQuerier.On("ListAppserverRoles", ctx, appserverId).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.ListAppserverRoles(appserverID)
+		_, err := svc.ListAppserverRoles(appserverId)
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Contains(t, err.Error(), "(-3) database error: db error")
+	})
+}
+
+func TestAppserverRoleService_GetById(t *testing.T) {
+
+	t.Run("Successful:appserver_return", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		roleId := uuid.New()
+		expected := qx.AppserverRole{ID: roleId, Name: "test-app"}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverRoleById", ctx, roleId).Return(expected, nil)
+
+		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		actual, err := svc.GetById(roleId)
+
+		// ASSERT
+		assert.NoError(t, err)
+		assert.Equal(t, expected.ID, actual.ID)
+		assert.Equal(t, expected.Name, actual.Name)
+	})
+
+	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverId := uuid.New()
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).
+			Return(nil, fmt.Errorf(message.DbNotFound))
+
+		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetById(appserverId)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-2) resource not found")
+	})
+
+	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverId := uuid.New()
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).
+			Return(nil, fmt.Errorf("boom"))
+
+		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetById(appserverId)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-3) database error: boom")
 	})
 }
 
@@ -182,6 +242,6 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "db crash")
+		assert.Contains(t, err.Error(), "(-3) database error: db crash")
 	})
 }

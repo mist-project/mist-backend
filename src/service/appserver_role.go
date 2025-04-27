@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -34,11 +35,18 @@ func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserver
 	}
 }
 
+// Creates an appserver role.
 func (s *AppserverRoleService) Create(obj qx.CreateAppserverRoleParams) (*qx.AppserverRole, error) {
 	appserverRole, err := s.db.CreateAppserverRole(s.ctx, obj)
+
+	if err != nil {
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
 	return &appserverRole, err
 }
 
+// Lists all the roles for an appserver.
 func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.AppserverRole, error) {
 	aRoles, err := s.db.ListAppserverRoles(s.ctx, appserverId)
 
@@ -47,6 +55,22 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.A
 	}
 
 	return aRoles, nil
+}
+
+// Gets an appserver detail by its id.
+func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) {
+	role, err := s.db.GetAppserverRoleById(s.ctx, id)
+
+	if err != nil {
+		// TODO: this check must be a standard db error result checker
+		if strings.Contains(err.Error(), message.DbNotFound) {
+			return nil, message.NotFoundError(message.NotFound)
+		}
+
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
+	return &role, nil
 }
 
 // Deletes a role from a server, only owner of server and delete role

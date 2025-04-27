@@ -20,7 +20,7 @@ func (s *ChannelGRPCService) Create(
 
 	serverId, _ := uuid.Parse(req.AppserverId)
 	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.ChannelCreateCtx{AppserverId: serverId},
+		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
 	)
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate); err != nil {
@@ -69,7 +69,7 @@ func (s *ChannelGRPCService) ListServerChannels(
 		nameFilter pgtype.Text
 	)
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{AppserverId: serverId})
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverChannels); err != nil {
 		return nil, message.RpcErrorHandler(err)

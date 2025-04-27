@@ -16,6 +16,10 @@ type SharedAuthorizer struct {
 	Db     db.Querier
 }
 
+type AppserverIdAuthCtx struct {
+	AppserverId uuid.UUID
+}
+
 func NewSharedAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *SharedAuthorizer {
 	return &SharedAuthorizer{
 		DbConn: DbConn,

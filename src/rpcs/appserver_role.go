@@ -7,6 +7,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/middleware"
+	"mist/src/permission"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -16,7 +17,17 @@ func (s *AppserverRoleGRPCService) Create(
 	ctx context.Context, req *pb_appserverrole.CreateRequest,
 ) (*pb_appserverrole.CreateResponse, error) {
 
+	var err error
+
 	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(
+		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+	)
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
 	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{Name: req.Name, AppserverID: serverId})
 
@@ -36,8 +47,17 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 ) (*pb_appserverrole.ListServerRolesResponse, error) {
 
 	// Initialize the service for AppserveRole
-	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
+	var (
+		err error
+	)
 	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListServerRoles); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
+	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
 	results, err := roleService.ListAppserverRoles(serverId)
 
 	// Error handling
@@ -61,13 +81,18 @@ func (s *AppserverRoleGRPCService) Delete(
 	ctx context.Context, req *pb_appserverrole.DeleteRequest,
 ) (*pb_appserverrole.DeleteResponse, error) {
 
+	var err error
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, ""); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	// Initialize the service for AppserveRole
 	claims, _ := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 	roleId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err := service.NewAppserverRoleService(ctx, s.DbConn, s.Db).Delete(
+	err = service.NewAppserverRoleService(ctx, s.DbConn, s.Db).Delete(
 		qx.DeleteAppserverRoleParams{AppuserID: userId, ID: roleId},
 	)
 

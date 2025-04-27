@@ -89,7 +89,7 @@ func TestChannelService_Create(t *testing.T) {
 		_, err := svc.Create(createObj)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "error on create")
+		assert.Contains(t, err.Error(), "create channel error: error on create")
 	})
 }
 
@@ -127,7 +127,7 @@ func TestChannelService_GetById(t *testing.T) {
 		_, err := svc.GetById(channel.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "resource not found")
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
 	t.Run("Error:on_database_error_it_returns_error", func(t *testing.T) {
@@ -143,7 +143,7 @@ func TestChannelService_GetById(t *testing.T) {
 		_, err := svc.GetById(channel.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "error on create")
+		assert.Contains(t, err.Error(), "(-3) database error: error on create")
 	})
 }
 
@@ -188,7 +188,7 @@ func TestChannelService_List(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Contains(t, err.Error(), "(-3) database error: database error")
 	})
 }
 
@@ -221,7 +221,7 @@ func TestChannelService_Delete(t *testing.T) {
 		err := svc.Delete(channelId)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "resource not found")
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
 	t.Run("Error:when_delete_fails_it_errors", func(t *testing.T) {
@@ -236,6 +236,6 @@ func TestChannelService_Delete(t *testing.T) {
 		err := svc.Delete(channelId)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "mock error")
+		assert.Contains(t, err.Error(), "(-3) database error: mock error")
 	})
 }

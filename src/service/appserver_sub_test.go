@@ -21,19 +21,19 @@ func TestAppserverSubService_PgTypeToPb(t *testing.T) {
 
 	// ARRANGE
 	id := uuid.New()
-	appserverID := uuid.New()
+	appserverId := uuid.New()
 	now := time.Now()
 
 	sub := &qx.AppserverSub{
 		ID:          id,
-		AppserverID: appserverID,
+		AppserverID: appserverId,
 		CreatedAt:   pgtype.Timestamp{Time: now, Valid: true},
 		UpdatedAt:   pgtype.Timestamp{Time: now, Valid: true},
 	}
 
 	expected := &pb_appserversub.AppserverSub{
 		Id:          id.String(),
-		AppserverId: appserverID.String(),
+		AppserverId: appserverId.String(),
 		CreatedAt:   timestamppb.New(now),
 		UpdatedAt:   timestamppb.New(now),
 	}
@@ -127,7 +127,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "create error")
+		assert.Contains(t, err.Error(), "(-3) database error: create error")
 	})
 }
 
@@ -176,7 +176,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "db boom error")
+		assert.Contains(t, err.Error(), "(-3) database error: db boom error")
 	})
 }
 
@@ -223,7 +223,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "query error")
+		assert.Contains(t, err.Error(), "(-3) database error: query error")
 	})
 }
 
@@ -268,9 +268,7 @@ func TestAppserverSubService_Filter(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("FilterAppserverSub", ctx, args).Return(
-			nil, fmt.Errorf("some db failure"),
-		)
+		mockQuerier.On("FilterAppserverSub", ctx, args).Return(nil, fmt.Errorf("some db failure"))
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -280,7 +278,7 @@ func TestAppserverSubService_Filter(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, res)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Contains(t, err.Error(), "(-3) database error: some db failure")
 	})
 }
 
@@ -318,7 +316,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "resource not found")
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
 	t.Run("Error:returns_error_on_db_fail", func(t *testing.T) {
@@ -336,6 +334,6 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "db error")
+		assert.Contains(t, err.Error(), "(-3) database error")
 	})
 }

@@ -42,24 +42,30 @@ func (auth *AppserverAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	if action == ActionRead || subAction == "create" {
-		return nil
-	}
+	// TODO: refactor this to potentially generalize
+	if objId != nil {
+		// Get object if id provided
+		id, err := uuid.Parse(*objId)
+		if err != nil {
+			return message.ValidateError(message.InvalidUUID)
+		}
 
-	// Actions with id
-	id, err := uuid.Parse(*objId)
-	if err != nil {
-		return message.ValidateError(message.InvalidUUID)
-	}
+		svc := service.NewAppserverService(ctx, auth.DbConn, auth.Db)
+		obj, err = svc.GetById(id)
 
-	svc := service.NewAppserverService(ctx, auth.DbConn, auth.Db)
-	obj, err = svc.GetById(id)
-
-	if err != nil {
-		return message.NotFoundError(message.NotFound)
+		if err != nil {
+			return message.NotFoundError(message.NotFound)
+		}
 	}
 
 	switch action {
+	case ActionRead:
+		return nil
+	case ActionWrite:
+		switch subAction {
+		case "create":
+			return nil
+		}
 	case ActionDelete:
 		return auth.canDelete(userId, obj)
 	}

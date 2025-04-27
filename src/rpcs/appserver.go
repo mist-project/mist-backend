@@ -18,10 +18,16 @@ func (s *AppserverGRPCService) Create(
 	ctx context.Context, req *pb_appserver.CreateRequest,
 ) (*pb_appserver.CreateResponse, error) {
 
-	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
-	claims, err := middleware.GetJWTClaims(ctx)
+	var err error
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, "create"); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
+	claims, _ := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 
+	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	appserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
 
 	if err != nil {
@@ -42,26 +48,38 @@ func (s *AppserverGRPCService) GetById(
 		err       error
 		appserver *qx.Appserver
 	)
-	claims, _ := middleware.GetJWTClaims(ctx)
-	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead, "detail"); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
+	claims, _ := middleware.GetJWTClaims(ctx)
+
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	id, _ := uuid.Parse(req.Id)
+
 	if appserver, err = as.GetById(id); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
 	pbA := as.PgTypeToPb(appserver)
 	pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
+
 	return &pb_appserver.GetByIdResponse{Appserver: pbA}, nil
 }
 
 func (s *AppserverGRPCService) List(
 	ctx context.Context, req *pb_appserver.ListRequest,
 ) (*pb_appserver.ListResponse, error) {
-	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
+
+	if err := s.Auth.Authorize(ctx, nil, permission.ActionRead, "list"); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	claims, _ := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	var name = pgtype.Text{Valid: false, String: ""}
 
 	if req.Name != nil {
@@ -93,8 +111,7 @@ func (s *AppserverGRPCService) Delete(
 		id  uuid.UUID
 	)
 
-	err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, "delete")
-	if err != nil {
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, "delete"); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

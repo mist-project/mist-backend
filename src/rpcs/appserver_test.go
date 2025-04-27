@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
+	"mist/src/errors/message"
 	"mist/src/permission"
 	pb_appserver "mist/src/protos/v1/appserver"
 	"mist/src/psql_db/db"
@@ -77,6 +78,28 @@ func TestAppserverService_List(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, 1, len(response.GetAppservers()))
 	})
+
+	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "list").Return(
+			message.UnauthorizedError("Unauthorized"),
+		)
+
+		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+
+		// ACT
+		_, err := svc.List(ctx, &pb_appserver.ListRequest{Name: &wrapperspb.StringValue{Value: "foo"}})
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Equal(t, codes.PermissionDenied, s.Code())
+		assert.True(t, ok)
+		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+	})
 }
 
 func TestAppserverSubService_GetById(t *testing.T) {
@@ -110,6 +133,19 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		)
 		s, ok := status.FromError(err)
 
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "detail").Return(nil)
+
+		svc := &rpcs.AppserverGRPCService{
+			Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth,
+		}
+
+		// ACT
+		response, err = svc.GetById(
+			ctx, &pb_appserver.GetByIdRequest{Id: uuid.NewString()},
+		)
+		s, ok = status.FromError(err)
+
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
@@ -132,6 +168,28 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.InvalidArgument, s.Code())
 		assert.Contains(t, s.Message(), "validation error:\n - id: value must be a valid UUID")
+	})
+
+	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "detail").Return(
+			message.UnauthorizedError("Unauthorized"),
+		)
+
+		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+
+		// ACT
+		_, err := svc.GetById(ctx, &pb_appserver.GetByIdRequest{Id: "foo"})
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Equal(t, codes.PermissionDenied, s.Code())
+		assert.True(t, ok)
+		assert.Contains(t, err.Error(), "(-5) Unauthorized")
 	})
 }
 
@@ -191,7 +249,10 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
 
-		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionWrite, "create").Return(nil)
+
+		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(ctx, &pb_appserver.CreateRequest{
@@ -201,6 +262,30 @@ func TestAppserverService_Create(t *testing.T) {
 		// ASSERT
 		assert.NotNil(t, err)
 		assert.Contains(t, err.Error(), "a db error")
+	})
+
+	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionWrite, "create").Return(
+			message.UnauthorizedError("Unauthorized"),
+		)
+
+		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+
+		// ACT
+		_, err := svc.Create(ctx, &pb_appserver.CreateRequest{
+			Name: "boo",
+		})
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Equal(t, codes.PermissionDenied, s.Code())
+		assert.True(t, ok)
+		assert.Contains(t, err.Error(), "(-5) Unauthorized")
 	})
 }
 

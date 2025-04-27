@@ -18,6 +18,7 @@ import (
 )
 
 func TestAppuserService_PgTypeToPb(t *testing.T) {
+
 	// ARRANGE
 	ctx := context.Background()
 	svc := service.NewAppuserService(ctx, testutil.TestDbConn, new(testutil.MockQuerier))
@@ -36,6 +37,7 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 }
 
 func TestAppuserService_Create(t *testing.T) {
+
 	t.Run("Successful:can_create_user", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -62,7 +64,7 @@ func TestAppuserService_Create(t *testing.T) {
 		params := qx.CreateAppuserParams{Username: "baduser"}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("CreateAppuser", ctx, params).Return(qx.Appuser{}, fmt.Errorf("db error"))
+		mockQuerier.On("CreateAppuser", ctx, params).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewAppuserService(ctx, testutil.TestDbConn, mockQuerier)
 

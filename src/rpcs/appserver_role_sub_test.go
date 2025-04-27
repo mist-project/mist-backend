@@ -14,7 +14,7 @@ import (
 )
 
 func TestAppserveRoleSubService_Create(t *testing.T) {
-	t.Run("Successfulcreates_successfully", func(t *testing.T) {
+	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appuser := testutil.TestAppuser(t, nil)

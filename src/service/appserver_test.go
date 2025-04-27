@@ -22,6 +22,7 @@ import (
 )
 
 func TestAppserverService_PgTypeToPb(t *testing.T) {
+
 	// ARANGE
 	ctx := context.Background()
 	svc := service.NewAppserverService(ctx, testutil.TestDbConn, new(testutil.MockQuerier))
@@ -114,7 +115,7 @@ func TestAppserverService_Create(t *testing.T) {
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 		expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: parsedUid}
 		mockTxQuerier := new(testutil.MockQuerier)
-		mockTxQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(qx.Appserver{}, fmt.Errorf("a db error"))
+		mockTxQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(nil, fmt.Errorf("a db error"))
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
@@ -190,6 +191,7 @@ func TestAppserverService_Create(t *testing.T) {
 }
 
 func TestAppserverService_GetById(t *testing.T) {
+
 	t.Run("Successful:appserver_return", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -216,7 +218,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		appserverID := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", ctx, appserverID).
-			Return(qx.Appserver{}, fmt.Errorf(message.DbNotFound))
+			Return(nil, fmt.Errorf(message.DbNotFound))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -234,7 +236,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		appserverID := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", ctx, appserverID).
-			Return(qx.Appserver{}, fmt.Errorf("connection reset by peer"))
+			Return(nil, fmt.Errorf("connection reset by peer"))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -248,6 +250,7 @@ func TestAppserverService_GetById(t *testing.T) {
 }
 
 func TestAppserverService_List(t *testing.T) {
+
 	t.Run("Successful:with_name_filter", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -318,6 +321,7 @@ func TestAppserverService_List(t *testing.T) {
 }
 
 func TestAppserverService_Delete(t *testing.T) {
+
 	ctx := testutil.Setup(t, func() {})
 	appserverId := uuid.New()
 
@@ -352,7 +356,7 @@ func TestAppserverService_Delete(t *testing.T) {
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(0), fmt.Errorf("db failure"))
+		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(nil, fmt.Errorf("db failure"))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 

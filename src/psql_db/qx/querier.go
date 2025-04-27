@@ -22,6 +22,7 @@ type Querier interface {
 	DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserverRoleSubParams) (int64, error)
 	DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteChannel(ctx context.Context, id uuid.UUID) (int64, error)
+	FilterAppserverSub(ctx context.Context, arg FilterAppserverSubParams) ([]FilterAppserverSubRow, error)
 	GetAppserverById(ctx context.Context, id uuid.UUID) (Appserver, error)
 	GetAppserverRoleById(ctx context.Context, id uuid.UUID) (AppserverRole, error)
 	GetAppserverRoleSubById(ctx context.Context, id uuid.UUID) (AppserverRoleSub, error)

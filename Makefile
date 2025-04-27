@@ -75,39 +75,45 @@ dump-schema:
 
 
 # ----- TESTS -----
-run-tests t: generate-queries test-rpcs test-middleware test-service test-permission test-errors test-message
+setup-test:
+	go run test-setup/main.go
 
-all-tests: 
+run-tests t: generate-queries setup-test test-rpcs test-middleware test-service test-permission test-errors test-message
+
+
+all-tests: setup-test
+	# Note: this is not well set up tests have errors. Issue lies on how db connection is used. needs to be fixed
+	# For now use run-tests command
 	go test -cover ./... | grep -v 'testutil'
 
 tbreak:
 	go test ./... -run "$(t)"
 
-test-rpcs:
+test-rpcs: setup-test
 	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
-test-middleware:
+test-middleware: setup-test
 	@echo -----------------------------------------
 	@go test mist/src/middleware -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
-test-service:
+test-service: setup-test
 	@echo -----------------------------------------
 	@go test mist/src/service -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
-test-permission:
+test-permission: setup-test
 	@echo -----------------------------------------
 	@go test mist/src/permission -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
-test-errors:
+test-errors: setup-test
 	@echo -----------------------------------------
 	@go test mist/src/errors -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
-test-message:
+test-message: setup-test
 	@echo -----------------------------------------
 	@go test mist/src/errors/message -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)

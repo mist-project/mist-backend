@@ -97,11 +97,21 @@ func (s *AppserverSubService) ListUserServerSubs(userId uuid.UUID) ([]qx.ListUse
 }
 
 // Lists all the users in a server.
-func (s *AppserverSubService) ListAppserverUserSubs(
-	appserverId uuid.UUID,
-) ([]qx.ListAppserverUserSubsRow, error) {
+func (s *AppserverSubService) ListAppserverUserSubs(appserverId uuid.UUID) ([]qx.ListAppserverUserSubsRow, error) {
 
 	subs, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
+
+	if err != nil {
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
+	return subs, nil
+}
+
+// Filters appserver subs.
+func (s *AppserverSubService) Filter(args qx.FilterAppserverSubParams) ([]qx.FilterAppserverSubRow, error) {
+
+	subs, err := s.db.FilterAppserverSub(s.ctx, args)
 
 	if err != nil {
 		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))

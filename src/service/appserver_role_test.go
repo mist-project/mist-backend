@@ -18,6 +18,7 @@ import (
 )
 
 func TestAppserverRoleService_PgTypeToPb(t *testing.T) {
+
 	// ARRANGE
 	id := uuid.New()
 	appserverID := uuid.New()
@@ -49,6 +50,7 @@ func TestAppserverRoleService_PgTypeToPb(t *testing.T) {
 }
 
 func TestAppserverRoleService_Create(t *testing.T) {
+
 	t.Run("Successful:create_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -75,7 +77,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 		obj := qx.CreateAppserverRoleParams{AppserverID: uuid.New(), Name: "viewer"}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("CreateAppserverRole", ctx, obj).Return(qx.AppserverRole{}, fmt.Errorf("creation failed"))
+		mockQuerier.On("CreateAppserverRole", ctx, obj).Return(nil, fmt.Errorf("creation failed"))
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -89,6 +91,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 }
 
 func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
+
 	t.Run("Successful:list_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -114,7 +117,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 		appserverID := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListAppserverRoles", ctx, appserverID).Return([]qx.AppserverRole{}, fmt.Errorf("db error"))
+		mockQuerier.On("ListAppserverRoles", ctx, appserverID).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -128,6 +131,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 }
 
 func TestAppserverRoleService_Delete(t *testing.T) {
+
 	t.Run("Successful:delete_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -169,7 +173,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 		params := qx.DeleteAppserverRoleParams{ID: uuid.New(), AppuserID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(int64(0), fmt.Errorf("db crash"))
+		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(nil, fmt.Errorf("db crash"))
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 

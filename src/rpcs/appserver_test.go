@@ -244,7 +244,7 @@ func TestAppserverService_Create(t *testing.T) {
 		expectedRequest := qx.CreateAppserverParams{AppuserID: userId, Name: "boo"}
 
 		mockTxQuerier := new(testutil.MockQuerier)
-		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(qx.Appserver{}, fmt.Errorf("a db error"))
+		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)

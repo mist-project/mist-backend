@@ -42,6 +42,7 @@ func (auth *AppserverAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
+	// ---- GET OBJECT -----
 	// TODO: refactor this to potentially generalize
 	if objId != nil {
 		// Get object if id provided
@@ -57,9 +58,14 @@ func (auth *AppserverAuthorizer) Authorize(
 			return message.NotFoundError(message.NotFound)
 		}
 	}
+	// ---------------------
 
 	switch action {
 	case ActionRead:
+		switch subAction {
+		case "detail":
+			return nil
+		}
 		return nil
 	case ActionWrite:
 		switch subAction {
@@ -73,8 +79,8 @@ func (auth *AppserverAuthorizer) Authorize(
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
+// Only server owners can delete a server.
 func (auth *AppserverAuthorizer) canDelete(userId uuid.UUID, obj *qx.Appserver) error {
-	// Only server owners can delete the server
 	if userId == obj.AppuserID {
 		return nil
 	}

@@ -19,6 +19,7 @@ import (
 )
 
 func TestChannelService_PgTypeToPb(t *testing.T) {
+
 	// ARRANGE
 	ctx := context.Background()
 	svc := service.NewChannelService(ctx, testutil.TestDbConn, new(testutil.MockQuerier))
@@ -52,6 +53,7 @@ func TestChannelService_PgTypeToPb(t *testing.T) {
 
 }
 func TestChannelService_Create(t *testing.T) {
+
 	t.Run("Successful:create_channel_for_appserver", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -80,7 +82,7 @@ func TestChannelService_Create(t *testing.T) {
 		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, fmt.Errorf("error on create"))
+		mockQuerier.On("CreateChannel", ctx, createObj).Return(nil, fmt.Errorf("error on create"))
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
@@ -92,6 +94,7 @@ func TestChannelService_Create(t *testing.T) {
 }
 
 func TestChannelService_GetById(t *testing.T) {
+
 	t.Run("Successful:returns_a_channel_object", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -117,7 +120,7 @@ func TestChannelService_GetById(t *testing.T) {
 		channel := testutil.TestChannel(t, nil)
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(*channel, fmt.Errorf(message.DbNotFound))
+		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(nil, fmt.Errorf(message.DbNotFound))
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
@@ -145,6 +148,7 @@ func TestChannelService_GetById(t *testing.T) {
 }
 
 func TestChannelService_List(t *testing.T) {
+
 	t.Run("Successful:with_appserver_filter", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -177,7 +181,7 @@ func TestChannelService_List(t *testing.T) {
 		var serverFilter = pgtype.UUID{Valid: true, Bytes: appserverId}
 		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverFilter}
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListServerChannels", ctx, queryParams).Return([]qx.Channel{}, fmt.Errorf("database error"))
+		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(nil, fmt.Errorf("database error"))
 
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -191,6 +195,7 @@ func TestChannelService_List(t *testing.T) {
 }
 
 func TestChannelService_Delete(t *testing.T) {
+
 	t.Run("Successful:can_delete_channel", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		channelId := uuid.New()
@@ -225,7 +230,7 @@ func TestChannelService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		channelId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteChannel", ctx, channelId).Return(int64(0), fmt.Errorf("mock error"))
+		mockQuerier.On("DeleteChannel", ctx, channelId).Return(nil, fmt.Errorf("mock error"))
 
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
 

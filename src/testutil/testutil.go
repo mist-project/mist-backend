@@ -51,37 +51,41 @@ var (
 
 // ----- SETUP FUNCTION -----
 
-func RunTestDbMigrations() {
-	var err error
+func SetupDbMigrations() {
 	// runs test migrations before starting the suite
+	TestDbConn, err := sql.Open("postgres", os.Getenv("TEST_DATABASE_URL"))
+
+	if err != nil {
+		log.Fatalf("Unble to connect to test DB for migrations. %v", err)
+	}
+
+	defer TestDbConn.Close()
+
+	mDir := fmt.Sprintf(
+		"%s/%s", os.Getenv("PROJECT_ROOT_PATH"), os.Getenv("GOOSE_MIGRATION_DIR"),
+	)
+
+	// Reset DB to starting point ( no migrations )
+	if err = goose.Reset(TestDbConn, mDir); err != nil {
+		log.Fatal("Error running migrations: ", err)
+	}
+
+	// install all migrations
+	if err = goose.Up(TestDbConn, mDir); err != nil {
+		log.Fatal("Error running migrations: ", err)
+	}
+
+}
+
+func SetupDbConnection() {
+	var err error
+
 	once.Do(func() {
-		TestDbConn, err := sql.Open("postgres", os.Getenv("TEST_DATABASE_URL"))
-
+		TestDbConn, err = pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
 		if err != nil {
-			log.Fatalf("Unble to connect to test DB for migrations. %v", err)
-		}
-
-		defer TestDbConn.Close()
-
-		mDir := fmt.Sprintf(
-			"%s/%s", os.Getenv("PROJECT_ROOT_PATH"), os.Getenv("GOOSE_MIGRATION_DIR"),
-		)
-
-		// Reset DB to starting point ( no migrations )
-		if err = goose.Reset(TestDbConn, mDir); err != nil {
-			log.Fatal("Error running migrations: ", err)
-		}
-
-		// install all migrations
-		if err = goose.Up(TestDbConn, mDir); err != nil {
-			log.Fatal("Error running migrations: ", err)
+			log.Fatalf("error runing on dbconnection %v", err)
 		}
 	})
-
-	TestDbConn, err = pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
-	if err != nil {
-		log.Fatalf("error runing on dbconnection %v", err)
-	}
 }
 
 func SetupTestGRPCServicesAndClient() {

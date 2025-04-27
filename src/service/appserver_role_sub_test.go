@@ -35,6 +35,7 @@ func TestAppserverRoleSubService_PgTypeToPb(t *testing.T) {
 }
 
 func TestAppserverRoleSubService_Create(t *testing.T) {
+
 	t.Run("Successful:create_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -73,7 +74,7 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("CreateAppserverRoleSub", ctx, obj).Return(qx.AppserverRoleSub{}, fmt.Errorf("insert failed"))
+		mockQuerier.On("CreateAppserverRoleSub", ctx, obj).Return(nil, fmt.Errorf("insert failed"))
 
 		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -87,6 +88,7 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 }
 
 func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
+
 	t.Run("Successful:fetch_role_subs", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -130,6 +132,7 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 }
 
 func TestAppserverRoleSubService_Delete(t *testing.T) {
+
 	t.Run("Successful:delete_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -171,7 +174,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		obj := qx.DeleteAppserverRoleSubParams{AppuserID: uuid.New(), ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserverRoleSub", ctx, obj).Return(int64(0), fmt.Errorf("db crash"))
+		mockQuerier.On("DeleteAppserverRoleSub", ctx, obj).Return(nil, fmt.Errorf("db crash"))
 
 		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
 

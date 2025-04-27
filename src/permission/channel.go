@@ -55,7 +55,7 @@ func (auth *ChannelAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	// // ---- GET OBJECT -----
+	// ---- GET OBJECT -----
 	// TODO: refactor this to potentially generalize
 	if objId != nil {
 		// Get object if id provided
@@ -71,7 +71,7 @@ func (auth *ChannelAuthorizer) Authorize(
 			return message.NotFoundError(message.NotFound)
 		}
 	}
-	// // ---------------------
+	// ---------------------
 
 	switch action {
 	case ActionRead:

@@ -34,7 +34,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				testutil.TestAppserverSub(t, &qx.AppserverSub{AppuserID: user.ID, AppserverID: appserver.ID}, false)
 
 				// Inject the required ctx value
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 					AppserverId: appserver.ID,
 				})
 
@@ -47,7 +47,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				ctx := testutil.Setup(t, func() {})
 				appserver := testutil.TestAppserver(t, nil, false)
 
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 					AppserverId: appserver.ID,
 				})
 
@@ -66,7 +66,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 				mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
 
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 					AppserverId: uuid.New(),
 				})
 
@@ -131,7 +131,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: user.ID}, false)
 
 			// Inject the required ctx value
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelCreateCtx{
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: appserver.ID,
 			})
 
@@ -144,7 +144,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			ctx := testutil.Setup(t, func() {})
 			appserver := testutil.TestAppserver(t, nil, false)
 
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelCreateCtx{
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: appserver.ID,
 			})
 
@@ -158,11 +158,11 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			ctx := testutil.Setup(t, func() {})
 
 			mockQuerier := new(testutil.MockQuerier)
-			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(qx.Appserver{}, fmt.Errorf("db error"))
+			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 
 			mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
 
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelCreateCtx{
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: uuid.New(),
 			})
 
@@ -206,7 +206,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 			mockQuerier := new(testutil.MockQuerier)
 			mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{}, nil)
-			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(qx.Appserver{}, fmt.Errorf("db error"))
+			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 
 			mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
 

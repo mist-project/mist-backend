@@ -13,14 +13,14 @@ import (
 	"mist/src/service"
 )
 
-type ChannelAuthorizer struct {
+type AppserverRoleAuthorizer struct {
 	DbConn *pgxpool.Pool
 	Db     db.Querier
 	shared *SharedAuthorizer
 }
 
-func NewChannelAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *ChannelAuthorizer {
-	return &ChannelAuthorizer{
+func NewAppserverRoleAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverRoleAuthorizer {
+	return &AppserverRoleAuthorizer{
 		DbConn: DbConn,
 		Db:     Db,
 		shared: &SharedAuthorizer{
@@ -30,13 +30,13 @@ func NewChannelAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *ChannelAuthorize
 	}
 }
 
-func (auth *ChannelAuthorizer) Authorize(
+func (auth *AppserverRoleAuthorizer) Authorize(
 	ctx context.Context, objId *string, action Action, subAction string,
 ) error {
 
 	var (
 		err    error
-		obj    *qx.Channel
+		obj    *qx.AppserverRole
 		claims *middleware.CustomJWTClaims
 		userId uuid.UUID
 	)
@@ -56,7 +56,7 @@ func (auth *ChannelAuthorizer) Authorize(
 			return message.ValidateError(message.InvalidUUID)
 		}
 
-		svc := service.NewChannelService(ctx, auth.DbConn, auth.Db)
+		svc := service.NewAppserverRoleService(ctx, auth.DbConn, auth.Db)
 		obj, err = svc.GetById(id)
 
 		if err != nil {
@@ -68,10 +68,8 @@ func (auth *ChannelAuthorizer) Authorize(
 	switch action {
 	case ActionRead:
 		switch subAction {
-		case SubActionListAppserverChannels:
-			return auth.canListAppserverChannels(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
-		case SubActionGetById:
-			return auth.canGetById(ctx, userId, obj)
+		case SubActionListServerRoles:
+			return auth.canListServerRoles(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
 		}
 	case ActionWrite:
 		switch subAction {
@@ -86,7 +84,7 @@ func (auth *ChannelAuthorizer) Authorize(
 }
 
 // A user can only request all channels in a server if they are subscribed to it.
-func (auth *ChannelAuthorizer) canListAppserverChannels(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
+func (auth *AppserverRoleAuthorizer) canListServerRoles(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
 		hasSub bool
 		err    error
@@ -103,27 +101,9 @@ func (auth *ChannelAuthorizer) canListAppserverChannels(ctx context.Context, use
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// A user can only request channel's details if they are subscribed to it
-func (auth *ChannelAuthorizer) canGetById(ctx context.Context, userId uuid.UUID, channel *qx.Channel) error {
-	var (
-		hasSub bool
-		err    error
-	)
-
-	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, channel.AppserverID); err != nil {
-		return err
-	}
-
-	if hasSub {
-		return nil
-	}
-
-	return message.UnauthorizedError(message.Unauthorized)
-}
-
-// Only server owners can create channels.
-// TODO: with permissions allow other users to create channels (pending ServerPermission definition)
-func (auth *ChannelAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
+// Only server owners can create roles.
+// TODO: with permissions allow other users to create roles (pending ServerPermission definition)
+func (auth *AppserverRoleAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
 		owner bool
 		err   error
@@ -141,8 +121,8 @@ func (auth *ChannelAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, 
 }
 
 // Only server owners can delete channels.
-// TODO: with permissions allow other users to delete channels (pending ServerPermission definition)
-func (auth *ChannelAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.Channel) error {
+// TODO: with permissions allow other users to delete roles (pending ServerPermission definition)
+func (auth *AppserverRoleAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.AppserverRole) error {
 	var (
 		owner bool
 		err   error

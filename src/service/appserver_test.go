@@ -127,7 +127,7 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// // ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) create appserver error:")
+		assert.Contains(t, err.Error(), "(-3) create appserver error: a db error")
 	})
 
 	t.Run("Error:is_returned_when_creating_appserver_sub_fails", func(t *testing.T) {
@@ -185,7 +185,7 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "commit failed")
+		assert.Contains(t, err.Error(), "(-3) database error: commit failed")
 		mockTx.AssertExpectations(t)
 	})
 }
@@ -195,16 +195,16 @@ func TestAppserverService_GetById(t *testing.T) {
 	t.Run("Successful:appserver_return", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserverID := uuid.New()
-		expected := qx.Appserver{ID: appserverID, Name: "test-app"}
+		appserverId := uuid.New()
+		expected := qx.Appserver{ID: appserverId, Name: "test-app"}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverById", ctx, appserverID).Return(expected, nil)
+		mockQuerier.On("GetAppserverById", ctx, appserverId).Return(expected, nil)
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		actual, err := svc.GetById(appserverID)
+		actual, err := svc.GetById(appserverId)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -215,15 +215,15 @@ func TestAppserverService_GetById(t *testing.T) {
 	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserverID := uuid.New()
+		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverById", ctx, appserverID).
+		mockQuerier.On("GetAppserverById", ctx, appserverId).
 			Return(nil, fmt.Errorf(message.DbNotFound))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.GetById(appserverID)
+		_, err := svc.GetById(appserverId)
 
 		// ASSERT
 		assert.Error(t, err)
@@ -233,15 +233,15 @@ func TestAppserverService_GetById(t *testing.T) {
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserverID := uuid.New()
+		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverById", ctx, appserverID).
+		mockQuerier.On("GetAppserverById", ctx, appserverId).
 			Return(nil, fmt.Errorf("connection reset by peer"))
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.GetById(appserverID)
+		_, err := svc.GetById(appserverId)
 
 		// ASSERT
 		assert.Error(t, err)

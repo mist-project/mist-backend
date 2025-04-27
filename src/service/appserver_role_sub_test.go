@@ -83,7 +83,7 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Contains(t, err.Error(), "(-3) database error: insert failed")
 	})
 }
 
@@ -92,18 +92,18 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 	t.Run("Successful:fetch_role_subs", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserverID := uuid.New()
+		appserverId := uuid.New()
 		expected := []qx.ListServerRoleSubsRow{
 			{AppuserID: uuid.New(), AppserverRoleID: uuid.New()},
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListServerRoleSubs", ctx, appserverID).Return(expected, nil)
+		mockQuerier.On("ListServerRoleSubs", ctx, appserverId).Return(expected, nil)
 
 		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		res, err := svc.ListServerRoleSubs(appserverID)
+		res, err := svc.ListServerRoleSubs(appserverId)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -113,21 +113,21 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserverID := uuid.New()
+		appserverId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListServerRoleSubs", ctx, appserverID).Return(
+		mockQuerier.On("ListServerRoleSubs", ctx, appserverId).Return(
 			[]qx.ListServerRoleSubsRow{}, fmt.Errorf("db fail"),
 		)
 
 		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
 
 		// ACT
-		_, err := svc.ListServerRoleSubs(appserverID)
+		_, err := svc.ListServerRoleSubs(appserverId)
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Contains(t, err.Error(), "(-3) database error: db fail")
 	})
 }
 
@@ -165,7 +165,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "resource not found")
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
 	t.Run("Error:db_failure", func(t *testing.T) {
@@ -183,6 +183,6 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Contains(t, err.Error(), "(-3) database error: db crash")
 	})
 }

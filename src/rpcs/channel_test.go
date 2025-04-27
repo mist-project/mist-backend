@@ -25,7 +25,7 @@ func TestChannelService_ListServerChannels(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
-		ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{AppserverId: sub.AppserverID})
+		ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: sub.AppserverID})
 
 		// ACT
 		response, err := testutil.TestChannelClient.ListServerChannels(
@@ -48,7 +48,7 @@ func TestChannelService_ListServerChannels(t *testing.T) {
 		testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: serverId}, false)
 		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: serverId}, false)
 		ctx = context.WithValue(
-			ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{AppserverId: serverId},
+			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
 		)
 
 		// ACT
@@ -73,7 +73,7 @@ func TestChannelService_ListServerChannels(t *testing.T) {
 		testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: serverId}, false)
 		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: serverId}, false)
 		ctx = context.WithValue(
-			ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{AppserverId: serverId},
+			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
 		)
 
 		// ACT
@@ -347,7 +347,33 @@ func TestChannelService_Delete(t *testing.T) {
 		assert.Contains(t, s.Message(), "resource not found")
 	})
 
-	t.Run("Error:when_create_fails_it_errors", func(t *testing.T) {
+	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+		// ARRANGE
+		mockId := uuid.NewString()
+		ctx := testutil.Setup(t, func() {})
+		mockQuerier := new(testutil.MockQuerier)
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete, "").Return(
+			message.UnauthorizedError("Unauthorized"),
+		)
+
+		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+
+		// ACT
+		_, err := svc.Delete(
+			ctx,
+			&pb_channel.DeleteRequest{Id: mockId},
+		)
+
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Equal(t, codes.PermissionDenied, s.Code())
+		assert.True(t, ok)
+		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+	})
+
+	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
 		// ARRANGE
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
@@ -373,5 +399,4 @@ func TestChannelService_Delete(t *testing.T) {
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), "(-3) database error: db error")
 	})
-
 }

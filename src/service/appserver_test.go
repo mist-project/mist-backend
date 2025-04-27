@@ -59,8 +59,8 @@ func TestAppserverService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 
-		testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "user bar"})
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: parsedUid})
+		testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "user bar"}, false)
+		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: parsedUid}, false)
 
 		expectedRequest := qx.CreateAppserverParams{Name: appserver.Name, AppuserID: parsedUid}
 
@@ -158,8 +158,8 @@ func TestAppserverService_Create(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "user bar"})
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: parsedUid})
+		testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "user bar"}, false)
+		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: parsedUid}, false)
 
 		expectedServer := qx.CreateAppserverParams{Name: appserver.Name, AppuserID: parsedUid}
 		expectedSub := qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: parsedUid}

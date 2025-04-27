@@ -18,7 +18,7 @@ LIMIT 1;
 SELECT *
 FROM channel
 WHERE name=COALESCE(sqlc.narg('name'), name)
-  AND appserver_id=COALESCE(sqlc.narg('appserver_id'), appserver_id);
+  AND appserver_id=$1;
 
 
 -- name: DeleteChannel :execrows

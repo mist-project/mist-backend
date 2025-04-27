@@ -63,13 +63,13 @@ func (auth *AppserverAuthorizer) Authorize(
 	switch action {
 	case ActionRead:
 		switch subAction {
-		case "detail":
+		case SubActionGetById:
 			return nil
 		}
 		return nil
 	case ActionWrite:
 		switch subAction {
-		case "create":
+		case SubActionCreate:
 			return nil
 		}
 	case ActionDelete:

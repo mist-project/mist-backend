@@ -24,18 +24,15 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	)
 
 	t.Run("ActionRead", func(t *testing.T) {
-
-		t.Run("Successful:does_not_error_on_detail", func(t *testing.T) {
-
+		t.Run("Successful:does_not_error_on_get_by_id", func(t *testing.T) {
 			// ACT
-			err = authorizer.Authorize(ctx, nil, permission.ActionRead, "detail")
+			err = authorizer.Authorize(ctx, nil, permission.ActionRead, "get-by-id")
 
 			// ASSERT
 			assert.Nil(t, err)
 		})
 
 		t.Run("Successful:does_not_error_on_other_read_actions", func(t *testing.T) {
-
 			// ACT
 			err = authorizer.Authorize(ctx, nil, permission.ActionRead, "n/a")
 
@@ -45,9 +42,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {
-
 		t.Run("Successful:does_not_error_on_create", func(t *testing.T) {
-
 			// ACT
 			err = authorizer.Authorize(ctx, nil, permission.ActionWrite, "create")
 
@@ -57,13 +52,11 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionDelete", func(t *testing.T) {
-
 		t.Run("Successful:owner_can_delete_server", func(t *testing.T) {
-
 			// ARRANGE
 			userID, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-			testutil.TestAppuser(t, &qx.Appuser{ID: userID, Username: "foo"})
-			appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: userID})
+			testutil.TestAppuser(t, &qx.Appuser{ID: userID, Username: "foo"}, false)
+			appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: userID}, false)
 			idStr := appserver.ID.String()
 
 			// ACT
@@ -74,9 +67,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 		})
 
 		t.Run("Error:non_owner_cannot_delete_server", func(t *testing.T) {
-
 			// ARRANGE
-			appserver := testutil.TestAppserver(t, nil)
+			appserver := testutil.TestAppserver(t, nil, false)
 			idStr := appserver.ID.String()
 
 			// ACT
@@ -89,7 +81,6 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("Errors", func(t *testing.T) {
-
 		t.Run("Error:invalid_user_id_in_context", func(t *testing.T) {
 			// ARRANGE
 			_, claims := testutil.CreateJwtToken(
@@ -112,7 +103,6 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 		})
 
 		t.Run("Error:invalid_object_id_format", func(t *testing.T) {
-
 			// ARRANGE
 			badId := "invalid"
 
@@ -125,7 +115,6 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 		})
 
 		t.Run("Error:object_id_not_found", func(t *testing.T) {
-
 			// ARRANGE
 			nonExistentId := uuid.NewString()
 
@@ -138,9 +127,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 		})
 
 		t.Run("Error:undefined_permission_defaults_to_error", func(t *testing.T) {
-
 			// ARRANGE
-			appserver := testutil.TestAppserver(t, nil)
+			appserver := testutil.TestAppserver(t, nil, false)
 			idStr := appserver.ID.String()
 
 			// ACT

@@ -19,6 +19,14 @@ type ChannelAuthorizer struct {
 	shared *SharedAuthorizer
 }
 
+type ChannelListAppserverChannelCtx struct {
+	AppserverId uuid.UUID
+}
+
+type ChannelCreateCtx struct {
+	AppserverId uuid.UUID
+}
+
 func NewChannelAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *ChannelAuthorizer {
 	return &ChannelAuthorizer{
 		DbConn: DbConn,
@@ -47,7 +55,7 @@ func (auth *ChannelAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	// ---- GET OBJECT -----
+	// // ---- GET OBJECT -----
 	// TODO: refactor this to potentially generalize
 	if objId != nil {
 		// Get object if id provided
@@ -63,20 +71,20 @@ func (auth *ChannelAuthorizer) Authorize(
 			return message.NotFoundError(message.NotFound)
 		}
 	}
-	// ---------------------
+	// // ---------------------
 
 	switch action {
 	case ActionRead:
 		switch subAction {
-		case "list-appserver-channels":
-			return auth.canListAppserverChannels(ctx, userId, obj)
-		case "detail":
-			return auth.canDetail(ctx, userId, obj)
+		case SubActionListAppserverChannels:
+			return auth.canListAppserverChannels(ctx, userId, ctx.Value(PermissionCtxKey).(*ChannelListAppserverChannelCtx))
+		case SubActionGetById:
+			return auth.canGetById(ctx, userId, obj)
 		}
 	case ActionWrite:
 		switch subAction {
-		case "create":
-			return auth.canCreate(ctx, userId, obj)
+		case SubActionCreate:
+			return auth.canCreate(ctx, userId, ctx.Value(PermissionCtxKey).(*ChannelCreateCtx))
 		}
 	case ActionDelete:
 		return auth.canDelete(ctx, userId, obj)
@@ -86,13 +94,13 @@ func (auth *ChannelAuthorizer) Authorize(
 }
 
 // A user can only request all channels in a server if they are subscribed to it.
-func (auth *ChannelAuthorizer) canListAppserverChannels(ctx context.Context, userId uuid.UUID, obj *qx.Channel) error {
+func (auth *ChannelAuthorizer) canListAppserverChannels(ctx context.Context, userId uuid.UUID, authCtx *ChannelListAppserverChannelCtx) error {
 	var (
 		hasSub bool
 		err    error
 	)
 
-	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, obj.AppserverID); err != nil {
+	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, authCtx.AppserverId); err != nil {
 		return err
 	}
 
@@ -104,13 +112,13 @@ func (auth *ChannelAuthorizer) canListAppserverChannels(ctx context.Context, use
 }
 
 // A user can only request channel's details if they are subscribed to it
-func (auth *ChannelAuthorizer) canDetail(ctx context.Context, userId uuid.UUID, obj *qx.Channel) error {
+func (auth *ChannelAuthorizer) canGetById(ctx context.Context, userId uuid.UUID, channel *qx.Channel) error {
 	var (
 		hasSub bool
 		err    error
 	)
 
-	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, obj.AppserverID); err != nil {
+	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, channel.AppserverID); err != nil {
 		return err
 	}
 
@@ -123,13 +131,13 @@ func (auth *ChannelAuthorizer) canDetail(ctx context.Context, userId uuid.UUID, 
 
 // Only server owners can create channels.
 // TODO: with permissions allow other users to create channels (pending ServerPermission definition)
-func (auth *ChannelAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, obj *qx.Channel) error {
+func (auth *ChannelAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *ChannelCreateCtx) error {
 	var (
 		owner bool
 		err   error
 	)
 
-	if owner, err = auth.shared.UserIsServerOwner(ctx, userId, obj.AppserverID); err != nil {
+	if owner, err = auth.shared.UserIsServerOwner(ctx, userId, authCtx.AppserverId); err != nil {
 		return err
 	}
 

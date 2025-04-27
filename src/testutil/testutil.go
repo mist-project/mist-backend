@@ -46,7 +46,8 @@ var (
 
 	once sync.Once
 
-	CtxUserKey = "userRequestId"
+	CtxUserKey    = "userRequestId"
+	DefaultUserId = "571637fd-3c1e-4bb5-9077-e35edbe02526"
 )
 
 // ----- SETUP FUNCTION -----
@@ -145,8 +146,8 @@ func RpcTestCleanup() {
 
 func Setup(t *testing.T, cleanup func()) context.Context {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	userRequestId := uuid.NewString()
-	ctx = context.WithValue(ctx, CtxUserKey, userRequestId)
+	DefaultUserId = uuid.NewString()
+	ctx = context.WithValue(ctx, CtxUserKey, DefaultUserId)
 
 	t.Cleanup(func() {
 		teardown(ctx)
@@ -160,7 +161,7 @@ func Setup(t *testing.T, cleanup func()) context.Context {
 			Iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 			Aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
 			SecretKey: os.Getenv("MIST_API_JWT_SECRET_KEY"),
-			UserId:    userRequestId,
+			UserId:    DefaultUserId,
 		},
 	)
 
@@ -228,22 +229,36 @@ func CreateJwtToken(t *testing.T, params *CreateTokenParams) (string, *middlewar
 }
 
 // ----- DB HELPER FUNCTIONS -----
-func TestAppuser(t *testing.T, appuser *qx.Appuser) *qx.Appuser {
+func TestAppuser(t *testing.T, appuser *qx.Appuser, base bool) *qx.Appuser {
 	var (
-		err error
+		id   uuid.UUID
+		user qx.Appuser
+		err  error
 	)
 	ctx := context.Background()
+	q := qx.New(TestDbConn)
 
 	if appuser == nil {
 		// Default values
-		id, _ := uuid.NewUUID()
+		if base {
+			id = uuid.MustParse(DefaultUserId)
+			user, err = q.GetAppuserById(ctx, id)
+
+			// if user already exists, return it
+			if err == nil {
+				return &user
+			}
+
+		} else {
+			id, _ = uuid.NewUUID()
+		}
 		appuser = &qx.Appuser{
 			ID:       id,
 			Username: uuid.NewString(),
 		}
 	}
 
-	user, err := qx.New(TestDbConn).CreateAppuser(ctx, qx.CreateAppuserParams{
+	user, err = q.CreateAppuser(ctx, qx.CreateAppuserParams{
 		ID:       appuser.ID,
 		Username: appuser.Username,
 	})
@@ -255,12 +270,12 @@ func TestAppuser(t *testing.T, appuser *qx.Appuser) *qx.Appuser {
 	return &user
 }
 
-func TestAppserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
+func TestAppserver(t *testing.T, appserver *qx.Appserver, base bool) *qx.Appserver {
 
 	if appserver == nil {
 		// Custom values
 		appserver = &qx.Appserver{
-			AppuserID: TestAppuser(t, nil).ID,
+			AppuserID: TestAppuser(t, nil, base).ID,
 			Name:      uuid.NewString(),
 		}
 	}
@@ -277,12 +292,12 @@ func TestAppserver(t *testing.T, appserver *qx.Appserver) *qx.Appserver {
 	return &as
 }
 
-func TestAppserverSub(t *testing.T, aSub *qx.AppserverSub) *qx.AppserverSub {
+func TestAppserverSub(t *testing.T, aSub *qx.AppserverSub, base bool) *qx.AppserverSub {
 	// Define attributes
 
 	if aSub == nil {
-		appuser := TestAppuser(t, nil)
-		appserver := TestAppserver(t, nil)
+		appuser := TestAppuser(t, nil, base)
+		appserver := TestAppserver(t, nil, base)
 		aSub = &qx.AppserverSub{
 			AppserverID: appserver.ID,
 			AppuserID:   appuser.ID,
@@ -301,12 +316,12 @@ func TestAppserverSub(t *testing.T, aSub *qx.AppserverSub) *qx.AppserverSub {
 	return &asSub
 }
 
-func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole) *qx.AppserverRole {
+func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole, base bool) *qx.AppserverRole {
 	// Define attributes
 
 	if aRole == nil {
 		aRole = &qx.AppserverRole{
-			AppserverID: TestAppserver(t, nil).ID,
+			AppserverID: TestAppserver(t, nil, base).ID,
 			Name:        uuid.NewString(),
 		}
 	}
@@ -323,21 +338,15 @@ func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole) *qx.AppserverRole 
 	return &asRole
 }
 
-func TestAppserverRoleSub(t *testing.T, roleSub *qx.AppserverRoleSub) *qx.AppserverRoleSub {
+func TestAppserverRoleSub(t *testing.T, roleSub *qx.AppserverRoleSub, base bool) *qx.AppserverRoleSub {
 	// Define attributes
 
 	if roleSub == nil {
 		// Custom values
-		user := TestAppuser(t, nil)
-		appserver := TestAppserver(t, nil)
-		sub := TestAppserverSub(t, &qx.AppserverSub{
-			AppserverID: appserver.ID,
-			AppuserID:   user.ID,
-		})
-		role := TestAppserverRole(
-			t,
-			&qx.AppserverRole{Name: "some random role", AppserverID: appserver.ID},
-		)
+		user := TestAppuser(t, nil, base)
+		appserver := TestAppserver(t, nil, base)
+		sub := TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: user.ID}, base)
+		role := TestAppserverRole(t, &qx.AppserverRole{Name: "some random role", AppserverID: appserver.ID}, base)
 		roleSub = &qx.AppserverRoleSub{
 			AppserverRoleID: role.ID,
 			AppserverSubID:  sub.ID,
@@ -363,14 +372,14 @@ func TestAppserverRoleSub(t *testing.T, roleSub *qx.AppserverRoleSub) *qx.Appser
 	return &asrSub
 }
 
-func TestChannel(t *testing.T, c *qx.Channel) *qx.Channel {
+func TestChannel(t *testing.T, c *qx.Channel, base bool) *qx.Channel {
 	// Define attributes
 
 	if c == nil {
 		// Default value
 		c = &qx.Channel{
 			Name:        uuid.NewString(),
-			AppserverID: TestAppserver(t, nil).ID,
+			AppserverID: TestAppserver(t, nil, base).ID,
 		}
 	}
 

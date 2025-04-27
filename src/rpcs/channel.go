@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"mist/src/errors/message"
+	"mist/src/permission"
 	pb_channel "mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -15,9 +16,18 @@ import (
 func (s *ChannelGRPCService) Create(
 	ctx context.Context, req *pb_channel.CreateRequest,
 ) (*pb_channel.CreateResponse, error) {
+	var err error
+
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(
+		ctx, permission.PermissionCtxKey, &permission.ChannelCreateCtx{AppserverId: serverId},
+	)
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
-	serverId, _ := uuid.Parse(req.AppserverId)
 	channel, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId})
 
 	if err != nil {
@@ -33,6 +43,11 @@ func (s *ChannelGRPCService) Create(
 func (s *ChannelGRPCService) GetById(
 	ctx context.Context, req *pb_channel.GetByIdRequest,
 ) (*pb_channel.GetByIdResponse, error) {
+	var err error
+
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead, permission.SubActionGetById); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
 	id, err := uuid.Parse(req.Id)
@@ -49,22 +64,24 @@ func (s *ChannelGRPCService) ListServerChannels(
 	ctx context.Context, req *pb_channel.ListServerChannelsRequest,
 ) (*pb_channel.ListServerChannelsResponse, error) {
 
-	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
 	var (
-		nameFilter   pgtype.Text
-		serverFilter pgtype.UUID
+		err        error
+		nameFilter pgtype.Text
 	)
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.ChannelListAppserverChannelCtx{AppserverId: serverId})
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverChannels); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
+	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
 
 	if req.Name != nil {
 		nameFilter = pgtype.Text{Valid: true, String: req.Name.Value}
 	}
 
-	if req.AppserverId != nil {
-		serverId, _ := uuid.Parse(req.AppserverId.Value)
-		serverFilter = pgtype.UUID{Valid: true, Bytes: serverId}
-	}
-
-	channels, _ := cs.ListServerChannels(qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverFilter})
+	channels, _ := cs.ListServerChannels(qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverId})
 	response := &pb_channel.ListServerChannelsResponse{}
 	response.Channels = make([]*pb_channel.Channel, 0, len(channels))
 
@@ -78,6 +95,12 @@ func (s *ChannelGRPCService) ListServerChannels(
 func (s *ChannelGRPCService) Delete(
 	ctx context.Context, req *pb_channel.DeleteRequest,
 ) (*pb_channel.DeleteResponse, error) {
+
+	var err error
+
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, ""); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
 
 	id, _ := uuid.Parse(req.Id)
 	if err := service.NewChannelService(ctx, s.DbConn, s.Db).Delete(id); err != nil {

@@ -42,9 +42,9 @@ func TestAppserverService_List(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID})
-		testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
+		testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID}, false)
+		testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID}, false)
 
 		// ACT
 		response, err := testutil.TestAppserverClient.List(
@@ -63,9 +63,9 @@ func TestAppserverService_List(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID})
-		testutil.TestAppserver(t, nil)
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
+		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID}, false)
+		testutil.TestAppserver(t, nil, false)
 
 		// ACT
 		response, err := testutil.TestAppserverClient.List(
@@ -106,7 +106,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil)
+		appserver := testutil.TestAppserver(t, nil, false)
 
 		// ACT
 		response, err := testutil.TestAppserverClient.GetById(
@@ -134,7 +134,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "detail").Return(nil)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "get-by-id").Return(nil)
 
 		svc := &rpcs.AppserverGRPCService{
 			Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth,
@@ -176,7 +176,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "detail").Return(
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "get-by-id").Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -200,7 +200,7 @@ func TestAppserverService_Create(t *testing.T) {
 		var count int
 		ctx := testutil.Setup(t, func() {})
 		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"})
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
 
 		// ACT
 		response, err := testutil.TestAppserverClient.Create(
@@ -295,9 +295,9 @@ func TestAppserverService_Delete(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid})
-		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid})
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
+		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid}, false)
+		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid}, false)
 
 		subService := service.NewAppserverSubService(ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
 
@@ -336,7 +336,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete, "delete").Return(nil)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete, "").Return(nil)
 		// ACT
 		svc := &rpcs.AppserverGRPCService{Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth}
 		_, err := svc.Delete(ctx, &pb_appserver.DeleteRequest{Id: uuid.NewString()})

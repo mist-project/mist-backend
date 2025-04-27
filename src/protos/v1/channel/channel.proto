@@ -41,7 +41,7 @@ message GetByIdResponse { Channel channel = 1; }
 
 message ListServerChannelsRequest {
   google.protobuf.StringValue name = 1;
-  google.protobuf.StringValue appserver_id = 2;
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
 message ListServerChannelsResponse { repeated Channel channels = 1; }
 

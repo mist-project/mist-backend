@@ -20,7 +20,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil)
+		appserver := testutil.TestAppserver(t, nil, false)
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
@@ -37,9 +37,9 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 	t.Run("Successful:can_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		server := testutil.TestAppserver(t, nil)
-		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name", AppserverID: server.ID})
-		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name #2", AppserverID: server.ID})
+		server := testutil.TestAppserver(t, nil, false)
+		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name", AppserverID: server.ID}, false)
+		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name #2", AppserverID: server.ID}, false)
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
@@ -61,9 +61,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 			AppserverId: appserverId,
 		}
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListAppserverRoles", mock.Anything, mock.Anything).Return(
-			[]qx.AppserverRole{}, fmt.Errorf("db error"),
-		)
+		mockQuerier.On("ListAppserverRoles", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 
 		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
 
@@ -83,7 +81,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil)
+		appserver := testutil.TestAppserver(t, nil, false)
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.Create(ctx, &pb_appserverrole.CreateRequest{
@@ -134,9 +132,9 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		user := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		server := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: user.ID})
-		aRole := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: server.ID, Name: "zoo"})
+		user := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
+		server := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: user.ID}, false)
+		aRole := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: server.ID, Name: "zoo"}, false)
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.Delete(
@@ -151,7 +149,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 	t.Run("Error:cannot_be_deleted_by_non_owner", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		aRole := testutil.TestAppserverRole(t, nil)
+		aRole := testutil.TestAppserverRole(t, nil, false)
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.Delete(

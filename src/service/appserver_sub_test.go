@@ -18,6 +18,7 @@ import (
 )
 
 func TestAppserverSubService_PgTypeToPb(t *testing.T) {
+
 	// ARRANGE
 	id := uuid.New()
 	appserverID := uuid.New()
@@ -47,6 +48,7 @@ func TestAppserverSubService_PgTypeToPb(t *testing.T) {
 }
 
 func TestAppserverSubService_PgAppserverSubRowToPb(t *testing.T) {
+
 	// ARRANGE
 	now := time.Now()
 	row := &qx.ListUserServerSubsRow{
@@ -68,6 +70,7 @@ func TestAppserverSubService_PgAppserverSubRowToPb(t *testing.T) {
 }
 
 func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
+
 	// ARRANGE
 	now := time.Now()
 	row := &qx.ListAppserverUserSubsRow{
@@ -89,6 +92,7 @@ func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
 }
 
 func TestAppserverSubService_Create(t *testing.T) {
+
 	t.Run("Successful:create_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -114,7 +118,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 		obj := qx.CreateAppserverSubParams{AppserverID: uuid.New(), AppuserID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("CreateAppserverSub", ctx, obj).Return(qx.AppserverSub{}, fmt.Errorf("create error"))
+		mockQuerier.On("CreateAppserverSub", ctx, obj).Return(nil, fmt.Errorf("create error"))
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -128,6 +132,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 }
 
 func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
+
 	t.Run("Successful:list_subs_for_user", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -176,6 +181,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 }
 
 func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
+
 	t.Run("Successful:list_users_in_server", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -208,7 +214,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		serverID := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListAppserverUserSubs", ctx, serverID).Return([]qx.ListAppserverUserSubsRow{}, fmt.Errorf("query error"))
+		mockQuerier.On("ListAppserverUserSubs", ctx, serverID).Return(nil, fmt.Errorf("query error"))
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -221,7 +227,65 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 	})
 }
 
+func TestAppserverSubService_Filter(t *testing.T) {
+
+	t.Run("Successful:filters_subs", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		args := qx.FilterAppserverSubParams{
+			AppuserID:   pgtype.UUID{Valid: true, Bytes: uuid.New()},
+			AppserverID: pgtype.UUID{Valid: true, Bytes: uuid.New()},
+		}
+		expected := []qx.FilterAppserverSubRow{
+			{
+				ID:          uuid.New(),
+				AppuserID:   uuid.New(),
+				AppserverID: uuid.New(),
+				CreatedAt:   pgtype.Timestamp{Time: time.Now(), Valid: true},
+				UpdatedAt:   pgtype.Timestamp{Time: time.Now(), Valid: true},
+			},
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("FilterAppserverSub", ctx, args).Return(expected, nil)
+
+		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		res, err := svc.Filter(args)
+
+		// ASSERT
+		assert.NoError(t, err)
+		assert.Equal(t, expected, res)
+	})
+
+	t.Run("Error:on_db_failure", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		args := qx.FilterAppserverSubParams{
+			AppuserID:   pgtype.UUID{Valid: true, Bytes: uuid.New()},
+			AppserverID: pgtype.UUID{Valid: true, Bytes: uuid.New()},
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("FilterAppserverSub", ctx, args).Return(
+			nil, fmt.Errorf("some db failure"),
+		)
+
+		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		res, err := svc.Filter(args)
+
+		// ASSERT
+		assert.Nil(t, res)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "database error")
+	})
+}
+
 func TestAppserverSubService_Delete(t *testing.T) {
+
 	t.Run("Successful:deletes_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})

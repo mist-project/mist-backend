@@ -34,11 +34,11 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		appserver := testutil.TestAppserver(t, nil)
-		appserver2 := testutil.TestAppserver(t, nil)
-		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID})
-		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver2.ID, AppuserID: appuser.ID})
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
+		appserver := testutil.TestAppserver(t, nil, false)
+		appserver2 := testutil.TestAppserver(t, nil, false)
+		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID}, false)
+		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver2.ID, AppuserID: appuser.ID}, false)
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.ListUserServerSubs(
@@ -74,11 +74,11 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 	t.Run("Successful:can_return_all_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		user1 := testutil.TestAppuser(t, &qx.Appuser{ID: uuid.New(), Username: "foo"})
-		user2 := testutil.TestAppuser(t, &qx.Appuser{ID: uuid.New(), Username: "bar"})
-		server := testutil.TestAppserver(t, nil)
-		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user1.ID})
-		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user2.ID})
+		user1 := testutil.TestAppuser(t, &qx.Appuser{ID: uuid.New(), Username: "foo"}, false)
+		user2 := testutil.TestAppuser(t, &qx.Appuser{ID: uuid.New(), Username: "bar"}, false)
+		server := testutil.TestAppserver(t, nil, false)
+		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user1.ID}, false)
+		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user2.ID}, false)
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.ListAppserverUserSubs(
@@ -101,8 +101,8 @@ func TestAppserverSubService_Create(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: appuser.ID})
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
+		appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: appuser.ID}, false)
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Create(
@@ -157,12 +157,14 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"})
-		appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: appuser.ID})
+		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
+		appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: appuser.ID}, false)
 		appserverSub := testutil.TestAppserverSub(t, &qx.AppserverSub{
 			AppserverID: appserver.ID,
 			AppuserID:   appuser.ID,
-		})
+		},
+			false,
+		)
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Delete(

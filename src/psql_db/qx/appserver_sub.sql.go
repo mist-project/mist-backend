@@ -54,6 +54,57 @@ func (q *Queries) DeleteAppserverSub(ctx context.Context, id uuid.UUID) (int64, 
 	return result.RowsAffected(), nil
 }
 
+const filterAppserverSub = `-- name: FilterAppserverSub :many
+SELECT 
+  sub.id,
+  sub.appuser_id,
+  sub.appserver_id,
+  sub.created_at,
+  sub.updated_at
+FROM appserver_sub as sub
+WHERE appuser_id=COALESCE($1, appuser_id)
+  AND appserver_id=COALESCE($2, appserver_id)
+`
+
+type FilterAppserverSubParams struct {
+	AppuserID   pgtype.UUID
+	AppserverID pgtype.UUID
+}
+
+type FilterAppserverSubRow struct {
+	ID          uuid.UUID
+	AppuserID   uuid.UUID
+	AppserverID uuid.UUID
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
+func (q *Queries) FilterAppserverSub(ctx context.Context, arg FilterAppserverSubParams) ([]FilterAppserverSubRow, error) {
+	rows, err := q.db.Query(ctx, filterAppserverSub, arg.AppuserID, arg.AppserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FilterAppserverSubRow
+	for rows.Next() {
+		var i FilterAppserverSubRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AppuserID,
+			&i.AppserverID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAppserverSubById = `-- name: GetAppserverSubById :one
 SELECT id, appserver_id, appuser_id, created_at, updated_at
 FROM appserver_sub
@@ -80,7 +131,7 @@ SELECT
   auser.id,
   auser.username,
   auser.created_at,
-  auser.updated_at  
+  auser.updated_at
 FROM appserver_sub as asub
 JOIN appuser as auser ON asub.appuser_id=auser.id
 WHERE asub.appserver_id=$1
@@ -127,7 +178,7 @@ SELECT
   aserver.id,
   aserver.name,
   aserver.created_at,
-  aserver.updated_at  
+  aserver.updated_at
 FROM appserver_sub as asub
 JOIN appserver as aserver ON asub.appserver_id=aserver.id
 WHERE asub.appuser_id=$1

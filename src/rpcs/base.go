@@ -53,6 +53,7 @@ type ChannelGRPCService struct {
 	pb_channel.UnimplementedChannelServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
+	Auth   permission.Authorizer
 }
 
 func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
@@ -76,7 +77,12 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{Db: querier, DbConn: dbConn})
 	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{Db: querier, DbConn: dbConn})
-	pb_channel.RegisterChannelServiceServer(s, &ChannelGRPCService{Db: querier, DbConn: dbConn})
+	pb_channel.RegisterChannelServiceServer(s,
+		&ChannelGRPCService{
+			Db:     querier,
+			DbConn: dbConn,
+			Auth:   permission.NewChannelAuthorizer(dbConn, querier),
+		})
 }
 
 var NewValidator = func() (protovalidate.Validator, error) {

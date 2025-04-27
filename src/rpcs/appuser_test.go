@@ -59,9 +59,7 @@ func TestAppuserService_Create(t *testing.T) {
 		expectedRequest := qx.CreateAppuserParams{ID: userId, Username: "boo"}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On(
-			"CreateAppuser", ctx, expectedRequest,
-		).Return(qx.Appuser{}, fmt.Errorf("a db error"))
+		mockQuerier.On("CreateAppuser", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
 		svc := &rpcs.AppuserGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
 
 		// ACT

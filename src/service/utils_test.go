@@ -8,7 +8,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// ---- SETUP -----
-	testutil.RunTestDbMigrations()
+	testutil.SetupDbConnection()
 
 	// ----- EXECUTION -----
 	exit := m.Run()

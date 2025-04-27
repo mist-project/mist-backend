@@ -42,24 +42,36 @@ func (auth *AppserverAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	if action == ActionRead || subAction == "create" {
-		return nil
-	}
+	// ---- GET OBJECT -----
+	// TODO: refactor this to potentially generalize
+	if objId != nil {
+		// Get object if id provided
+		id, err := uuid.Parse(*objId)
+		if err != nil {
+			return message.ValidateError(message.InvalidUUID)
+		}
 
-	// Actions with id
-	id, err := uuid.Parse(*objId)
-	if err != nil {
-		return message.ValidateError(message.InvalidUUID)
-	}
+		svc := service.NewAppserverService(ctx, auth.DbConn, auth.Db)
+		obj, err = svc.GetById(id)
 
-	svc := service.NewAppserverService(ctx, auth.DbConn, auth.Db)
-	obj, err = svc.GetById(id)
-
-	if err != nil {
-		return message.NotFoundError(message.NotFound)
+		if err != nil {
+			return message.NotFoundError(message.NotFound)
+		}
 	}
+	// ---------------------
 
 	switch action {
+	case ActionRead:
+		switch subAction {
+		case SubActionGetById:
+			return nil
+		}
+		return nil
+	case ActionWrite:
+		switch subAction {
+		case SubActionCreate:
+			return nil
+		}
 	case ActionDelete:
 		return auth.canDelete(userId, obj)
 	}
@@ -67,8 +79,8 @@ func (auth *AppserverAuthorizer) Authorize(
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
+// Only server owners can delete a server.
 func (auth *AppserverAuthorizer) canDelete(userId uuid.UUID, obj *qx.Appserver) error {
-	// Only server owners can delete the server
 	if userId == obj.AppuserID {
 		return nil
 	}

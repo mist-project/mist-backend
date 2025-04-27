@@ -77,17 +77,17 @@ func (q *Queries) GetChannelById(ctx context.Context, id uuid.UUID) (Channel, er
 const listServerChannels = `-- name: ListServerChannels :many
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel
-WHERE name=COALESCE($1, name)
-  AND appserver_id=COALESCE($2, appserver_id)
+WHERE name=COALESCE($2, name)
+  AND appserver_id=$1
 `
 
 type ListServerChannelsParams struct {
+	AppserverID uuid.UUID
 	Name        pgtype.Text
-	AppserverID pgtype.UUID
 }
 
 func (q *Queries) ListServerChannels(ctx context.Context, arg ListServerChannelsParams) ([]Channel, error) {
-	rows, err := q.db.Query(ctx, listServerChannels, arg.Name, arg.AppserverID)
+	rows, err := q.db.Query(ctx, listServerChannels, arg.AppserverID, arg.Name)
 	if err != nil {
 		return nil, err
 	}

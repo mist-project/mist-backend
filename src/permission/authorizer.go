@@ -14,6 +14,16 @@ const (
 
 const (
 	UndefinedPermission string = "undefined permission"
+	PermissionCtxKey    string = "permission-context"
+)
+
+const (
+	SubActionGetById               = "get-by-id"
+	SubActionList                  = "list"
+	SubActionCreate                = "create"
+	SubActionListAppserverChannels = "list-appserver-channels"
+	SubActionUpdate                = "update"
+	SubActionDelete                = "delete"
 )
 
 type Authorizer interface {

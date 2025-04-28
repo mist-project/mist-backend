@@ -161,7 +161,7 @@ func TestChannelService_GetById(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &channelId, permission.ActionRead, "get-by-id").Return(
+		mockAuth.On("Authorize", mock.Anything, &channelId, permission.ActionRead, permission.SubActionGetById).Return(
 			nil,
 		)
 
@@ -204,7 +204,7 @@ func TestChannelService_GetById(t *testing.T) {
 		mockId := uuid.NewString()
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionRead, "get-by-id").Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionRead, permission.SubActionGetById).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -252,7 +252,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateChannel", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, "create").Return(
+		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, permission.SubActionCreate).Return(
 			nil,
 		)
 
@@ -293,7 +293,7 @@ func TestChannelService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, "create").Return(
+		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, permission.SubActionCreate).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -353,7 +353,7 @@ func TestChannelService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete, "").Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -380,7 +380,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteChannel", ctx, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, "").Return(
+		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
 			nil,
 		)
 

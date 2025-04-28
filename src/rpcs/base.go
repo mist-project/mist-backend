@@ -35,6 +35,7 @@ type AppserverSubGRPCService struct {
 	pb_appserversub.UnimplementedAppserverSubServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
+	Auth   permission.Authorizer
 }
 
 type AppserverRoleGRPCService struct {
@@ -60,6 +61,7 @@ type ChannelGRPCService struct {
 func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 	querier := db.NewQuerier(qx.New(dbConn))
 
+	// ----- APPUSER -----
 	pb_appuser.RegisterAppuserServiceServer(
 		s,
 		&AppuserGRPCService{
@@ -68,6 +70,7 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 		},
 	)
 
+	// ----- APPSERVER -----
 	pb_appserver.RegisterAppserverServiceServer(s,
 		&AppserverGRPCService{
 			Db:     querier,
@@ -75,13 +78,30 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 			Auth:   permission.NewAppserverAuthorizer(dbConn, querier),
 		},
 	)
-	pb_appserversub.RegisterAppserverSubServiceServer(s, &AppserverSubGRPCService{Db: querier, DbConn: dbConn})
+
+	// ----- APPSERVER SUB -----
+
+	pb_appserversub.RegisterAppserverSubServiceServer(
+		s,
+		&AppserverSubGRPCService{
+			Db:     querier,
+			DbConn: dbConn,
+			Auth:   permission.NewAppserverSubAuthorizer(dbConn, querier),
+		},
+	)
+
+	// ----- APPSERVER ROLE -----
+
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{
 		Db:     querier,
 		DbConn: dbConn,
 		Auth:   permission.NewAppserverRoleAuthorizer(dbConn, querier)},
 	)
+
+	// ----- APPSERVER ROLE SUB -----
 	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{Db: querier, DbConn: dbConn})
+
+	// ----- CHANNEL -----
 	pb_channel.RegisterChannelServiceServer(s,
 		&ChannelGRPCService{
 			Db:     querier,

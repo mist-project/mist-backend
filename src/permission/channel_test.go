@@ -88,7 +88,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 				idStr := channel.ID.String()
 
-				err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, "get-by-id")
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, permission.SubActionGetById)
 
 				assert.Nil(t, err)
 			})
@@ -98,7 +98,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				channel := testutil.TestChannel(t, nil, false)
 				idStr := channel.ID.String()
 
-				err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, "get-by-id")
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, permission.SubActionGetById)
 
 				assert.NotNil(t, err)
 				assert.Equal(t, "(-5) Unauthorized", err.Error())
@@ -115,7 +115,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 				mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
 
-				err = mockChannelAuth.Authorize(ctx, &idStr, permission.ActionRead, "get-by-id")
+				err = mockChannelAuth.Authorize(ctx, &idStr, permission.ActionRead, permission.SubActionGetById)
 
 				assert.NotNil(t, err)
 				assert.Equal(t, "(-3) database error: db error", err.Error())
@@ -135,7 +135,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				AppserverId: appserver.ID,
 			})
 
-			err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, "create")
+			err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
 			assert.Nil(t, err)
 		})
@@ -148,7 +148,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				AppserverId: appserver.ID,
 			})
 
-			err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, "create")
+			err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-5) Unauthorized", err.Error())
@@ -166,7 +166,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				AppserverId: uuid.New(),
 			})
 
-			err = mockChannelAuth.Authorize(ctx, nil, permission.ActionWrite, "create")
+			err = mockChannelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-3) database error: db error", err.Error())
@@ -183,7 +183,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 			idStr := channel.ID.String()
 
-			err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, "")
+			err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
 			assert.Nil(t, err)
 		})
@@ -194,7 +194,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 			idStr := channel.ID.String()
 
-			err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, "")
+			err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-5) Unauthorized", err.Error())
@@ -210,7 +210,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 			mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
 
-			err = mockChannelAuth.Authorize(ctx, &idStr, permission.ActionDelete, "")
+			err = mockChannelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-3) database error: db error", err.Error())
@@ -228,7 +228,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			})
 			badCtx := context.WithValue(ctx, middleware.JwtClaimsK, claims)
 
-			err = channelAuth.Authorize(badCtx, nil, permission.ActionRead, "")
+			err = channelAuth.Authorize(badCtx, nil, permission.ActionRead, permission.SubActionDelete)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-1) invalid uuid", err.Error())
@@ -238,7 +238,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			ctx := testutil.Setup(t, func() {})
 			idStr := "invalid"
 
-			err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, "")
+			err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, permission.SubActionDelete)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-1) invalid uuid", err.Error())
@@ -248,7 +248,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			ctx := testutil.Setup(t, func() {})
 			idStr := uuid.NewString()
 
-			err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, "")
+			err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, permission.SubActionDelete)
 
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-2) resource not found", err.Error())

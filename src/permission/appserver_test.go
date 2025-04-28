@@ -26,7 +26,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	t.Run("ActionRead", func(t *testing.T) {
 		t.Run("Successful:does_not_error_on_get_by_id", func(t *testing.T) {
 			// ACT
-			err = authorizer.Authorize(ctx, nil, permission.ActionRead, "get-by-id")
+			err = authorizer.Authorize(ctx, nil, permission.ActionRead, permission.SubActionGetById)
 
 			// ASSERT
 			assert.Nil(t, err)
@@ -44,7 +44,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	t.Run("ActionWrite", func(t *testing.T) {
 		t.Run("Successful:does_not_error_on_create", func(t *testing.T) {
 			// ACT
-			err = authorizer.Authorize(ctx, nil, permission.ActionWrite, "create")
+			err = authorizer.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
 			// ASSERT
 			assert.Nil(t, err)
@@ -60,7 +60,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 			idStr := appserver.ID.String()
 
 			// ACT
-			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, "delete")
+			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
 			// ASSERT
 			assert.Nil(t, err)
@@ -72,7 +72,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 			idStr := appserver.ID.String()
 
 			// ACT
-			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, "delete")
+			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -95,7 +95,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 			badCtx := context.WithValue(ctx, middleware.JwtClaimsK, claims)
 
 			// ACT
-			err = authorizer.Authorize(badCtx, nil, permission.ActionDelete, "delete")
+			err = authorizer.Authorize(badCtx, nil, permission.ActionDelete, permission.SubActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -107,7 +107,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 			badId := "invalid"
 
 			// ACT
-			err = authorizer.Authorize(ctx, &badId, permission.ActionDelete, "delete")
+			err = authorizer.Authorize(ctx, &badId, permission.ActionDelete, permission.SubActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -119,7 +119,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 			nonExistentId := uuid.NewString()
 
 			// ACT
-			err = authorizer.Authorize(ctx, &nonExistentId, permission.ActionDelete, "delete")
+			err = authorizer.Authorize(ctx, &nonExistentId, permission.ActionDelete, permission.SubActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)

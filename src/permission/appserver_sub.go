@@ -104,14 +104,17 @@ func (auth *AppserverSubAuthorizer) canListAppserverSubs(ctx context.Context, us
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// Only server owners can delete channels.
-// TODO: Users are allowed to leave a server, so they should be able to delete these
-// TODO: with permissions allow other users to delete roles (pending ServerPermission definition)
+// Server owner and and object owner can delete a subscription.
+// TODO: with permissions allow other users to delete subs (pending ServerPermission definition)
 func (auth *AppserverSubAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.AppserverSub) error {
 	var (
 		owner bool
 		err   error
 	)
+
+	if userId == obj.AppuserID {
+		return nil
+	}
 
 	if owner, err = auth.shared.UserIsServerOwner(ctx, userId, obj.AppserverID); err != nil {
 		return err

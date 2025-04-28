@@ -120,7 +120,7 @@ func (auth *AppserverRoleAuthorizer) canCreate(ctx context.Context, userId uuid.
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// Only server owners can delete channels.
+// Only server owners can delete roles.
 // TODO: with permissions allow other users to delete roles (pending ServerPermission definition)
 func (auth *AppserverRoleAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.AppserverRole) error {
 	var (

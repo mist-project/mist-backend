@@ -127,10 +127,12 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionDelete", func(t *testing.T) {
-		t.Run("Successful:owner_can_delete_sub", func(t *testing.T) {
+		t.Run("Successful:owner_can_delete_another_user_sub", func(t *testing.T) {
 			// ARRANGE
 			ctx := testutil.Setup(t, func() {})
-			sub := testutil.TestAppserverSub(t, nil, true)
+			user := testutil.TestAppuser(t, nil, false)
+			server := testutil.TestAppserver(t, nil, true)
+			sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user.ID}, false)
 
 			idStr := sub.ID.String()
 
@@ -141,7 +143,23 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			assert.Nil(t, err)
 		})
 
-		t.Run("Error:non_owner_cannot_delete_sub", func(t *testing.T) {
+		t.Run("Successful:object_owner_can_delete_its_own_subscription", func(t *testing.T) {
+			// ARRANGE
+			ctx := testutil.Setup(t, func() {})
+			appuser := testutil.TestAppuser(t, nil, true)
+			server := testutil.TestAppserver(t, nil, false)
+			sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppuserID: appuser.ID, AppserverID: server.ID}, false)
+
+			idStr := sub.ID.String()
+
+			// ACT
+			err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+			// ASSERT
+			assert.Nil(t, err)
+		})
+
+		t.Run("Error:non_owner_cannot_delete_other_user_sub", func(t *testing.T) {
 			// ARRANGE
 			ctx := testutil.Setup(t, func() {})
 			sub := testutil.TestAppserverSub(t, nil, false)

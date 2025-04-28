@@ -49,6 +49,7 @@ type AppserverRoleSubGRPCService struct {
 	pb_appserverrolesub.UnimplementedAppserverRoleSubServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
+	Auth   permission.Authorizer
 }
 
 type ChannelGRPCService struct {
@@ -99,7 +100,10 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 	)
 
 	// ----- APPSERVER ROLE SUB -----
-	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(s, &AppserverRoleSubGRPCService{Db: querier, DbConn: dbConn})
+	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(
+		s,
+		&AppserverRoleSubGRPCService{Db: querier, DbConn: dbConn, Auth: permission.NewAppserverRoleSubAuthorizer(dbConn, querier)},
+	)
 
 	// ----- CHANNEL -----
 	pb_channel.RegisterChannelServiceServer(s,

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
+	"mist/src/errors/message"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -128,6 +129,69 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "(-3) database error: db fail")
+	})
+}
+
+func TestAppserverRoleSubService_GetById(t *testing.T) {
+
+	t.Run("Successful:return_appserver_role_sub_object", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		roleId := uuid.New()
+		expected := qx.AppserverRoleSub{
+			ID: uuid.New(), AppuserID: uuid.New(), AppserverRoleID: uuid.New(), AppserverSubID: uuid.New(),
+			AppserverID: uuid.New(),
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverRoleSubById", ctx, roleId).Return(expected, nil)
+
+		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		actual, err := svc.GetById(roleId)
+
+		// ASSERT
+		assert.NoError(t, err)
+		assert.Equal(t, expected.ID, actual.ID)
+		assert.Equal(t, expected.AppuserID, actual.AppuserID)
+		assert.Equal(t, expected.AppserverRoleID, actual.AppserverRoleID)
+		assert.Equal(t, expected.AppserverSubID, actual.AppserverSubID)
+		assert.Equal(t, expected.AppserverID, actual.AppserverID)
+	})
+
+	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverId := uuid.New()
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverRoleSubById", ctx, appserverId).Return(nil, fmt.Errorf(message.DbNotFound))
+
+		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetById(appserverId)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-2) resource not found")
+	})
+
+	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverId := uuid.New()
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverRoleSubById", ctx, appserverId).Return(nil, fmt.Errorf("boom"))
+
+		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetById(appserverId)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-3) database error: boom")
 	})
 }
 

@@ -109,25 +109,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {
-		t.Run("Successful:owner_can_create_sub", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-			user := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
-			appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: user.ID}, false)
-
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: appserver.ID,
-			})
-
-			// ACT
-			err = subAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
-
-			// ASSERT
-			assert.Nil(t, err)
-		})
-
-		t.Run("Error:non_owner_cannot_create_sub", func(t *testing.T) {
+		t.Run("Successful:anyone_can_create_appserver_sub", func(t *testing.T) {
 			// ARRANGE
 			ctx := testutil.Setup(t, func() {})
 			appserver := testutil.TestAppserver(t, nil, false)
@@ -140,27 +122,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			err = subAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
 			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-		})
-
-		t.Run("Error:db_error_on_owner_check", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			mockQuerier := new(testutil.MockQuerier)
-			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(qx.Appserver{}, fmt.Errorf("db error"))
-			mockSubAuth := permission.NewAppserverSubAuthorizer(testutil.TestDbConn, mockQuerier)
-
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: uuid.New(),
-			})
-
-			// ACT
-			err = mockSubAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
-
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-3) database error: db error", err.Error())
+			assert.Nil(t, err)
 		})
 	})
 

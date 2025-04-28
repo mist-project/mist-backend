@@ -133,7 +133,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 
 func TestAppserverRoleService_GetById(t *testing.T) {
 
-	t.Run("Successful:appserver_return", func(t *testing.T) {
+	t.Run("Successful:returns_appserver_role_object", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		roleId := uuid.New()
@@ -158,8 +158,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).
-			Return(nil, fmt.Errorf(message.DbNotFound))
+		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).Return(nil, fmt.Errorf(message.DbNotFound))
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -176,8 +175,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).
-			Return(nil, fmt.Errorf("boom"))
+		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).Return(nil, fmt.Errorf("boom"))
 
 		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
 

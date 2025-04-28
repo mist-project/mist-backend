@@ -7,6 +7,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/middleware"
+	"mist/src/permission"
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -15,13 +16,20 @@ import (
 func (s *AppserverRoleSubGRPCService) Create(
 	ctx context.Context, req *pb_appserverrolesub.CreateRequest,
 ) (*pb_appserverrolesub.CreateResponse, error) {
+
+	var err error
+
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(
+		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+	)
+
 	roleSubS := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db)
 
 	// TODO: Figure out what can go wrong to add error handler
 	subId, _ := uuid.Parse(req.AppserverSubId)
 	roleId, _ := uuid.Parse(req.AppserverRoleId)
 	userId, _ := uuid.Parse(req.AppuserId)
-	serverId, _ := uuid.Parse(req.AppserverId)
 
 	arSub, err := roleSubS.Create(
 		qx.CreateAppserverRoleSubParams{
@@ -47,8 +55,16 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 	ctx context.Context, req *pb_appserverrolesub.ListServerRoleSubsRequest,
 ) (*pb_appserverrolesub.ListServerRoleSubsResponse, error) {
 
-	// Initialize the service for AppserveRole
+	var (
+		err error
+	)
 	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverUserRoleSubs); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db).ListServerRoleSubs(serverId)
 
 	// Construct the response
@@ -73,6 +89,11 @@ func (s *AppserverRoleSubGRPCService) Delete(
 	ctx context.Context, req *pb_appserverrolesub.DeleteRequest,
 ) (*pb_appserverrolesub.DeleteResponse, error) {
 
+	var err error
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	// Initialize the service for AppserveRole
 	arss := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -80,7 +101,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 	roleSubId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err := arss.Delete(qx.DeleteAppserverRoleSubParams{
+	err = arss.Delete(qx.DeleteAppserverRoleSubParams{
 		ID:        roleSubId,
 		AppuserID: userId,
 	})

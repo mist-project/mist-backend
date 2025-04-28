@@ -230,7 +230,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 
 func TestAppserverSubService_GetById(t *testing.T) {
 
-	t.Run("Successful:appserver_return", func(t *testing.T) {
+	t.Run("Successful:returns_appserver_sub_object", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		expected := qx.AppserverSub{ID: uuid.New(), AppserverID: uuid.New(), AppuserID: uuid.New()}
@@ -255,8 +255,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverSubById", ctx, appserverId).
-			Return(nil, fmt.Errorf(message.DbNotFound))
+		mockQuerier.On("GetAppserverSubById", ctx, appserverId).Return(nil, fmt.Errorf(message.DbNotFound))
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 
@@ -273,8 +272,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverSubById", ctx, appserverId).
-			Return(nil, fmt.Errorf("boom"))
+		mockQuerier.On("GetAppserverSubById", ctx, appserverId).Return(nil, fmt.Errorf("boom"))
 
 		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
 

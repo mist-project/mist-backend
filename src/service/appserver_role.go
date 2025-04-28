@@ -57,7 +57,7 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.A
 	return aRoles, nil
 }
 
-// Gets an appserver detail by its id.
+// Gets an appserver role by its id.
 func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) {
 	role, err := s.db.GetAppserverRoleById(s.ctx, id)
 

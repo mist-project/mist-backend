@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -55,6 +56,22 @@ func (s *AppserverRoleSubService) ListServerRoleSubs(
 	}
 
 	return rows, nil
+}
+
+// Gets an appserver role sub by its id.
+func (s *AppserverRoleSubService) GetById(id uuid.UUID) (*qx.AppserverRoleSub, error) {
+	role, err := s.db.GetAppserverRoleSubById(s.ctx, id)
+
+	if err != nil {
+		// TODO: this check must be a standard db error result checker
+		if strings.Contains(err.Error(), message.DbNotFound) {
+			return nil, message.NotFoundError(message.NotFound)
+		}
+
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
+	return &role, nil
 }
 
 // Removes a role to a particular user.

@@ -7,6 +7,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/middleware"
+	"mist/src/permission"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -38,6 +39,11 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 	ctx context.Context, req *pb_appserversub.ListUserServerSubsRequest,
 ) (*pb_appserversub.ListUserServerSubsResponse, error) {
 
+	var err error
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListUserServerSubs); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
 
@@ -66,10 +72,16 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 	ctx context.Context, req *pb_appserversub.ListAppserverUserSubsRequest,
 ) (*pb_appserversub.ListAppserverUserSubsResponse, error) {
 
+	var err error
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverUserSubs); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
-	serverId, _ := uuid.Parse((req.AppserverId))
-
 	results, _ := subService.ListAppserverUserSubs(serverId)
 
 	// Construct the response
@@ -89,8 +101,13 @@ func (s *AppserverSubGRPCService) Delete(
 	ctx context.Context, req *pb_appserversub.DeleteRequest,
 ) (*pb_appserversub.DeleteResponse, error) {
 
+	var err error
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
+		return nil, message.RpcErrorHandler(err)
+	}
+
 	id, _ := uuid.Parse((req.Id))
-	err := service.NewAppserverSubService(ctx, s.DbConn, s.Db).Delete(id)
+	err = service.NewAppserverSubService(ctx, s.DbConn, s.Db).Delete(id)
 
 	// Error handling
 	if err != nil {

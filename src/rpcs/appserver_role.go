@@ -46,7 +46,6 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 	ctx context.Context, req *pb_appserverrole.ListServerRolesRequest,
 ) (*pb_appserverrole.ListServerRolesResponse, error) {
 
-	// Initialize the service for AppserveRole
 	var (
 		err error
 	)
@@ -82,7 +81,7 @@ func (s *AppserverRoleGRPCService) Delete(
 ) (*pb_appserverrole.DeleteResponse, error) {
 
 	var err error
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, ""); err != nil {
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

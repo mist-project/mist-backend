@@ -134,7 +134,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "get-by-id").Return(nil)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, permission.SubActionGetById).Return(nil)
 
 		svc := &rpcs.AppserverGRPCService{
 			Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth,
@@ -176,7 +176,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, "get-by-id").Return(
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead, permission.SubActionGetById).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -250,7 +250,7 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
 
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionWrite, "create").Return(nil)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionWrite, permission.SubActionCreate).Return(nil)
 
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
@@ -270,7 +270,7 @@ func TestAppserverService_Create(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionWrite, "create").Return(
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionWrite, permission.SubActionCreate).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -336,7 +336,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete, "").Return(nil)
+		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete, permission.SubActionDelete).Return(nil)
 		// ACT
 		svc := &rpcs.AppserverGRPCService{Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth}
 		_, err := svc.Delete(ctx, &pb_appserver.DeleteRequest{Id: uuid.NewString()})
@@ -346,5 +346,31 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())             // Check that the error code is NotFound
 		assert.Contains(t, s.Message(), "resource not found") // Check the error message
+	})
+
+	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+		// ARRANGE
+		roleId := uuid.NewString()
+		ctx := testutil.Setup(t, func() {})
+		mockQuerier := new(testutil.MockQuerier)
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete, permission.SubActionDelete).Return(
+			message.UnauthorizedError("Unauthorized"),
+		)
+
+		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+
+		// ACT
+		_, err := svc.Delete(
+			ctx,
+			&pb_appserver.DeleteRequest{Id: roleId},
+		)
+
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Equal(t, codes.PermissionDenied, s.Code())
+		assert.True(t, ok)
+		assert.Contains(t, err.Error(), "(-5) Unauthorized")
 	})
 }

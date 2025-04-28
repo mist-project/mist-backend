@@ -156,7 +156,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionWrite, "create").Return(
+		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionWrite, permission.SubActionCreate).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -184,7 +184,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateAppserverRole", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, "create").Return(nil)
+		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, permission.SubActionCreate).Return(nil)
 
 		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
@@ -255,7 +255,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete, "").Return(
+		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete, permission.SubActionDelete).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -282,7 +282,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserverRole", ctx, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, "").Return(
+		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
 			nil,
 		)
 

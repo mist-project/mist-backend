@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -106,6 +107,22 @@ func (s *AppserverSubService) ListAppserverUserSubs(appserverId uuid.UUID) ([]qx
 	}
 
 	return subs, nil
+}
+
+// Gets an appserver sub by its id.
+func (s *AppserverSubService) GetById(id uuid.UUID) (*qx.AppserverSub, error) {
+	role, err := s.db.GetAppserverSubById(s.ctx, id)
+
+	if err != nil {
+		// TODO: this check must be a standard db error result checker
+		if strings.Contains(err.Error(), message.DbNotFound) {
+			return nil, message.NotFoundError(message.NotFound)
+		}
+
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
+	return &role, nil
 }
 
 // Filters appserver subs.

@@ -111,7 +111,7 @@ func (s *AppserverGRPCService) Delete(
 		id  uuid.UUID
 	)
 
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, ""); err != nil {
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

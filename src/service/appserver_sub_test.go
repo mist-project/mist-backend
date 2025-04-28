@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/errors/message"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -224,6 +225,65 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		// ASSERT
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "(-3) database error: query error")
+	})
+}
+
+func TestAppserverSubService_GetById(t *testing.T) {
+
+	t.Run("Successful:appserver_return", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		expected := qx.AppserverSub{ID: uuid.New(), AppserverID: uuid.New(), AppuserID: uuid.New()}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverSubById", ctx, expected.ID).Return(expected, nil)
+
+		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		actual, err := svc.GetById(expected.ID)
+
+		// ASSERT
+		assert.NoError(t, err)
+		assert.Equal(t, expected.ID, actual.ID)
+		assert.Equal(t, expected.AppserverID, actual.AppserverID)
+		assert.Equal(t, expected.AppuserID, actual.AppuserID)
+	})
+
+	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverId := uuid.New()
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverSubById", ctx, appserverId).
+			Return(nil, fmt.Errorf(message.DbNotFound))
+
+		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetById(appserverId)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-2) resource not found")
+	})
+
+	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverId := uuid.New()
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverSubById", ctx, appserverId).
+			Return(nil, fmt.Errorf("boom"))
+
+		svc := service.NewAppserverSubService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetById(appserverId)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-3) database error: boom")
 	})
 }
 

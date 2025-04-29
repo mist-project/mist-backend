@@ -13,14 +13,14 @@ import (
 	"mist/src/service"
 )
 
-type AppserverRoleSubAuthorizer struct {
+type AppserverPermissionAuthorizer struct {
 	DbConn *pgxpool.Pool
 	Db     db.Querier
 	shared *SharedAuthorizer
 }
 
-func NewAppserverRoleSubAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverRoleSubAuthorizer {
-	return &AppserverRoleSubAuthorizer{
+func NewAppserverPermissionAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverPermissionAuthorizer {
+	return &AppserverPermissionAuthorizer{
 		DbConn: DbConn,
 		Db:     Db,
 		shared: &SharedAuthorizer{
@@ -30,13 +30,13 @@ func NewAppserverRoleSubAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *Appserv
 	}
 }
 
-func (auth *AppserverRoleSubAuthorizer) Authorize(
+func (auth *AppserverPermissionAuthorizer) Authorize(
 	ctx context.Context, objId *string, action Action, subAction string,
 ) error {
 
 	var (
 		err    error
-		obj    *qx.AppserverRoleSub
+		obj    *qx.AppserverPermission
 		claims *middleware.CustomJWTClaims
 		userId uuid.UUID
 	)
@@ -48,7 +48,7 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 	}
 
 	if objId != nil {
-		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverRoleSubService(ctx, auth.DbConn, auth.Db).GetById)
+		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverPermissionService(ctx, auth.DbConn, auth.Db).GetById)
 		if err != nil {
 			return err
 		}
@@ -57,8 +57,9 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 	switch action {
 	case ActionRead:
 		switch subAction {
-		case SubActionListAppserverUserRoleSubs:
-			return auth.canListUserRoleSubs(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
+		case SubActionListAppserverUserPermsission:
+
+			return auth.canListServerUserPermission(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
 		}
 	case ActionWrite:
 		switch subAction {
@@ -72,27 +73,26 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// A user can only request all users subs for a role in a server if they are to the server to it.
-func (auth *AppserverRoleSubAuthorizer) canListUserRoleSubs(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
+// Only server owners can retreive all appserver permission role users.
+func (auth *AppserverPermissionAuthorizer) canListServerUserPermission(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
-		hasSub bool
-		err    error
+		owner bool
+		err   error
 	)
+	if owner, err = auth.shared.UserIsServerOwner(ctx, userId, authCtx.AppserverId); err != nil {
 
-	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, authCtx.AppserverId); err != nil {
 		return err
 	}
 
-	if hasSub {
+	if owner {
 		return nil
 	}
 
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// Only server owners can create role subs
-// TODO: with permissions allow other users to create roles (pending ServerPermission definition)
-func (auth *AppserverRoleSubAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
+// Only server owners can create appserver permission roles.
+func (auth *AppserverPermissionAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
 		owner bool
 		err   error
@@ -109,9 +109,8 @@ func (auth *AppserverRoleSubAuthorizer) canCreate(ctx context.Context, userId uu
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// Only server owners can remove role subs.
-// TODO: with permissions allow other users to delete roles (pending ServerPermission definition)
-func (auth *AppserverRoleSubAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.AppserverRoleSub) error {
+// Only server owners can delete appserver permission roles.
+func (auth *AppserverPermissionAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.AppserverPermission) error {
 	var (
 		owner bool
 		err   error

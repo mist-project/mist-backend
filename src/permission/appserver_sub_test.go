@@ -130,8 +130,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 		t.Run("Successful:owner_can_delete_another_user_sub", func(t *testing.T) {
 			// ARRANGE
 			ctx := testutil.Setup(t, func() {})
-			user := testutil.TestAppuser(t, nil, false)
 			server := testutil.TestAppserver(t, nil, true)
+			user := testutil.TestAppuser(t, nil, false)
 			sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: server.ID, AppuserID: user.ID}, false)
 
 			idStr := sub.ID.String()

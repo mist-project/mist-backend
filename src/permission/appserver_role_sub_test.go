@@ -83,9 +83,7 @@ func TestAppserverRoleSubAuthorizer_Authorize(t *testing.T) {
 		t.Run("Successful:owner_can_create_role_sub", func(t *testing.T) {
 			// ARRANGE
 			ctx := testutil.Setup(t, func() {})
-			userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-			user := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
-			appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: user.ID}, false)
+			appserver := testutil.TestAppserver(t, nil, true)
 
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: appserver.ID,

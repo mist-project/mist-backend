@@ -9,6 +9,7 @@ import (
 	"mist/src/middleware"
 	"mist/src/permission"
 	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverpermission "mist/src/protos/v1/appserver_permission"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
@@ -26,6 +27,13 @@ type AppuserGRPCService struct {
 
 type AppserverGRPCService struct {
 	pb_appserver.UnimplementedAppserverServiceServer
+	DbConn *pgxpool.Pool
+	Db     db.Querier
+	Auth   permission.Authorizer
+}
+
+type AppserverPermissionGRPCService struct {
+	pb_appserverpermission.UnimplementedAppserverPermissionServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
 	Auth   permission.Authorizer
@@ -80,19 +88,15 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 		},
 	)
 
-	// ----- APPSERVER SUB -----
-
-	pb_appserversub.RegisterAppserverSubServiceServer(
-		s,
-		&AppserverSubGRPCService{
+	// ----- APPSERVER PERMISSION-----
+	pb_appserverpermission.RegisterAppserverPermissionServiceServer(
+		s, &AppserverPermissionGRPCService{
 			Db:     querier,
 			DbConn: dbConn,
-			Auth:   permission.NewAppserverSubAuthorizer(dbConn, querier),
-		},
+			Auth:   permission.NewAppserverPermissionAuthorizer(dbConn, querier)},
 	)
 
 	// ----- APPSERVER ROLE -----
-
 	pb_appserverrole.RegisterAppserverRoleServiceServer(s, &AppserverRoleGRPCService{
 		Db:     querier,
 		DbConn: dbConn,
@@ -102,7 +106,21 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 	// ----- APPSERVER ROLE SUB -----
 	pb_appserverrolesub.RegisterAppserverRoleSubServiceServer(
 		s,
-		&AppserverRoleSubGRPCService{Db: querier, DbConn: dbConn, Auth: permission.NewAppserverRoleSubAuthorizer(dbConn, querier)},
+		&AppserverRoleSubGRPCService{
+			Db:     querier,
+			DbConn: dbConn,
+			Auth:   permission.NewAppserverRoleSubAuthorizer(dbConn, querier),
+		},
+	)
+
+	// ----- APPSERVER SUB -----
+	pb_appserversub.RegisterAppserverSubServiceServer(
+		s,
+		&AppserverSubGRPCService{
+			Db:     querier,
+			DbConn: dbConn,
+			Auth:   permission.NewAppserverSubAuthorizer(dbConn, querier),
+		},
 	)
 
 	// ----- CHANNEL -----

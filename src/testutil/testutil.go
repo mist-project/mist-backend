@@ -22,6 +22,7 @@ import (
 
 	"mist/src/middleware"
 	pb_appserver "mist/src/protos/v1/appserver"
+	pb_appserverpermission "mist/src/protos/v1/appserver_permission"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	pb_appserverrolesub "mist/src/protos/v1/appserver_role_sub"
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
@@ -32,14 +33,15 @@ import (
 )
 
 var (
-	testServer                 *grpc.Server
-	TestAppserverClient        pb_appserver.AppserverServiceClient
-	TestAppserverRoleClient    pb_appserverrole.AppserverRoleServiceClient
-	TestAppserverRoleSubClient pb_appserverrolesub.AppserverRoleSubServiceClient
-	TestAppserverSubClient     pb_appserversub.AppserverSubServiceClient
-	TestAppuserClient          pb_appuser.AppuserServiceClient
-	TestChannelClient          pb_channel.ChannelServiceClient
-	testClientConn             *grpc.ClientConn
+	testServer                    *grpc.Server
+	TestAppserverClient           pb_appserver.AppserverServiceClient
+	TestAppserverPermissionClient pb_appserverpermission.AppserverPermissionServiceClient
+	TestAppserverRoleClient       pb_appserverrole.AppserverRoleServiceClient
+	TestAppserverRoleSubClient    pb_appserverrolesub.AppserverRoleSubServiceClient
+	TestAppserverSubClient        pb_appserversub.AppserverSubServiceClient
+	TestAppuserClient             pb_appuser.AppuserServiceClient
+	TestChannelClient             pb_channel.ChannelServiceClient
+	testClientConn                *grpc.ClientConn
 
 	TestDbConn *pgxpool.Pool
 	lis        net.Listener
@@ -123,6 +125,7 @@ func SetupTestGRPCServicesAndClient() {
 
 	TestAppuserClient = pb_appuser.NewAppuserServiceClient(testClientConn)
 	TestAppserverClient = pb_appserver.NewAppserverServiceClient(testClientConn)
+	TestAppserverPermissionClient = pb_appserverpermission.NewAppserverPermissionServiceClient(testClientConn)
 	TestAppserverRoleClient = pb_appserverrole.NewAppserverRoleServiceClient(testClientConn)
 	TestAppserverRoleSubClient = pb_appserverrolesub.NewAppserverRoleSubServiceClient(testClientConn)
 	TestAppserverSubClient = pb_appserversub.NewAppserverSubServiceClient(testClientConn)
@@ -179,10 +182,12 @@ func teardown(ctx context.Context) {
 	tables := []string{
 		"appserver",
 		"appuser",
-		"channel",
 		"appserver_sub",
 		"appserver_role",
 		"appserver_role_sub",
+		"appserver_permission",
+		"channel",
+		"channel_permission",
 	}
 
 	for _, table := range tables {
@@ -292,28 +297,26 @@ func TestAppserver(t *testing.T, appserver *qx.Appserver, base bool) *qx.Appserv
 	return &as
 }
 
-func TestAppserverSub(t *testing.T, aSub *qx.AppserverSub, base bool) *qx.AppserverSub {
+func TestAppserverPermission(t *testing.T, p *qx.AppserverPermission, base bool) *qx.AppserverPermission {
 	// Define attributes
 
-	if aSub == nil {
-		appuser := TestAppuser(t, nil, base)
-		appserver := TestAppserver(t, nil, base)
-		aSub = &qx.AppserverSub{
-			AppserverID: appserver.ID,
-			AppuserID:   appuser.ID,
+	if p == nil {
+		p = &qx.AppserverPermission{
+			AppserverID: TestAppserver(t, nil, base).ID,
+			AppuserID:   TestAppuser(t, nil, base).ID,
 		}
 	}
 
-	asSub, err := qx.New(TestDbConn).CreateAppserverSub(
+	permission, err := qx.New(TestDbConn).CreateAppserverPermission(
 		context.Background(),
-		qx.CreateAppserverSubParams{AppserverID: aSub.AppserverID, AppuserID: aSub.AppuserID},
+		qx.CreateAppserverPermissionParams{AppserverID: p.AppserverID, AppuserID: p.AppuserID},
 	)
 
 	if err != nil {
-		t.Fatalf("Unable to create appserverSub. Error: %v", err)
+		t.Fatalf("Unable to create appserverRole. Error: %v", err)
 	}
 
-	return &asSub
+	return &permission
 }
 
 func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole, base bool) *qx.AppserverRole {
@@ -346,7 +349,7 @@ func TestAppserverRoleSub(t *testing.T, roleSub *qx.AppserverRoleSub, base bool)
 		user := TestAppuser(t, nil, base)
 		appserver := TestAppserver(t, nil, base)
 		sub := TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: user.ID}, base)
-		role := TestAppserverRole(t, &qx.AppserverRole{Name: "some random role", AppserverID: appserver.ID}, base)
+		role := TestAppserverRole(t, &qx.AppserverRole{Name: uuid.NewString(), AppserverID: appserver.ID}, base)
 		roleSub = &qx.AppserverRoleSub{
 			AppserverRoleID: role.ID,
 			AppserverSubID:  sub.ID,
@@ -370,6 +373,30 @@ func TestAppserverRoleSub(t *testing.T, roleSub *qx.AppserverRoleSub, base bool)
 	}
 
 	return &asrSub
+}
+
+func TestAppserverSub(t *testing.T, aSub *qx.AppserverSub, base bool) *qx.AppserverSub {
+	// Define attributes
+
+	if aSub == nil {
+		appuser := TestAppuser(t, nil, base)
+		appserver := TestAppserver(t, nil, base)
+		aSub = &qx.AppserverSub{
+			AppserverID: appserver.ID,
+			AppuserID:   appuser.ID,
+		}
+	}
+
+	asSub, err := qx.New(TestDbConn).CreateAppserverSub(
+		context.Background(),
+		qx.CreateAppserverSubParams{AppserverID: aSub.AppserverID, AppuserID: aSub.AppuserID},
+	)
+
+	if err != nil {
+		t.Fatalf("Unable to create appserverSub. Error: %v", err)
+	}
+
+	return &asSub
 }
 
 func TestChannel(t *testing.T, c *qx.Channel, base bool) *qx.Channel {

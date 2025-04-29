@@ -1,25 +1,23 @@
 syntax = "proto3";
 
-package v1.appserverrole;
-option go_package = "mist/src/protos/v1/appserverrole;appserverrole";
+package v1.appserverpermission;
+option go_package = "mist/src/protos/v1/appserverpermission;appserverpermission";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
-import "v1/appuser/appuser.proto";
-import "v1/appserver/appserver.proto";
 
-service AppserverRoleService {
+service AppserverPermissionService {
   rpc Create(CreateRequest) returns (CreateResponse) {}
-  rpc ListServerRoles(ListServerRolesRequest)
-      returns (ListServerRolesResponse) {}
+  rpc ListAppserverUsers(ListAppserverUsersRequest)
+      returns (ListAppserverUsersResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }
 
 // ----- STRUCTURES -----
-message AppserverRole {
+message AppserverPermission {
   string id = 1;
-  string name = 2;
+  string appuser_id = 2;
   string appserver_id = 3;
   google.protobuf.Timestamp created_at = 4;
   google.protobuf.Timestamp updated_at = 5;
@@ -28,17 +26,16 @@ message AppserverRole {
 // ----- REQUEST/RESPONSE -----
 message CreateRequest {
   string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
-  string name = 2 [
-    (buf.validate.field).string.min_len = 1,
-    (buf.validate.field).string.max_len = 64
-  ];
+  string appuser_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
-message CreateResponse { AppserverRole appserver_role = 1; }
+message CreateResponse {}
 
-message ListServerRolesRequest {
+message ListAppserverUsersRequest {
   string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
 }
-message ListServerRolesResponse { repeated AppserverRole appserver_roles = 1; }
+message ListAppserverUsersResponse {
+  repeated AppserverPermission appserver_roles = 1;
+}
 
 message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];

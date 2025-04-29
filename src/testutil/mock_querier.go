@@ -33,6 +33,11 @@ func (m *MockQuerier) CreateAppserver(ctx context.Context, arg qx.CreateAppserve
 	return returnIfError[qx.Appserver](args, 1)
 }
 
+func (m *MockQuerier) CreateAppserverPermission(ctx context.Context, arg qx.CreateAppserverPermissionParams) (qx.AppserverPermission, error) {
+	args := m.Called(ctx, arg)
+	return returnIfError[qx.AppserverPermission](args, 1)
+}
+
 func (m *MockQuerier) CreateAppserverRole(ctx context.Context, arg qx.CreateAppserverRoleParams) (qx.AppserverRole, error) {
 	args := m.Called(ctx, arg)
 	return returnIfError[qx.AppserverRole](args, 1)
@@ -58,7 +63,17 @@ func (m *MockQuerier) CreateChannel(ctx context.Context, arg qx.CreateChannelPar
 	return returnIfError[qx.Channel](args, 1)
 }
 
+func (m *MockQuerier) CreateChannelPermission(ctx context.Context, arg qx.CreateChannelPermissionParams) (qx.ChannelPermission, error) {
+	args := m.Called(ctx, arg)
+	return returnIfError[qx.ChannelPermission](args, 1)
+}
+
 func (m *MockQuerier) DeleteAppserver(ctx context.Context, id uuid.UUID) (int64, error) {
+	args := m.Called(ctx, id)
+	return returnIfError[int64](args, 1)
+}
+
+func (m *MockQuerier) DeleteAppserverPermission(ctx context.Context, id uuid.UUID) (int64, error) {
 	args := m.Called(ctx, id)
 	return returnIfError[int64](args, 1)
 }
@@ -83,6 +98,11 @@ func (m *MockQuerier) DeleteChannel(ctx context.Context, id uuid.UUID) (int64, e
 	return returnIfError[int64](args, 1)
 }
 
+func (m *MockQuerier) DeleteChannelPermission(ctx context.Context, id uuid.UUID) (int64, error) {
+	args := m.Called(ctx, id)
+	return returnIfError[int64](args, 1)
+}
+
 func (m *MockQuerier) FilterAppserverSub(ctx context.Context, arg qx.FilterAppserverSubParams) ([]qx.FilterAppserverSubRow, error) {
 	args := m.Called(ctx, arg)
 	return returnIfError[[]qx.FilterAppserverSubRow](args, 1)
@@ -103,6 +123,16 @@ func (m *MockQuerier) GetAppserverById(ctx context.Context, id uuid.UUID) (qx.Ap
 	return returnIfError[qx.Appserver](args, 1)
 }
 
+func (m *MockQuerier) GetAppserverPermissionById(ctx context.Context, id uuid.UUID) (qx.AppserverPermission, error) {
+	args := m.Called(ctx, id)
+	return returnIfError[qx.AppserverPermission](args, 1)
+}
+
+func (m *MockQuerier) GetAppserverPermissionForUser(ctx context.Context, arg qx.GetAppserverPermissionForUserParams) (qx.AppserverPermission, error) {
+	args := m.Called(ctx, arg)
+	return returnIfError[qx.AppserverPermission](args, 1)
+}
+
 func (m *MockQuerier) GetAppserverRoleById(ctx context.Context, id uuid.UUID) (qx.AppserverRole, error) {
 	args := m.Called(ctx, id)
 	return returnIfError[qx.AppserverRole](args, 1)
@@ -111,6 +141,11 @@ func (m *MockQuerier) GetAppserverRoleById(ctx context.Context, id uuid.UUID) (q
 func (m *MockQuerier) GetAppserverRoleSubById(ctx context.Context, id uuid.UUID) (qx.AppserverRoleSub, error) {
 	args := m.Called(ctx, id)
 	return returnIfError[qx.AppserverRoleSub](args, 1)
+}
+
+func (m *MockQuerier) ListAppserverPermissions(ctx context.Context, appserverID uuid.UUID) ([]qx.AppserverPermission, error) {
+	args := m.Called(ctx, appserverID)
+	return returnIfError[[]qx.AppserverPermission](args, 1)
 }
 
 func (m *MockQuerier) ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]qx.AppserverRole, error) {
@@ -128,9 +163,19 @@ func (m *MockQuerier) GetAppuserById(ctx context.Context, id uuid.UUID) (qx.Appu
 	return returnIfError[qx.Appuser](args, 1)
 }
 
+func (m *MockQuerier) GetChannelPermissionById(ctx context.Context, id uuid.UUID) (qx.ChannelPermission, error) {
+	args := m.Called(ctx, id)
+	return returnIfError[qx.ChannelPermission](args, 1)
+}
+
 func (m *MockQuerier) ListAppuserRoleSubs(ctx context.Context, arg qx.ListAppuserRoleSubsParams) ([]qx.ListAppuserRoleSubsRow, error) {
 	args := m.Called(ctx, arg)
 	return returnIfError[[]qx.ListAppuserRoleSubsRow](args, 1)
+}
+
+func (m *MockQuerier) ListChannelPermissions(ctx context.Context, id uuid.UUID) ([]qx.ChannelPermission, error) {
+	args := m.Called(ctx, id)
+	return returnIfError[[]qx.ChannelPermission](args, 1)
 }
 
 func (m *MockQuerier) GetChannelById(ctx context.Context, id uuid.UUID) (qx.Channel, error) {

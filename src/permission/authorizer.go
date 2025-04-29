@@ -18,16 +18,17 @@ const (
 )
 
 const (
-	SubActionGetById                   = "get-by-id"
-	SubActionList                      = "list"
-	SubActionListServerRoles           = "list-server-roles"
-	SubActionListUserServerSubs        = "list-user-server-subs"
-	SubActionListAppserverChannels     = "list-appserver-channels"
-	SubActionListAppserverUserSubs     = "list-appserver-user-subs"
-	SubActionListAppserverUserRoleSubs = "list-appserver-user-role-subs"
-	SubActionCreate                    = "create"
-	SubActionUpdate                    = "update"
-	SubActionDelete                    = "delete"
+	SubActionGetById                      = "get-by-id"
+	SubActionList                         = "list"
+	SubActionListServerRoles              = "list-server-roles"
+	SubActionListUserServerSubs           = "list-user-server-subs"
+	SubActionListAppserverChannels        = "list-appserver-channels"
+	SubActionListAppserverUserSubs        = "list-appserver-user-subs"
+	SubActionListAppserverUserRoleSubs    = "list-appserver-user-role-subs"
+	SubActionListAppserverUserPermsission = "list-appserver-user-permissions"
+	SubActionCreate                       = "create"
+	SubActionUpdate                       = "update"
+	SubActionDelete                       = "delete"
 )
 
 type Authorizer interface {

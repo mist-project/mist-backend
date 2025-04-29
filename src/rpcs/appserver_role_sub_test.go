@@ -131,7 +131,6 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 
 	t.Run("Successful:can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
-
 		ctx := testutil.Setup(t, func() {})
 		userId, _ := uuid.NewUUID()
 		user1 := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "boo"}, false)

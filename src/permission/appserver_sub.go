@@ -47,22 +47,12 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	// ---- GET OBJECT -----
-	// TODO: refactor this to potentially generalize
 	if objId != nil {
-		// Get object if id provided
-		id, err := uuid.Parse(*objId)
+		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverSubService(ctx, auth.DbConn, auth.Db).GetById)
 		if err != nil {
-			return message.ValidateError(message.InvalidUUID)
-		}
-		svc := service.NewAppserverSubService(ctx, auth.DbConn, auth.Db)
-		obj, err = svc.GetById(id)
-
-		if err != nil {
-			return message.NotFoundError(message.NotFound)
+			return err
 		}
 	}
-	// ---------------------
 
 	switch action {
 	case ActionRead:

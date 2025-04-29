@@ -2,6 +2,7 @@ package permission
 
 import (
 	"context"
+	"mist/src/errors/message"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -54,4 +55,22 @@ func (auth *SharedAuthorizer) UserHasServerSub(ctx context.Context, userId uuid.
 	}
 
 	return false, nil
+}
+
+func GetObject[T any](
+	ctx context.Context, auth *SharedAuthorizer, objId string, fetchFunc func(uuid.UUID) (*T, error),
+) (*T, error) {
+
+	id, err := uuid.Parse(objId)
+	if err != nil {
+		return nil, message.ValidateError(message.InvalidUUID)
+	}
+
+	obj, err := fetchFunc(id)
+
+	if err != nil {
+		return nil, message.NotFoundError(message.NotFound)
+	}
+
+	return obj, nil
 }

@@ -37,7 +37,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {
-		t.Run(string(permission.SubActionCreate), func(t *testing.T) {
+		t.Run(permission.SubActionCreate, func(t *testing.T) {
 
 			t.Run("Successful:any_user_can_create_appserver", func(t *testing.T) {
 				// ACT
@@ -50,44 +50,47 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionDelete", func(t *testing.T) {
-		t.Run("Successful:owner_can_delete_server", func(t *testing.T) {
-			// ARRANGE
-			userID, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-			testutil.TestAppuser(t, &qx.Appuser{ID: userID, Username: "foo"}, false)
-			appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: userID}, false)
-			idStr := appserver.ID.String()
+		t.Run(permission.SubActionDelete, func(t *testing.T) {
 
-			// ACT
-			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+			t.Run("Successful:owner_can_delete_server", func(t *testing.T) {
+				// ARRANGE
+				userID, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+				testutil.TestAppuser(t, &qx.Appuser{ID: userID, Username: "foo"}, false)
+				appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: userID}, false)
+				idStr := appserver.ID.String()
 
-			// ASSERT
-			assert.Nil(t, err)
-		})
+				// ACT
+				err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-		t.Run("Error:user_with_delete_permission_cannot_delete_server", func(t *testing.T) {
-			// ARRANGE
-			tu := factory.UserAppserverWithPermission(t)
-			idStr := tu.Server.ID.String()
+				// ASSERT
+				assert.Nil(t, err)
+			})
 
-			// ACT
-			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+			t.Run("Error:user_with_delete_permission_cannot_delete_server", func(t *testing.T) {
+				// ARRANGE
+				tu := factory.UserAppserverWithPermission(t)
+				idStr := tu.Server.ID.String()
 
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-		})
+				// ACT
+				err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-		t.Run("Error:non_owner_cannot_delete_server", func(t *testing.T) {
-			// ARRANGE
-			appserver := testutil.TestAppserver(t, nil, false)
-			idStr := appserver.ID.String()
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
 
-			// ACT
-			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+			t.Run("Error:non_owner_cannot_delete_server", func(t *testing.T) {
+				// ARRANGE
+				appserver := testutil.TestAppserver(t, nil, false)
+				idStr := appserver.ID.String()
 
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+				// ACT
+				err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
 		})
 	})
 

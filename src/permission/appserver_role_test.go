@@ -15,6 +15,7 @@ import (
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
@@ -32,6 +33,22 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 
 				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 					AppserverId: sub.AppserverID,
+				})
+
+				// ACT
+				err = roleAuth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListServerRoles)
+
+				// ASSERT
+				assert.Nil(t, err)
+			})
+
+			t.Run("Successful:user_with_server_permission_can_list_roles", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				sub := factory.UserAppserverWithPermission(t)
+
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: sub.Server.ID,
 				})
 
 				// ACT
@@ -62,6 +79,9 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				mockQuerier := new(testutil.MockQuerier)
+				mockQuerier.On("GetAppserverPermissionForUser", mock.Anything, mock.Anything).Return(
+					nil, fmt.Errorf("not found"),
+				)
 				mockQuerier.On("FilterAppserverSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 				mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
 
@@ -80,107 +100,150 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {
-		t.Run("Successful:owner_can_create_role", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			appserver := testutil.TestAppserver(t, nil, true)
+		t.Run(permission.SubActionCreate, func(t *testing.T) {
 
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: appserver.ID,
+			t.Run("Successful:owner_can_create_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				appserver := testutil.TestAppserver(t, nil, true)
+
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: appserver.ID,
+				})
+
+				// ACT
+				err = roleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+
+				// ASSERT
+				assert.Nil(t, err)
 			})
 
-			// ACT
-			err = roleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+			t.Run("Successful:user_with_appserver_permission_can_create_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverWithPermission(t)
 
-			// ASSERT
-			assert.Nil(t, err)
-		})
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: tu.Server.ID,
+				})
 
-		t.Run("Error:non_owner_cannot_create_role", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			appserver := testutil.TestAppserver(t, nil, false)
+				// ACT
+				err = roleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: appserver.ID,
+				// ASSERT
+				assert.Nil(t, err)
 			})
 
-			// ACT
-			err = roleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+			t.Run("Error:non_owner_cannot_create_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				appserver := testutil.TestAppserver(t, nil, false)
 
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-		})
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: appserver.ID,
+				})
 
-		t.Run("Error:db_error_on_owner_check", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			mockQuerier := new(testutil.MockQuerier)
-			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-			mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
+				// ACT
+				err = roleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: uuid.New(),
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
 			})
 
-			// ACT
-			err = mockRoleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+			t.Run("Error:db_error_on_owner_check", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				mockQuerier := new(testutil.MockQuerier)
+				mockQuerier.On("GetAppserverPermissionForUser", mock.Anything, mock.Anything).Return(
+					nil, fmt.Errorf("not found"),
+				)
+				mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+				mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
 
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-3) database error: db error", err.Error())
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: uuid.New(),
+				})
+
+				// ACT
+				err = mockRoleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-3) database error: db error", err.Error())
+			})
 		})
 	})
 
 	t.Run("ActionDelete", func(t *testing.T) {
-		t.Run("Successful:owner_can_delete_role", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			testutil.TestAppserverSub(t, nil, true)
-			role := testutil.TestAppserverRole(t, nil, true)
+		t.Run(permission.SubActionDelete, func(t *testing.T) {
 
-			idStr := role.ID.String()
+			t.Run("Successful:owner_can_delete_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				testutil.TestAppserverSub(t, nil, true)
+				role := testutil.TestAppserverRole(t, nil, true)
 
-			// ACT
-			err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+				idStr := role.ID.String()
 
-			// ASSERT
-			assert.Nil(t, err)
-		})
+				// ACT
+				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-		t.Run("Error:non_owner_cannot_delete_role", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			role := testutil.TestAppserverRole(t, nil, false)
+				// ASSERT
+				assert.Nil(t, err)
+			})
 
-			idStr := role.ID.String()
+			t.Run("Successful:user_with_permission_role_can_delete_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverWithPermission(t)
+				role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: tu.Server.ID}, false)
 
-			// ACT
-			err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+				idStr := role.ID.String()
 
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-		})
+				// ACT
+				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-		t.Run("Error:db_error_on_owner_check", func(t *testing.T) {
-			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			idStr := testutil.TestAppserverRole(t, nil, true).ID.String()
+				// ASSERT
+				assert.Nil(t, err)
+			})
 
-			mockQuerier := new(testutil.MockQuerier)
-			mockQuerier.On("GetAppserverRoleById", mock.Anything, mock.Anything).Return(qx.AppserverRole{}, nil)
-			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+			t.Run("Error:non_owner_cannot_delete_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				role := testutil.TestAppserverRole(t, nil, false)
 
-			mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
+				idStr := role.ID.String()
 
-			// ACT
-			err = mockRoleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+				// ACT
+				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-3) database error: db error", err.Error())
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
+
+			t.Run("Error:db_error_on_owner_check", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				idStr := testutil.TestAppserverRole(t, nil, true).ID.String()
+
+				mockQuerier := new(testutil.MockQuerier)
+				mockQuerier.On("GetAppserverPermissionForUser", mock.Anything, mock.Anything).Return(
+					nil, fmt.Errorf("not found"),
+				)
+				mockQuerier.On("GetAppserverRoleById", mock.Anything, mock.Anything).Return(qx.AppserverRole{}, nil)
+				mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+
+				mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
+
+				// ACT
+				err = mockRoleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-3) database error: db error", err.Error())
+			})
 		})
 	})
 

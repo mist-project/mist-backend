@@ -29,10 +29,10 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 			t.Run("Successful:subscribed_user_can_list_roles", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
-				sub := testutil.TestAppserverSub(t, nil, true)
+				tu := factory.UserAppserverSub(t)
 
 				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: sub.AppserverID,
+					AppserverId: tu.Server.ID,
 				})
 
 				// ACT
@@ -61,10 +61,10 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 			t.Run("Error:unsubscribed_user_cannot_list_roles", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
-				appserver := testutil.TestAppserver(t, nil, false)
+				sub := factory.UserAppserverUnsub(t)
 
 				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: appserver.ID,
+					AppserverId: sub.Server.ID,
 				})
 
 				// ACT
@@ -105,10 +105,10 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 			t.Run("Successful:owner_can_create_role", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
-				appserver := testutil.TestAppserver(t, nil, true)
+				tu := factory.UserAppserverOwner(t)
 
 				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: appserver.ID,
+					AppserverId: tu.Server.ID,
 				})
 
 				// ACT
@@ -134,13 +134,30 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 				assert.Nil(t, err)
 			})
 
-			t.Run("Error:non_owner_cannot_create_role", func(t *testing.T) {
+			t.Run("Error:subscribed_user_cannot_create_role", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
-				appserver := testutil.TestAppserver(t, nil, false)
+				tu := factory.UserAppserverSub(t)
 
 				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: appserver.ID,
+					AppserverId: tu.Server.ID,
+				})
+
+				// ACT
+				err = roleAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
+
+			t.Run("Error:unsubscribed_user_cannot_create_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverUnsub(t)
+
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: tu.Server.ID,
 				})
 
 				// ACT
@@ -208,7 +225,23 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 				assert.Nil(t, err)
 			})
 
-			t.Run("Error:non_owner_cannot_delete_role", func(t *testing.T) {
+			t.Run("Error:subscribed_user_cannot_delete_role", func(t *testing.T) {
+				// ARRANGE
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverSub(t)
+				role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: tu.Server.ID}, false)
+
+				idStr := role.ID.String()
+
+				// ACT
+				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
+
+			t.Run("Error:unsubscribed_user_cannot_delete_role", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				role := testutil.TestAppserverRole(t, nil, false)

@@ -15,6 +15,7 @@ import (
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestChannelAuthorizer_Authorize(t *testing.T) {
@@ -27,6 +28,20 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 	t.Run("ActionRead", func(t *testing.T) {
 		t.Run(permission.SubActionListAppserverChannels, func(t *testing.T) {
 			t.Run("Successful:subscribed_has_access", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverSub(t)
+
+				// Inject the required ctx value
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: tu.Server.ID,
+				})
+
+				err = channelAuth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverChannels)
+
+				assert.Nil(t, err)
+			})
+
+			t.Run("Successful:user_with_permission_role_has_access", func(t *testing.T) {
 				ctx := testutil.Setup(t, func() {})
 				userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 				user := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
@@ -45,10 +60,10 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 			t.Run("Error:unsubscribed_user_not_allowed", func(t *testing.T) {
 				ctx := testutil.Setup(t, func() {})
-				appserver := testutil.TestAppserver(t, nil, false)
+				tu := factory.UserAppserverUnsub(t)
 
 				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: appserver.ID,
+					AppserverId: tu.Server.ID,
 				})
 
 				err = channelAuth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverChannels)
@@ -61,6 +76,9 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				ctx := testutil.Setup(t, func() {})
 
 				mockQuerier := new(testutil.MockQuerier)
+				mockQuerier.On("GetAppserverPermissionForUser", mock.Anything, mock.Anything).Return(
+					nil, fmt.Errorf("not found"),
+				)
 				mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{}, nil)
 				mockQuerier.On("FilterAppserverSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 
@@ -77,14 +95,23 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			})
 		})
 
-		t.Run("get-by-id", func(t *testing.T) {
+		t.Run(permission.SubActionGetById, func(t *testing.T) {
 			t.Run("Successful:subscribed_user_has_access", func(t *testing.T) {
 				ctx := testutil.Setup(t, func() {})
-				userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-				user := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
-				appserver := testutil.TestAppserver(t, nil, false)
-				channel := testutil.TestChannel(t, &qx.Channel{AppserverID: appserver.ID}, false)
-				testutil.TestAppserverSub(t, &qx.AppserverSub{AppuserID: user.ID, AppserverID: appserver.ID}, false)
+				tu := factory.UserAppserverSub(t)
+				channel := testutil.TestChannel(t, &qx.Channel{AppserverID: tu.Server.ID}, false)
+
+				idStr := channel.ID.String()
+
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, permission.SubActionGetById)
+
+				assert.Nil(t, err)
+			})
+
+			t.Run("Successful:user_with_permission_role_has_access", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverWithPermission(t)
+				channel := testutil.TestChannel(t, &qx.Channel{AppserverID: tu.Server.ID}, false)
 
 				idStr := channel.ID.String()
 
@@ -95,7 +122,9 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 
 			t.Run("Error:unsubscribed_user_not_allowed", func(t *testing.T) {
 				ctx := testutil.Setup(t, func() {})
-				channel := testutil.TestChannel(t, nil, false)
+				tu := factory.UserAppserverUnsub(t)
+				channel := testutil.TestChannel(t, &qx.Channel{AppserverID: tu.Server.ID}, false)
+
 				idStr := channel.ID.String()
 
 				err = channelAuth.Authorize(ctx, &idStr, permission.ActionRead, permission.SubActionGetById)
@@ -110,6 +139,9 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				idStr := channel.ID.String()
 
 				mockQuerier := new(testutil.MockQuerier)
+				mockQuerier.On("GetAppserverPermissionForUser", mock.Anything, mock.Anything).Return(
+					nil, fmt.Errorf("not found"),
+				)
 				mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(*channel, nil)
 				mockQuerier.On("FilterAppserverSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 
@@ -124,96 +156,158 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {
-		t.Run("Successful:owner_can_create_channel", func(t *testing.T) {
-			ctx := testutil.Setup(t, func() {})
-			userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-			user := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
-			appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: user.ID}, false)
+		t.Run(permission.SubActionCreate, func(t *testing.T) {
 
-			// Inject the required ctx value
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: appserver.ID,
+			t.Run("Successful:owner_can_create_channel", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverOwner(t)
+
+				// Inject the required ctx value
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: tu.Server.ID,
+				})
+
+				err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+
+				assert.Nil(t, err)
 			})
 
-			err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+			t.Run("Successful:user_with_permission_role_can_Create", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverWithPermission(t)
 
-			assert.Nil(t, err)
-		})
+				// Inject the required ctx value
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: tu.Server.ID,
+				})
 
-		t.Run("Error:non_owners_cannot_create", func(t *testing.T) {
-			ctx := testutil.Setup(t, func() {})
-			appserver := testutil.TestAppserver(t, nil, false)
+				err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: appserver.ID,
+				assert.Nil(t, err)
 			})
 
-			err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+			t.Run("Error:subscribed_users_cannot_create_channels", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverSub(t)
 
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-		})
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: tu.Server.ID,
+				})
 
-		t.Run("Error:db_error_returns_error", func(t *testing.T) {
-			ctx := testutil.Setup(t, func() {})
+				err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
 
-			mockQuerier := new(testutil.MockQuerier)
-			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-
-			mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
-
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: uuid.New(),
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
 			})
 
-			err = mockChannelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+			t.Run("Error:unsubscribed_users_cannot_create_channels", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverUnsub(t)
 
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-3) database error: db error", err.Error())
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: tu.Server.ID,
+				})
+
+				err = channelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
+
+			t.Run("Error:db_error_returns_error", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+
+				mockQuerier := new(testutil.MockQuerier)
+				mockQuerier.On("GetAppserverPermissionForUser", mock.Anything, mock.Anything).Return(
+					nil, fmt.Errorf("not found"),
+				)
+				mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+
+				mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
+
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: uuid.New(),
+				})
+
+				err = mockChannelAuth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-3) database error: db error", err.Error())
+			})
 		})
 	})
 
 	t.Run("ActionDelete", func(t *testing.T) {
-		t.Run("Successful:owner_can_delete_channel", func(t *testing.T) {
-			ctx := testutil.Setup(t, func() {})
-			userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-			user := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
-			appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: user.ID}, false)
-			channel := testutil.TestChannel(t, &qx.Channel{AppserverID: appserver.ID}, false)
+		t.Run(permission.SubActionDelete, func(t *testing.T) {
 
-			idStr := channel.ID.String()
+			t.Run("Successful:owner_can_delete_channel", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverOwner(t)
+				channel := testutil.TestChannel(t, &qx.Channel{AppserverID: tu.Server.ID}, false)
 
-			err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+				idStr := channel.ID.String()
 
-			assert.Nil(t, err)
-		})
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-		t.Run("Error:non_owner_cannot_delete_channel", func(t *testing.T) {
-			ctx := testutil.Setup(t, func() {})
-			channel := testutil.TestChannel(t, nil, false)
+				assert.Nil(t, err)
+			})
 
-			idStr := channel.ID.String()
+			t.Run("Successful:user_with_permission_role_can_delete_channel", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverWithPermission(t)
+				channel := testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: tu.Server.ID}, false)
 
-			err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+				idStr := channel.ID.String()
 
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-		})
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-		t.Run("Error:db_error_returns_error", func(t *testing.T) {
-			ctx := testutil.Setup(t, func() {})
-			idStr := uuid.NewString()
+				assert.Nil(t, err)
+			})
 
-			mockQuerier := new(testutil.MockQuerier)
-			mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{}, nil)
-			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+			t.Run("Error:subscribed_user_cannot_delete_channel", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverSub(t)
+				channel := testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: tu.Server.ID}, false)
 
-			mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
+				idStr := channel.ID.String()
 
-			err = mockChannelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-3) database error: db error", err.Error())
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
+
+			t.Run("Error:unsubscribed_user_cannot_delete_channel", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverUnsub(t)
+				channel := testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: tu.Server.ID}, false)
+
+				idStr := channel.ID.String()
+
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
+
+			t.Run("Error:db_error_returns_error", func(t *testing.T) {
+				ctx := testutil.Setup(t, func() {})
+				idStr := uuid.NewString()
+
+				mockQuerier := new(testutil.MockQuerier)
+				mockQuerier.On("GetAppserverPermissionForUser", mock.Anything, mock.Anything).Return(
+					nil, fmt.Errorf("not found"),
+				)
+				mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{}, nil)
+				mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+
+				mockChannelAuth := permission.NewChannelAuthorizer(testutil.TestDbConn, mockQuerier)
+
+				err = mockChannelAuth.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-3) database error: db error", err.Error())
+			})
 		})
 	})
 

@@ -231,7 +231,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 				assert.Nil(t, err)
 			})
 
-			t.Run("Error:non_owner_cannot_delete_other_user_sub", func(t *testing.T) {
+			t.Run("Error:subscribed_user_cannot_delete_other_user_sub", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				sub := testutil.TestAppserverSub(t, nil, false)

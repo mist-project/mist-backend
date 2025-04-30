@@ -35,10 +35,13 @@ func (auth *AppserverSubAuthorizer) Authorize(
 ) error {
 
 	var (
-		err    error
-		obj    *qx.AppserverSub
-		claims *middleware.CustomJWTClaims
-		userId uuid.UUID
+		err        error
+		obj        *qx.AppserverSub
+		claims     *middleware.CustomJWTClaims
+		authctx    *AppserverIdAuthCtx
+		permission *qx.AppserverPermission
+		authOk     bool
+		userId     uuid.UUID
 	)
 
 	// No error expected when getting claims. this method should be hit AFTER authentication ( which sets claims )
@@ -52,24 +55,57 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		if err != nil {
 			return err
 		}
+
+		permission, _ = service.NewAppserverPermissionService(
+			ctx, auth.DbConn, auth.shared.Db,
+		).GetAppserverPermissionForUser(
+			qx.GetAppserverPermissionForUserParams{AppserverID: obj.AppserverID, AppuserID: userId},
+		)
+	}
+
+	authctx, authOk = ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
+
+	if authOk && permission == nil {
+		permission, _ = service.NewAppserverPermissionService(
+			ctx, auth.DbConn, auth.shared.Db,
+		).GetAppserverPermissionForUser(
+			qx.GetAppserverPermissionForUserParams{AppserverID: authctx.AppserverId, AppuserID: userId},
+		)
 	}
 
 	switch action {
 	case ActionRead:
+
+		if permission != nil && permission.ReadAll.Bool {
+			// user has elevated read permissions
+			return nil
+		}
+
 		switch subAction {
 		case SubActionListUserServerSubs:
 			return nil
 		case SubActionListAppserverUserSubs:
-			return auth.canListAppserverSubs(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
+			return auth.canListAppserverSubs(ctx, userId, authctx)
 		}
 
 	case ActionWrite:
+
+		if permission != nil && permission.WriteAll.Bool {
+			// user has elevated write permissions
+			return nil
+		}
+
 		switch subAction {
 		case SubActionCreate:
 			// Anyone can become a sub for a server.
 			return nil
 		}
 	case ActionDelete:
+		if permission != nil && permission.DeleteAll.Bool {
+			// user has elevated delete permissions
+			return nil
+		}
+
 		return auth.canDelete(ctx, userId, obj)
 	}
 
@@ -79,9 +115,14 @@ func (auth *AppserverSubAuthorizer) Authorize(
 // A user can only request list users subscribed to a server if they are subscribed to it.
 func (auth *AppserverSubAuthorizer) canListAppserverSubs(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
+		owner  bool
 		hasSub bool
 		err    error
 	)
+
+	if owner, err = auth.shared.UserIsServerOwner(ctx, userId, authCtx.AppserverId); owner {
+		return nil
+	}
 
 	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, authCtx.AppserverId); err != nil {
 		return err

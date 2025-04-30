@@ -13,6 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
@@ -304,12 +305,21 @@ func TestAppserverPermission(t *testing.T, p *qx.AppserverPermission, base bool)
 		p = &qx.AppserverPermission{
 			AppserverID: TestAppserver(t, nil, base).ID,
 			AppuserID:   TestAppuser(t, nil, base).ID,
+			ReadAll:     pgtype.Bool{Valid: true, Bool: true},
+			WriteAll:    pgtype.Bool{Valid: true, Bool: true},
+			DeleteAll:   pgtype.Bool{Valid: true, Bool: true},
 		}
 	}
 
 	permission, err := qx.New(TestDbConn).CreateAppserverPermission(
 		context.Background(),
-		qx.CreateAppserverPermissionParams{AppserverID: p.AppserverID, AppuserID: p.AppuserID},
+		qx.CreateAppserverPermissionParams{
+			AppserverID: p.AppserverID,
+			AppuserID:   p.AppuserID,
+			ReadAll:     p.ReadAll,
+			WriteAll:    p.WriteAll,
+			DeleteAll:   p.DeleteAll,
+		},
 	)
 
 	if err != nil {

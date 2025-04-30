@@ -25,7 +25,6 @@ func TestAppserverService_List(t *testing.T) {
 	t.Run("Successful:can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-
 		// ACT
 		response, err := testutil.TestAppserverClient.List(
 			ctx, &pb_appserver.ListRequest{Name: wrapperspb.String("random")},

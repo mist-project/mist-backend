@@ -62,7 +62,6 @@ func (s *AppserverPermissionService) GetById(id uuid.UUID) (*qx.AppserverPermiss
 	role, err := s.db.GetAppserverPermissionById(s.ctx, id)
 
 	if err != nil {
-		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
 			return nil, message.NotFoundError(message.NotFound)
 		}
@@ -71,6 +70,21 @@ func (s *AppserverPermissionService) GetById(id uuid.UUID) (*qx.AppserverPermiss
 	}
 
 	return &role, nil
+}
+
+// Gets an appserver permission by its id.
+func (s *AppserverPermissionService) GetAppserverPermissionForUser(obj qx.GetAppserverPermissionForUserParams) (*qx.AppserverPermission, error) {
+	permission, err := s.db.GetAppserverPermissionForUser(s.ctx, obj)
+
+	if err != nil {
+		if strings.Contains(err.Error(), message.DbNotFound) {
+			return nil, message.NotFoundError(message.NotFound)
+		}
+
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
+	return &permission, nil
 }
 
 // Deletes a permission from a server, only owner of server and delete permission

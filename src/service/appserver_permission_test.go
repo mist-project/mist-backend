@@ -185,6 +185,77 @@ func TestAppserverPermissionService_GetById(t *testing.T) {
 	})
 }
 
+func TestAppserverPermissionService_GetAppserverPermissionForUser(t *testing.T) {
+	t.Run("Successful:returns_permission_object", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		params := qx.GetAppserverPermissionForUserParams{
+			AppserverID: uuid.New(),
+			AppuserID:   uuid.New(),
+		}
+		expected := qx.AppserverPermission{
+			ID:          uuid.New(),
+			AppserverID: params.AppserverID,
+			AppuserID:   params.AppuserID,
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverPermissionForUser", ctx, params).Return(expected, nil)
+
+		svc := service.NewAppserverPermissionService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		actual, err := svc.GetAppserverPermissionForUser(params)
+
+		// ASSERT
+		assert.NoError(t, err)
+		assert.Equal(t, expected.ID, actual.ID)
+		assert.Equal(t, expected.AppuserID, actual.AppuserID)
+	})
+
+	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		params := qx.GetAppserverPermissionForUserParams{
+			AppserverID: uuid.New(),
+			AppuserID:   uuid.New(),
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverPermissionForUser", ctx, params).Return(qx.AppserverPermission{}, fmt.Errorf(message.DbNotFound))
+
+		svc := service.NewAppserverPermissionService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetAppserverPermissionForUser(params)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-2) resource not found")
+	})
+
+	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		params := qx.GetAppserverPermissionForUserParams{
+			AppserverID: uuid.New(),
+			AppuserID:   uuid.New(),
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverPermissionForUser", ctx, params).Return(qx.AppserverPermission{}, fmt.Errorf("boom"))
+
+		svc := service.NewAppserverPermissionService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetAppserverPermissionForUser(params)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-3) database error: boom")
+	})
+}
+
 func TestAppserverPermissionService_Delete(t *testing.T) {
 	t.Run("Successful:delete_permission", func(t *testing.T) {
 		// ARRANGE

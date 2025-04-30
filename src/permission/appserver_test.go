@@ -10,6 +10,7 @@ import (
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -24,59 +25,82 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	)
 
 	t.Run("ActionRead", func(t *testing.T) {
-		t.Run("Successful:does_not_error_on_get_by_id", func(t *testing.T) {
-			// ACT
-			err = authorizer.Authorize(ctx, nil, permission.ActionRead, permission.SubActionGetById)
+		t.Run(permission.SubActionGetById, func(t *testing.T) {
+			t.Run("Successful:unsubscribe_user_has_access", func(t *testing.T) {
+				// ACT
+				err = authorizer.Authorize(ctx, nil, permission.ActionRead, permission.SubActionGetById)
 
-			// ASSERT
-			assert.Nil(t, err)
+				// ASSERT
+				assert.Nil(t, err)
+			})
 		})
 
-		t.Run("Successful:does_not_error_on_other_read_actions", func(t *testing.T) {
-			// ACT
-			err = authorizer.Authorize(ctx, nil, permission.ActionRead, "n/a")
+		t.Run(permission.SubActionList, func(t *testing.T) {
+			t.Run("Successful:unsubscribe_user_has_access", func(t *testing.T) {
+				// ACT
+				err = authorizer.Authorize(ctx, nil, permission.ActionRead, permission.SubActionList)
 
-			// ASSERT
-			assert.Nil(t, err)
+				// ASSERT
+				assert.Nil(t, err)
+			})
 		})
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {
-		t.Run("Successful:does_not_error_on_create", func(t *testing.T) {
-			// ACT
-			err = authorizer.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+		t.Run(permission.SubActionCreate, func(t *testing.T) {
 
-			// ASSERT
-			assert.Nil(t, err)
+			t.Run("Successful:any_user_can_create_appserver", func(t *testing.T) {
+				// ACT
+				err = authorizer.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate)
+
+				// ASSERT
+				assert.Nil(t, err)
+			})
 		})
 	})
 
 	t.Run("ActionDelete", func(t *testing.T) {
-		t.Run("Successful:owner_can_delete_server", func(t *testing.T) {
-			// ARRANGE
-			userID, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-			testutil.TestAppuser(t, &qx.Appuser{ID: userID, Username: "foo"}, false)
-			appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: userID}, false)
-			idStr := appserver.ID.String()
+		t.Run(permission.SubActionDelete, func(t *testing.T) {
 
-			// ACT
-			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+			t.Run("Successful:owner_can_delete_server", func(t *testing.T) {
+				// ARRANGE
+				userID, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+				testutil.TestAppuser(t, &qx.Appuser{ID: userID, Username: "foo"}, false)
+				appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: userID}, false)
+				idStr := appserver.ID.String()
 
-			// ASSERT
-			assert.Nil(t, err)
-		})
+				// ACT
+				err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
 
-		t.Run("Error:non_owner_cannot_delete_server", func(t *testing.T) {
-			// ARRANGE
-			appserver := testutil.TestAppserver(t, nil, false)
-			idStr := appserver.ID.String()
+				// ASSERT
+				assert.Nil(t, err)
+			})
 
-			// ACT
-			err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+			t.Run("Error:user_with_delete_permission_cannot_delete_server", func(t *testing.T) {
+				// ARRANGE
+				tu := factory.UserAppserverWithPermission(t)
+				idStr := tu.Server.ID.String()
 
-			// ASSERT
-			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+				// ACT
+				err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
+
+			t.Run("Error:non_owner_cannot_delete_server", func(t *testing.T) {
+				// ARRANGE
+				appserver := testutil.TestAppserver(t, nil, false)
+				idStr := appserver.ID.String()
+
+				// ACT
+				err = authorizer.Authorize(ctx, &idStr, permission.ActionDelete, permission.SubActionDelete)
+
+				// ASSERT
+				assert.NotNil(t, err)
+				assert.Equal(t, "(-5) Unauthorized", err.Error())
+			})
 		})
 	})
 

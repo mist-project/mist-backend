@@ -35,9 +35,9 @@ func (auth *AppserverAuthorizer) Authorize(
 ) error {
 
 	var (
+		claims *middleware.CustomJWTClaims
 		err    error
 		obj    *qx.Appserver
-		claims *middleware.CustomJWTClaims
 		userId uuid.UUID
 	)
 
@@ -47,6 +47,7 @@ func (auth *AppserverAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
+	// get object and get permission role if exists
 	if objId != nil {
 		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverService(ctx, auth.DbConn, auth.Db).GetById)
 		if err != nil {
@@ -55,17 +56,19 @@ func (auth *AppserverAuthorizer) Authorize(
 	}
 
 	switch action {
+
 	case ActionRead:
 		switch subAction {
 		case SubActionGetById:
 			return nil
 		}
-		return nil
+
 	case ActionWrite:
 		switch subAction {
 		case SubActionCreate:
 			return nil
 		}
+
 	case ActionDelete:
 		return auth.canDelete(userId, obj)
 	}

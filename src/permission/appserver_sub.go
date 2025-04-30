@@ -35,12 +35,12 @@ func (auth *AppserverSubAuthorizer) Authorize(
 ) error {
 
 	var (
+		authctx    *AppserverIdAuthCtx
+		authOk     bool
+		claims     *middleware.CustomJWTClaims
 		err        error
 		obj        *qx.AppserverSub
-		claims     *middleware.CustomJWTClaims
-		authctx    *AppserverIdAuthCtx
 		permission *qx.AppserverPermission
-		authOk     bool
 		userId     uuid.UUID
 	)
 
@@ -50,6 +50,7 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
+	// get object and get permission role if exists
 	if objId != nil {
 		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverSubService(ctx, auth.DbConn, auth.Db).GetById)
 		if err != nil {
@@ -65,6 +66,7 @@ func (auth *AppserverSubAuthorizer) Authorize(
 
 	authctx, authOk = ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
 
+	// if permission role undefined, and auth context provided, attempt to get permission
 	if authOk && permission == nil {
 		permission, _ = service.NewAppserverPermissionService(
 			ctx, auth.DbConn, auth.shared.Db,
@@ -100,6 +102,7 @@ func (auth *AppserverSubAuthorizer) Authorize(
 			// Anyone can become a sub for a server.
 			return nil
 		}
+
 	case ActionDelete:
 		if permission != nil && permission.DeleteAll.Bool {
 			// user has elevated delete permissions

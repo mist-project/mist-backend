@@ -34,6 +34,16 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 				assert.Nil(t, err)
 			})
 		})
+
+		t.Run(permission.SubActionList, func(t *testing.T) {
+			t.Run("Successful:unsubscribe_user_has_access", func(t *testing.T) {
+				// ACT
+				err = authorizer.Authorize(ctx, nil, permission.ActionRead, permission.SubActionList)
+
+				// ASSERT
+				assert.Nil(t, err)
+			})
+		})
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {

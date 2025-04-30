@@ -61,6 +61,8 @@ func (auth *AppserverAuthorizer) Authorize(
 		switch subAction {
 		case SubActionGetById:
 			return nil
+		case SubActionList:
+			return nil
 		}
 
 	case ActionWrite:

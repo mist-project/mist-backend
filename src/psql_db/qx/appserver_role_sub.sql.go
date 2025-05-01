@@ -23,7 +23,7 @@ INSERT INTO appserver_role_sub (
   $3,
   $4
 )
-RETURNING id, appuser_id, appserver_role_id, appserver_sub_id, appserver_id, created_at, updated_at
+RETURNING id, appuser_id, appserver_sub_id, appserver_role_id, appserver_id, created_at, updated_at
 `
 
 type CreateAppserverRoleSubParams struct {
@@ -44,8 +44,8 @@ func (q *Queries) CreateAppserverRoleSub(ctx context.Context, arg CreateAppserve
 	err := row.Scan(
 		&i.ID,
 		&i.AppuserID,
-		&i.AppserverRoleID,
 		&i.AppserverSubID,
+		&i.AppserverRoleID,
 		&i.AppserverID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -76,7 +76,7 @@ func (q *Queries) DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserve
 }
 
 const getAppserverRoleSubById = `-- name: GetAppserverRoleSubById :one
-SELECT id, appuser_id, appserver_role_id, appserver_sub_id, appserver_id, created_at, updated_at
+SELECT id, appuser_id, appserver_sub_id, appserver_role_id, appserver_id, created_at, updated_at
 FROM appserver_role_sub
 WHERE id=$1
 LIMIT 1
@@ -88,8 +88,8 @@ func (q *Queries) GetAppserverRoleSubById(ctx context.Context, id uuid.UUID) (Ap
 	err := row.Scan(
 		&i.ID,
 		&i.AppuserID,
-		&i.AppserverRoleID,
 		&i.AppserverSubID,
+		&i.AppserverRoleID,
 		&i.AppserverID,
 		&i.CreatedAt,
 		&i.UpdatedAt,

@@ -10,34 +10,34 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserverrole "mist/src/protos/v1/appserver_role"
+	pb_channelrole "mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
-type AppserverRoleService struct {
+type ChannelRoleService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
 }
 
-func NewAppserverRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverRoleService {
-	return &AppserverRoleService{ctx: ctx, dbConn: dbConn, db: db}
+func NewChannelRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *ChannelRoleService {
+	return &ChannelRoleService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserverrole.AppserverRole {
-	return &pb_appserverrole.AppserverRole{
-		Id:          aRole.ID.String(),
-		AppserverId: aRole.AppserverID.String(),
-		Name:        aRole.Name,
-		CreatedAt:   timestamppb.New(aRole.CreatedAt.Time),
-		UpdatedAt:   timestamppb.New(aRole.UpdatedAt.Time),
+func (s *ChannelRoleService) PgTypeToPb(cRole *qx.ChannelRole) *pb_channelrole.ChannelRole {
+	return &pb_channelrole.ChannelRole{
+		Id:              cRole.ID.String(),
+		ChannelId:       cRole.ChannelID.String(),
+		AppserverRoleId: cRole.AppserverRoleID.String(),
+		CreatedAt:       timestamppb.New(cRole.CreatedAt.Time),
+		UpdatedAt:       timestamppb.New(cRole.UpdatedAt.Time),
 	}
 }
 
 // Creates an appserver role.
-func (s *AppserverRoleService) Create(obj qx.CreateAppserverRoleParams) (*qx.AppserverRole, error) {
-	appserverRole, err := s.db.CreateAppserverRole(s.ctx, obj)
+func (s *ChannelRoleService) Create(obj qx.CreateChannelRoleParams) (*qx.ChannelRole, error) {
+	appserverRole, err := s.db.CreateChannelRole(s.ctx, obj)
 
 	if err != nil {
 		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
@@ -47,19 +47,19 @@ func (s *AppserverRoleService) Create(obj qx.CreateAppserverRoleParams) (*qx.App
 }
 
 // Lists all the roles for an appserver.
-func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.AppserverRole, error) {
-	aRoles, err := s.db.ListAppserverRoles(s.ctx, appserverId)
+func (s *ChannelRoleService) ListChannelRoles(channelId uuid.UUID) ([]qx.ChannelRole, error) {
+	cRoles, err := s.db.ListChannelRoles(s.ctx, channelId)
 
 	if err != nil {
 		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	}
 
-	return aRoles, nil
+	return cRoles, nil
 }
 
 // Gets an appserver role by its id.
-func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) {
-	role, err := s.db.GetAppserverRoleById(s.ctx, id)
+func (s *ChannelRoleService) GetById(id uuid.UUID) (*qx.ChannelRole, error) {
+	role, err := s.db.GetChannelRoleById(s.ctx, id)
 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
@@ -74,8 +74,8 @@ func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) 
 }
 
 // Deletes a role from a server, only owner of server and delete role
-func (s *AppserverRoleService) Delete(id uuid.UUID) error {
-	deleted, err := s.db.DeleteAppserverRole(s.ctx, id)
+func (s *ChannelRoleService) Delete(id uuid.UUID) error {
+	deleted, err := s.db.DeleteChannelRole(s.ctx, id)
 
 	if err != nil {
 		return message.DatabaseError(fmt.Sprintf("database error: %v", err))

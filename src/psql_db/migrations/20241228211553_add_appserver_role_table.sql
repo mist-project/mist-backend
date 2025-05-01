@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS appserver_role (
     updated_at TIMESTAMP DEFAULT NOW(),
 
     FOREIGN KEY (appserver_id) REFERENCES appserver(id) ON DELETE CASCADE,
-    CONSTRAINT appserver_role_uk_appserver_name UNIQUE (appserver_id, name)
+    CONSTRAINT appserver_role_uk_appserver_name UNIQUE (appserver_id, name),
+    CONSTRAINT appserver_role_uk_server_role UNIQUE (appserver_id, id)
 );
 -- +goose StatementEnd
 

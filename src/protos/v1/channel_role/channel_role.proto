@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package v1.channelrole;
+option go_package = "mist/src/protos/v1/channelrole;channelrole";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service ChannelRoleService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc ListChannelRoles(ListChannelRolesRequest)
+      returns (ListChannelRolesResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+}
+
+// ----- STRUCTURES -----
+message ChannelRole {
+  string id = 1;
+  string channel_id = 2;
+  string appserver_id = 3;
+  string appserver_role_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+// ----- REQUEST/RESPONSE -----
+message CreateRequest {
+  string channel_id = 1 [ (buf.validate.field).string.uuid = true ];
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
+  string appserver_role_id = 3 [ (buf.validate.field).string.uuid = true ];
+}
+message CreateResponse { ChannelRole channel_role = 1; }
+
+message ListChannelRolesRequest {
+  string channel_id = 1 [ (buf.validate.field).string.uuid = true ];
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
+}
+message ListChannelRolesResponse { repeated ChannelRole channel_roles = 1; }
+
+message DeleteRequest {
+  string id = 1 [ (buf.validate.field).string.uuid = true ];
+}
+message DeleteResponse {}

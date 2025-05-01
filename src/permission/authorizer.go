@@ -21,6 +21,7 @@ const (
 	SubActionGetById                      = "get-by-id"
 	SubActionList                         = "list"
 	SubActionListServerRoles              = "list-server-roles"
+	SubActionListChannelRoles             = "list-channel-roles"
 	SubActionListUserServerSubs           = "list-user-server-subs"
 	SubActionListAppserverChannels        = "list-appserver-channels"
 	SubActionListAppserverUserSubs        = "list-appserver-user-subs"

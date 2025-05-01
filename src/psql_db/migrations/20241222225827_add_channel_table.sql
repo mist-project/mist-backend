@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS channel (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
 
-    FOREIGN KEY (appserver_id) REFERENCES appserver(id) ON DELETE CASCADE
+    FOREIGN KEY (appserver_id) REFERENCES appserver(id) ON DELETE CASCADE,
+
+    CONSTRAINT channel_uk_server_channel UNIQUE (appserver_id, id)
 );
 -- +goose StatementEnd
 

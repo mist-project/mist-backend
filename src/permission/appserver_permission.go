@@ -54,17 +54,19 @@ func (auth *AppserverPermissionAuthorizer) Authorize(
 		}
 	}
 
+	authctx, _ := ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
+
 	switch action {
 	case ActionRead:
 		switch subAction {
 		case SubActionListAppserverUserPermsission:
 
-			return auth.canListServerUserPermission(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
+			return auth.canListServerUserPermission(ctx, userId, authctx)
 		}
 	case ActionWrite:
 		switch subAction {
 		case SubActionCreate:
-			return auth.canCreate(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
+			return auth.canCreate(ctx, userId, authctx)
 		}
 	case ActionDelete:
 		return auth.canDelete(ctx, userId, obj)

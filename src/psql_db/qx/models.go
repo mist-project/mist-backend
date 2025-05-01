@@ -86,8 +86,8 @@ type AppserverRole struct {
 type AppserverRoleSub struct {
 	ID              uuid.UUID
 	AppuserID       uuid.UUID
-	AppserverRoleID uuid.UUID
 	AppserverSubID  uuid.UUID
+	AppserverRoleID uuid.UUID
 	AppserverID     uuid.UUID
 	CreatedAt       pgtype.Timestamp
 	UpdatedAt       pgtype.Timestamp
@@ -123,6 +123,15 @@ type ChannelPermission struct {
 	AppserverRoleID uuid.UUID
 	ReadAll         pgtype.Bool
 	WriteAll        pgtype.Bool
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+}
+
+type ChannelRole struct {
+	ID              uuid.UUID
+	AppserverID     uuid.UUID
+	ChannelID       uuid.UUID
+	AppserverRoleID uuid.UUID
 	CreatedAt       pgtype.Timestamp
 	UpdatedAt       pgtype.Timestamp
 }

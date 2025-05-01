@@ -13,14 +13,14 @@ import (
 	"mist/src/service"
 )
 
-type ChannelAuthorizer struct {
+type ChannelRoleAuthorizer struct {
 	DbConn *pgxpool.Pool
 	Db     db.Querier
 	shared *SharedAuthorizer
 }
 
-func NewChannelAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *ChannelAuthorizer {
-	return &ChannelAuthorizer{
+func NewChannelRoleAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *ChannelRoleAuthorizer {
+	return &ChannelRoleAuthorizer{
 		DbConn: DbConn,
 		Db:     Db,
 		shared: &SharedAuthorizer{
@@ -30,7 +30,7 @@ func NewChannelAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *ChannelAuthorize
 	}
 }
 
-func (auth *ChannelAuthorizer) Authorize(
+func (auth *ChannelRoleAuthorizer) Authorize(
 	ctx context.Context, objId *string, action Action, subAction string,
 ) error {
 
@@ -39,7 +39,7 @@ func (auth *ChannelAuthorizer) Authorize(
 		authOk     bool
 		claims     *middleware.CustomJWTClaims
 		err        error
-		obj        *qx.Channel
+		obj        *qx.ChannelRole
 		permission *qx.AppserverPermission
 		userId     uuid.UUID
 	)
@@ -50,14 +50,11 @@ func (auth *ChannelAuthorizer) Authorize(
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	// ---- GET OBJECT -----
-	// TODO: refactor this to potentially generalize
 	if objId != nil {
-		obj, err = GetObject(ctx, auth.shared, *objId, service.NewChannelService(ctx, auth.DbConn, auth.Db).GetById)
+		obj, err = GetObject(ctx, auth.shared, *objId, service.NewChannelRoleService(ctx, auth.DbConn, auth.Db).GetById)
 		if err != nil {
 			return err
 		}
-
 		permission, _ = service.NewAppserverPermissionService(
 			ctx, auth.DbConn, auth.shared.Db,
 		).GetAppserverPermissionForUser(
@@ -75,8 +72,6 @@ func (auth *ChannelAuthorizer) Authorize(
 			qx.GetAppserverPermissionForUserParams{AppserverID: authctx.AppserverId, AppuserID: userId},
 		)
 	}
-	// ---------------------
-
 	switch action {
 
 	case ActionRead:
@@ -87,11 +82,8 @@ func (auth *ChannelAuthorizer) Authorize(
 		}
 
 		switch subAction {
-
-		case SubActionListAppserverChannels:
-			return auth.canListAppserverChannels(ctx, userId, authctx)
-		case SubActionGetById:
-			return auth.canGetById(ctx, userId, obj)
+		case SubActionListChannelRoles:
+			return auth.canListChannelRoles(ctx, userId, authctx)
 		}
 
 	case ActionWrite:
@@ -102,7 +94,6 @@ func (auth *ChannelAuthorizer) Authorize(
 		}
 
 		switch subAction {
-
 		case SubActionCreate:
 			return auth.canCreate(ctx, userId, authctx)
 		}
@@ -120,13 +111,12 @@ func (auth *ChannelAuthorizer) Authorize(
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// A user can only request all channels in a server if they are subscribed to it.
-func (auth *ChannelAuthorizer) canListAppserverChannels(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
+// A user can only request all channels roles in a server if they are subscribed to it.
+func (auth *ChannelRoleAuthorizer) canListChannelRoles(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
 		hasSub bool
 		err    error
 	)
-
 	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, authCtx.AppserverId); err != nil {
 		return err
 	}
@@ -138,26 +128,8 @@ func (auth *ChannelAuthorizer) canListAppserverChannels(ctx context.Context, use
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// A user can only request channel's details if they are subscribed to it
-func (auth *ChannelAuthorizer) canGetById(ctx context.Context, userId uuid.UUID, channel *qx.Channel) error {
-	var (
-		hasSub bool
-		err    error
-	)
-
-	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, channel.AppserverID); err != nil {
-		return err
-	}
-
-	if hasSub {
-		return nil
-	}
-
-	return message.UnauthorizedError(message.Unauthorized)
-}
-
-// Only server owners can create channels.
-func (auth *ChannelAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
+// Only server owners or users with permission role can create channel roles.
+func (auth *ChannelRoleAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
 		owner bool
 		err   error
@@ -174,8 +146,8 @@ func (auth *ChannelAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, 
 	return message.UnauthorizedError(message.Unauthorized)
 }
 
-// Only server owners can delete channels.
-func (auth *ChannelAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.Channel) error {
+// Only server owners or users with permission role can create channel roles.
+func (auth *ChannelRoleAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.ChannelRole) error {
 	var (
 		owner bool
 		err   error

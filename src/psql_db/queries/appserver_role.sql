@@ -22,7 +22,4 @@ WHERE appserver_id=$1;
 
 -- name: DeleteAppserverRole :execrows
 DELETE FROM appserver_role as ar
-USING appserver as a 
-WHERE a.id=ar.appserver_id
-  AND ar.id=$1
-  AND a.appuser_id=$2;
+WHERE ar.id=$1;

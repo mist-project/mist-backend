@@ -15,6 +15,7 @@ import (
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	pb_appuser "mist/src/protos/v1/appuser"
 	pb_channel "mist/src/protos/v1/channel"
+	pb_channelrole "mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -62,6 +63,13 @@ type AppserverRoleSubGRPCService struct {
 
 type ChannelGRPCService struct {
 	pb_channel.UnimplementedChannelServiceServer
+	DbConn *pgxpool.Pool
+	Db     db.Querier
+	Auth   permission.Authorizer
+}
+
+type ChannelRoleGRPCService struct {
+	pb_channelrole.UnimplementedChannelRoleServiceServer
 	DbConn *pgxpool.Pool
 	Db     db.Querier
 	Auth   permission.Authorizer
@@ -129,6 +137,14 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
 			Db:     querier,
 			DbConn: dbConn,
 			Auth:   permission.NewChannelAuthorizer(dbConn, querier),
+		})
+
+	// ----- CHANNEL ROLE -----
+	pb_channelrole.RegisterChannelRoleServiceServer(s,
+		&ChannelRoleGRPCService{
+			Db:     querier,
+			DbConn: dbConn,
+			Auth:   permission.NewChannelRoleAuthorizer(dbConn, querier),
 		})
 }
 

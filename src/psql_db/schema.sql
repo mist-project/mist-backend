@@ -40,8 +40,8 @@ CREATE TABLE public.appserver_role (
 CREATE TABLE public.appserver_role_sub (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     appuser_id uuid NOT NULL,
-    appserver_role_id uuid NOT NULL,
     appserver_sub_id uuid NOT NULL,
+    appserver_role_id uuid NOT NULL,
     appserver_id uuid NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
@@ -77,6 +77,15 @@ CREATE TABLE public.channel_permission (
     appserver_role_id uuid NOT NULL,
     read_all boolean DEFAULT true,
     write_all boolean DEFAULT false,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
+);
+
+CREATE TABLE public.channel_role (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    appserver_id uuid NOT NULL,
+    channel_id uuid NOT NULL,
+    appserver_role_id uuid NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
 );
@@ -118,11 +127,17 @@ ALTER TABLE ONLY public.appserver_role_sub
 ALTER TABLE ONLY public.appserver_role
     ADD CONSTRAINT appserver_role_uk_appserver_name UNIQUE (appserver_id, name);
 
+ALTER TABLE ONLY public.appserver_role
+    ADD CONSTRAINT appserver_role_uk_server_role UNIQUE (appserver_id, id);
+
 ALTER TABLE ONLY public.appserver_sub
     ADD CONSTRAINT appserver_sub_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.appserver_sub
     ADD CONSTRAINT appserver_sub_uk_appserver_owner UNIQUE (appserver_id, appuser_id);
+
+ALTER TABLE ONLY public.appserver_sub
+    ADD CONSTRAINT appserver_sub_uk_server_sub UNIQUE (appserver_id, id);
 
 ALTER TABLE ONLY public.appuser
     ADD CONSTRAINT appuser_pkey PRIMARY KEY (id);
@@ -138,6 +153,15 @@ ALTER TABLE ONLY public.channel_permission
 
 ALTER TABLE ONLY public.channel
     ADD CONSTRAINT channel_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.channel_role
+    ADD CONSTRAINT channel_role_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.channel_role
+    ADD CONSTRAINT channel_role_uk_role_channel UNIQUE (channel_id, appserver_role_id);
+
+ALTER TABLE ONLY public.channel
+    ADD CONSTRAINT channel_uk_server_channel UNIQUE (appserver_id, id);
 
 ALTER TABLE ONLY public.goose_db_version
     ADD CONSTRAINT goose_db_version_pkey PRIMARY KEY (id);
@@ -166,6 +190,12 @@ ALTER TABLE ONLY public.appserver_role_sub
 ALTER TABLE ONLY public.appserver_role_sub
     ADD CONSTRAINT appserver_role_sub_appuser_id_fkey FOREIGN KEY (appuser_id) REFERENCES public.appuser(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY public.appserver_role_sub
+    ADD CONSTRAINT appserver_role_sub_uk_server_and_role FOREIGN KEY (appserver_id, appserver_role_id) REFERENCES public.appserver_role(appserver_id, id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.appserver_role_sub
+    ADD CONSTRAINT appserver_role_sub_uk_server_and_sub FOREIGN KEY (appserver_id, appserver_sub_id) REFERENCES public.appserver_sub(appserver_id, id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY public.appserver_sub
     ADD CONSTRAINT appserver_sub_appserver_id_fkey FOREIGN KEY (appserver_id) REFERENCES public.appserver(id) ON DELETE CASCADE;
 
@@ -180,4 +210,10 @@ ALTER TABLE ONLY public.channel_permission
 
 ALTER TABLE ONLY public.channel_permission
     ADD CONSTRAINT channel_permission_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.channel(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.channel_role
+    ADD CONSTRAINT channel_role_appserver_id_channel_id_fkey FOREIGN KEY (appserver_id, channel_id) REFERENCES public.channel(appserver_id, id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.channel_role
+    ADD CONSTRAINT channel_role_appserver_role_id_fkey FOREIGN KEY (appserver_role_id) REFERENCES public.appserver_role(id) ON DELETE CASCADE;
 

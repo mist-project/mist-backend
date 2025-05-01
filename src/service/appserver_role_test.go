@@ -193,7 +193,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 	t.Run("Successful:delete_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		params := qx.DeleteAppserverRoleParams{ID: uuid.New(), AppuserID: uuid.New()}
+		params := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(int64(1), nil)
@@ -210,7 +210,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 	t.Run("Error:no_rows_deleted", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		params := qx.DeleteAppserverRoleParams{ID: uuid.New(), AppuserID: uuid.New()}
+		params := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(int64(0), nil)
@@ -228,7 +228,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 	t.Run("Error:db_failure_on_delete", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		params := qx.DeleteAppserverRoleParams{ID: uuid.New(), AppuserID: uuid.New()}
+		params := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(nil, fmt.Errorf("db crash"))

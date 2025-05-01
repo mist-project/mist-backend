@@ -84,7 +84,7 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 
 		switch subAction {
 		case SubActionListAppserverUserRoleSubs:
-			return auth.canListUserRoleSubs(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
+			return auth.canListUserRoleSubs(ctx, userId, authctx)
 		}
 
 	case ActionWrite:
@@ -96,7 +96,7 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 
 		switch subAction {
 		case SubActionCreate:
-			return auth.canCreate(ctx, userId, ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx))
+			return auth.canCreate(ctx, userId, authctx)
 		}
 
 	case ActionDelete:
@@ -131,7 +131,6 @@ func (auth *AppserverRoleSubAuthorizer) canListUserRoleSubs(ctx context.Context,
 }
 
 // Only server owners can create role subs
-// TODO: with permissions allow other users to create roles (pending ServerPermission definition)
 func (auth *AppserverRoleSubAuthorizer) canCreate(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
 	var (
 		owner bool
@@ -150,7 +149,6 @@ func (auth *AppserverRoleSubAuthorizer) canCreate(ctx context.Context, userId uu
 }
 
 // Only server owners can remove role subs.
-// TODO: with permissions allow other users to delete roles (pending ServerPermission definition)
 func (auth *AppserverRoleSubAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.AppserverRoleSub) error {
 	var (
 		owner bool

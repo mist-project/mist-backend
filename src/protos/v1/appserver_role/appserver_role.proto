@@ -6,8 +6,6 @@ option go_package = "mist/src/protos/v1/appserverrole;appserverrole";
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
-import "v1/appuser/appuser.proto";
-import "v1/appserver/appserver.proto";
 
 service AppserverRoleService {
   rpc Create(CreateRequest) returns (CreateResponse) {}

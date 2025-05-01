@@ -1,7 +1,5 @@
 -- +goose Up
 -- +goose StatementBegin
-SELECT 'up SQL query';
-
 CREATE TABLE IF NOT EXISTS appserver_permission(
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     appserver_id UUID NOT NULL,
@@ -37,8 +35,6 @@ CREATE TABLE IF NOT EXISTS channel_permission(
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
 DROP TABLE IF EXISTS appserver_permission;
 DROP TABLE IF EXISTS channel_permission;
-
 -- +goose StatementEnd

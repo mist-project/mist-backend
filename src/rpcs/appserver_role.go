@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 
 	"mist/src/errors/message"
-	"mist/src/middleware"
 	"mist/src/permission"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
@@ -86,14 +85,10 @@ func (s *AppserverRoleGRPCService) Delete(
 	}
 
 	// Initialize the service for AppserveRole
-	claims, _ := middleware.GetJWTClaims(ctx)
-	userId, _ := uuid.Parse(claims.UserID)
 	roleId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err = service.NewAppserverRoleService(ctx, s.DbConn, s.Db).Delete(
-		qx.DeleteAppserverRoleParams{AppuserID: userId, ID: roleId},
-	)
+	err = service.NewAppserverRoleService(ctx, s.DbConn, s.Db).Delete(roleId)
 
 	// Error handling
 	if err != nil {

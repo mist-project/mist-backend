@@ -29,6 +29,7 @@ import (
 	pb_appserversub "mist/src/protos/v1/appserver_sub"
 	pb_appuser "mist/src/protos/v1/appuser"
 	pb_channel "mist/src/protos/v1/channel"
+	pb_channelrole "mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )
@@ -42,6 +43,7 @@ var (
 	TestAppserverSubClient        pb_appserversub.AppserverSubServiceClient
 	TestAppuserClient             pb_appuser.AppuserServiceClient
 	TestChannelClient             pb_channel.ChannelServiceClient
+	TestChannelRoleClient         pb_channelrole.ChannelRoleServiceClient
 	testClientConn                *grpc.ClientConn
 
 	TestDbConn *pgxpool.Pool
@@ -131,6 +133,7 @@ func SetupTestGRPCServicesAndClient() {
 	TestAppserverRoleSubClient = pb_appserverrolesub.NewAppserverRoleSubServiceClient(testClientConn)
 	TestAppserverSubClient = pb_appserversub.NewAppserverSubServiceClient(testClientConn)
 	TestChannelClient = pb_channel.NewChannelServiceClient(testClientConn)
+	TestChannelRoleClient = pb_channelrole.NewChannelRoleServiceClient(testClientConn)
 }
 
 func RpcTestCleanup() {
@@ -189,6 +192,7 @@ func teardown(ctx context.Context) {
 		"appserver_permission",
 		"channel",
 		"channel_permission",
+		"channel_role",
 	}
 
 	for _, table := range tables {
@@ -427,4 +431,28 @@ func TestChannel(t *testing.T, c *qx.Channel, base bool) *qx.Channel {
 		t.Fatalf("Unable to create appserver. Error: %v", err)
 	}
 	return &channel
+}
+
+func TestChannelRole(t *testing.T, cr *qx.ChannelRole, base bool) *qx.ChannelRole {
+	// Define attributes
+
+	if cr == nil {
+		// Default value
+		role := TestAppserverRole(t, nil, base)
+		cr = &qx.ChannelRole{
+			AppserverID:     role.AppserverID,
+			AppserverRoleID: role.ID,
+			ChannelID:       TestChannel(t, &qx.Channel{Name: uuid.NewString(), AppserverID: role.AppserverID}, base).ID,
+		}
+	}
+
+	role, err := qx.New(TestDbConn).CreateChannelRole(
+		context.Background(),
+		qx.CreateChannelRoleParams{AppserverRoleID: cr.AppserverRoleID, ChannelID: cr.ChannelID, AppserverID: cr.AppserverID},
+	)
+
+	if err != nil {
+		t.Fatalf("Unable to create appserver. Error: %v", err)
+	}
+	return &role
 }

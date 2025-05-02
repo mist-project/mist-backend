@@ -46,8 +46,9 @@ var (
 	TestChannelRoleClient         pb_channelrole.ChannelRoleServiceClient
 	testClientConn                *grpc.ClientConn
 
-	TestDbConn *pgxpool.Pool
-	lis        net.Listener
+	TestDbConn    *pgxpool.Pool
+	TestKProducer = new(MockProducer)
+	lis           net.Listener
 
 	once sync.Once
 
@@ -108,7 +109,8 @@ func SetupTestGRPCServicesAndClient() {
 	interceptors, err := rpcs.BaseInterceptors()
 
 	testServer = grpc.NewServer(interceptors)
-	rpcs.RegisterGrpcServices(testServer, TestDbConn)
+
+	rpcs.RegisterGrpcServices(testServer, TestDbConn, TestKProducer)
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {

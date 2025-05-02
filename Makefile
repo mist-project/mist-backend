@@ -78,7 +78,7 @@ dump-schema:
 setup-test:
 	go run test-setup/main.go
 
-run-tests t: generate-queries setup-test test-rpcs test-middleware test-service test-permission test-errors test-message
+run-tests t: generate-queries setup-test test-rpcs test-middleware test-service test-permission test-errors test-message test-producer
 
 
 all-tests: setup-test
@@ -116,6 +116,11 @@ test-errors: setup-test
 test-message: setup-test
 	@echo -----------------------------------------
 	@go test mist/src/errors/message -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
+test-producer: setup-test
+	@echo -----------------------------------------
+	@go test mist/src/producer -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 # ----- FORMAT -----

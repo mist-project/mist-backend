@@ -8,6 +8,7 @@ import (
 
 	"mist/src/middleware"
 	"mist/src/permission"
+	"mist/src/producer"
 	pb_appserver "mist/src/protos/v1/appserver"
 	pb_appserverpermission "mist/src/protos/v1/appserver_permission"
 	pb_appserverrole "mist/src/protos/v1/appserver_role"
@@ -28,54 +29,61 @@ type AppuserGRPCService struct {
 
 type AppserverGRPCService struct {
 	pb_appserver.UnimplementedAppserverServiceServer
-	DbConn *pgxpool.Pool
-	Db     db.Querier
-	Auth   permission.Authorizer
+	DbConn   *pgxpool.Pool
+	Db       db.Querier
+	Auth     permission.Authorizer
+	Producer *producer.MessageProducer
 }
 
 type AppserverPermissionGRPCService struct {
 	pb_appserverpermission.UnimplementedAppserverPermissionServiceServer
-	DbConn *pgxpool.Pool
-	Db     db.Querier
-	Auth   permission.Authorizer
+	DbConn   *pgxpool.Pool
+	Db       db.Querier
+	Auth     permission.Authorizer
+	Producer *producer.MessageProducer
 }
 
 type AppserverSubGRPCService struct {
 	pb_appserversub.UnimplementedAppserverSubServiceServer
-	DbConn *pgxpool.Pool
-	Db     db.Querier
-	Auth   permission.Authorizer
+	DbConn   *pgxpool.Pool
+	Db       db.Querier
+	Auth     permission.Authorizer
+	Producer *producer.MessageProducer
 }
 
 type AppserverRoleGRPCService struct {
 	pb_appserverrole.UnimplementedAppserverRoleServiceServer
-	DbConn *pgxpool.Pool
-	Db     db.Querier
-	Auth   permission.Authorizer
+	DbConn   *pgxpool.Pool
+	Db       db.Querier
+	Auth     permission.Authorizer
+	Producer *producer.MessageProducer
 }
 
 type AppserverRoleSubGRPCService struct {
 	pb_appserverrolesub.UnimplementedAppserverRoleSubServiceServer
-	DbConn *pgxpool.Pool
-	Db     db.Querier
-	Auth   permission.Authorizer
+	DbConn   *pgxpool.Pool
+	Db       db.Querier
+	Auth     permission.Authorizer
+	Producer *producer.MessageProducer
 }
 
 type ChannelGRPCService struct {
 	pb_channel.UnimplementedChannelServiceServer
-	DbConn *pgxpool.Pool
-	Db     db.Querier
-	Auth   permission.Authorizer
+	DbConn   *pgxpool.Pool
+	Db       db.Querier
+	Auth     permission.Authorizer
+	Producer *producer.MessageProducer
 }
 
 type ChannelRoleGRPCService struct {
 	pb_channelrole.UnimplementedChannelRoleServiceServer
-	DbConn *pgxpool.Pool
-	Db     db.Querier
-	Auth   permission.Authorizer
+	DbConn   *pgxpool.Pool
+	Db       db.Querier
+	Auth     permission.Authorizer
+	Producer *producer.MessageProducer
 }
 
-func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool) {
+func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, kp producer.MessageProducer) {
 	querier := db.NewQuerier(qx.New(dbConn))
 
 	// ----- APPUSER -----

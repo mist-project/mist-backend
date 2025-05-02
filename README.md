@@ -42,6 +42,7 @@ sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresq
 sudo apt update
 sudo apt -y install postgresql
 
+TODO: add/figure out db roles
 # After installation create new database called mist
 sudo -u postgres psql
 
@@ -91,4 +92,42 @@ go install github.com/air-verse/air@1.61.1
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.62.2
 
 golangci-lint --version
+```
+
+
+ENV SETUP 
+
+```
+
+export APP_PORT=4000
+export TEST_APP_PORT=5000
+
+# ----- KAFKA CONFIGURATION -----
+export KAFKA_HOST=localhost
+export KAFKA_PORT=4003
+export KAFKA_MAIN_BROKER=${KAFKA_HOST}:${KAFKA_PORT}
+export KAFKA_EVENT_TOPIC="app-events"
+
+# ----- DATABASE CONFIGURATION -----
+export DATABASE_NAME=m
+export DATABASE_URL=
+
+export TEST_DATABASE_NAME=
+export TEST_DATABASE_URL=
+
+# TODO: figure out why this is needed
+export DATABASE_ROLE=omarcruz
+
+export DB_SOURCE_DIR=src/psql_db
+export GOOSE_DRIVER=postgres
+export GOOSE_DBSTRING=${DATABASE_URL}
+export GOOSE_MIGRATION_DIR=${DB_SOURCE_DIR}/migrations
+
+export PROJECT_ROOT_PATH=$(pwd)
+
+# ----- JWT AUTHORIZATION CONFIG -----
+export MIST_API_JWT_SECRET_KEY=""
+export MIST_API_JWT_AUDIENCE=""
+export MIST_API_JWT_ISSUER=""
+
 ```

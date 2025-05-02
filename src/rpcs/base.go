@@ -32,7 +32,7 @@ type AppserverGRPCService struct {
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
-	Producer *producer.MessageProducer
+	Producer producer.MessageProducer
 }
 
 type AppserverPermissionGRPCService struct {
@@ -40,7 +40,7 @@ type AppserverPermissionGRPCService struct {
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
-	Producer *producer.MessageProducer
+	Producer producer.MessageProducer
 }
 
 type AppserverSubGRPCService struct {
@@ -56,7 +56,7 @@ type AppserverRoleGRPCService struct {
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
-	Producer *producer.MessageProducer
+	Producer producer.MessageProducer
 }
 
 type AppserverRoleSubGRPCService struct {
@@ -64,7 +64,7 @@ type AppserverRoleSubGRPCService struct {
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
-	Producer *producer.MessageProducer
+	Producer producer.MessageProducer
 }
 
 type ChannelGRPCService struct {
@@ -72,7 +72,7 @@ type ChannelGRPCService struct {
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
-	Producer *producer.MessageProducer
+	Producer producer.MessageProducer
 }
 
 type ChannelRoleGRPCService struct {
@@ -80,10 +80,10 @@ type ChannelRoleGRPCService struct {
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
-	Producer *producer.MessageProducer
+	Producer producer.MessageProducer
 }
 
-func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, kp producer.MessageProducer) {
+func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.MessageProducer) {
 	querier := db.NewQuerier(qx.New(dbConn))
 
 	// ----- APPUSER -----
@@ -142,17 +142,19 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, kp producer.Mess
 	// ----- CHANNEL -----
 	pb_channel.RegisterChannelServiceServer(s,
 		&ChannelGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-			Auth:   permission.NewChannelAuthorizer(dbConn, querier),
+			Db:       querier,
+			DbConn:   dbConn,
+			Auth:     permission.NewChannelAuthorizer(dbConn, querier),
+			Producer: mp,
 		})
 
 	// ----- CHANNEL ROLE -----
 	pb_channelrole.RegisterChannelRoleServiceServer(s,
 		&ChannelRoleGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-			Auth:   permission.NewChannelRoleAuthorizer(dbConn, querier),
+			Db:       querier,
+			DbConn:   dbConn,
+			Auth:     permission.NewChannelRoleAuthorizer(dbConn, querier),
+			Producer: mp,
 		})
 }
 

@@ -10,7 +10,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
+	"mist/src/producer"
 	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/protos/v1/event"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -19,11 +21,12 @@ type ChannelService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
+	p      producer.MessageProducer
 }
 
 // Creates a new ChannelService struct.
-func NewChannelService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *ChannelService {
-	return &ChannelService{ctx: ctx, dbConn: dbConn, db: db}
+func NewChannelService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, p producer.MessageProducer) *ChannelService {
+	return &ChannelService{ctx: ctx, dbConn: dbConn, db: db, p: p}
 }
 
 // Convert Channel db object to Channel protobuff object.
@@ -42,7 +45,14 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 
 	if err != nil {
 		return nil, message.DatabaseError(fmt.Sprintf("create channel error: %v", err))
+	}
 
+	err = s.p.SendMessage(s.PgTypeToPb(&channel), event.ActionType_ACTION_CREATE_CHANNEL)
+
+	if err != nil {
+		// TODO: send error to some other place to handle it
+		fmt.Println(err)
+		err = nil
 	}
 
 	return &channel, err

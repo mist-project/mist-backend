@@ -9,10 +9,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
 	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/protos/v1/event"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -22,7 +24,7 @@ func TestChannelService_PgTypeToPb(t *testing.T) {
 
 	// ARRANGE
 	ctx := context.Background()
-	svc := service.NewChannelService(ctx, testutil.TestDbConn, new(testutil.MockQuerier))
+	svc := service.NewChannelService(ctx, testutil.TestDbConn, new(testutil.MockQuerier), new(testutil.MockProducer))
 
 	id := uuid.New()
 	serverId := uuid.New()
@@ -62,8 +64,10 @@ func TestChannelService_Create(t *testing.T) {
 		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: expectedChannel.AppserverID}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_CREATE_CHANNEL).Return(nil)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		channel, err := svc.Create(createObj)
@@ -82,14 +86,39 @@ func TestChannelService_Create(t *testing.T) {
 		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(nil, fmt.Errorf("error on create"))
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_CREATE_CHANNEL).Return(nil)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		_, err := svc.Create(createObj)
 
 		// ASSERT
 		assert.Contains(t, err.Error(), "create channel error: error on create")
+	})
+
+	t.Run("Error:on_producer_message_error_it_does_nothing", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserver := testutil.TestAppserver(t, nil, false)
+		expectedChannel := qx.Channel{ID: uuid.New(), Name: "foo", AppserverID: appserver.ID}
+		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: expectedChannel.AppserverID}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_CREATE_CHANNEL).Return(fmt.Errorf("boom"))
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		channel, err := svc.Create(createObj)
+
+		// ASSERT
+		assert.Nil(t, err)
+		assert.Equal(t, expectedChannel.ID, channel.ID)
+		assert.Equal(t, expectedChannel.Name, channel.Name)
+		assert.Equal(t, expectedChannel.AppserverID, channel.AppserverID)
 	})
 }
 
@@ -101,8 +130,9 @@ func TestChannelService_GetById(t *testing.T) {
 		expectedChannel := testutil.TestChannel(t, nil, false)
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("GetChannelById", ctx, expectedChannel.ID).Return(*expectedChannel, nil)
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		channel, err := svc.GetById(expectedChannel.ID)
@@ -120,8 +150,9 @@ func TestChannelService_GetById(t *testing.T) {
 		channel := testutil.TestChannel(t, nil, false)
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(nil, fmt.Errorf(message.DbNotFound))
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		_, err := svc.GetById(channel.ID)
@@ -136,8 +167,9 @@ func TestChannelService_GetById(t *testing.T) {
 		channel := testutil.TestChannel(t, nil, false)
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(*channel, fmt.Errorf("error on create"))
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		_, err := svc.GetById(channel.ID)
@@ -161,9 +193,10 @@ func TestChannelService_List(t *testing.T) {
 		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: appserverId}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(expected, nil)
 
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		result, err := svc.ListServerChannels(queryParams)
@@ -179,9 +212,10 @@ func TestChannelService_List(t *testing.T) {
 		var nameFilter = pgtype.Text{Valid: false, String: ""}
 		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: appserverId}
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(nil, fmt.Errorf("database error"))
 
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		_, err := svc.ListServerChannels(queryParams)
@@ -198,9 +232,10 @@ func TestChannelService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		channelId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("DeleteChannel", ctx, channelId).Return(int64(1), nil)
 
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		err := svc.Delete(channelId)
@@ -213,9 +248,10 @@ func TestChannelService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		channelId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("DeleteChannel", ctx, channelId).Return(int64(0), nil)
 
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		err := svc.Delete(channelId)
@@ -228,9 +264,10 @@ func TestChannelService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		channelId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("DeleteChannel", ctx, channelId).Return(nil, fmt.Errorf("mock error"))
 
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		err := svc.Delete(channelId)

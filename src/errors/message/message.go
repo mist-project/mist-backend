@@ -32,6 +32,7 @@ var (
 	DatabaseErrorString       string = fmt.Sprintf("(%d)", DatabaseErrorCode)
 	AuthenticationErrorString string = fmt.Sprintf("(%d)", AuthenticationErrorCode)
 	AuthorizationErrorString  string = fmt.Sprintf("(%d)", AuthorizationErrorCode)
+	UnknownErrorString        string = fmt.Sprintf("(%d)", UnknownErrorCode)
 )
 
 func ValidateError(s string) error {
@@ -51,6 +52,10 @@ func UnauthenticatedError(s string) error {
 
 func UnauthorizedError(s string) error {
 	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", AuthorizationErrorString, s)))
+}
+
+func UnknownError(s string) error {
+	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", UnknownErrorString, s)))
 }
 
 func ParseError(s string) int {

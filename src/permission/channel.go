@@ -53,7 +53,7 @@ func (auth *ChannelAuthorizer) Authorize(
 	// ---- GET OBJECT -----
 	// TODO: refactor this to potentially generalize
 	if objId != nil {
-		obj, err = GetObject(ctx, auth.shared, *objId, service.NewChannelService(ctx, auth.DbConn, auth.Db).GetById)
+		obj, err = GetObject(ctx, auth.shared, *objId, service.NewChannelService(ctx, auth.DbConn, auth.Db, nil).GetById)
 		if err != nil {
 			return err
 		}

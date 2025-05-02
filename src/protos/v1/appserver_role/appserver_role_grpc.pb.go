@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: v1/appserver_role/appserver_role.proto
 
-package appserverrole
+package appserver_role
 
 import (
 	context "context"
@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AppserverRoleService_Create_FullMethodName          = "/v1.appserverrole.AppserverRoleService/Create"
-	AppserverRoleService_ListServerRoles_FullMethodName = "/v1.appserverrole.AppserverRoleService/ListServerRoles"
-	AppserverRoleService_Delete_FullMethodName          = "/v1.appserverrole.AppserverRoleService/Delete"
+	AppserverRoleService_Create_FullMethodName          = "/v1.appserver_role.AppserverRoleService/Create"
+	AppserverRoleService_ListServerRoles_FullMethodName = "/v1.appserver_role.AppserverRoleService/ListServerRoles"
+	AppserverRoleService_Delete_FullMethodName          = "/v1.appserver_role.AppserverRoleService/Delete"
 )
 
 // AppserverRoleServiceClient is the client API for AppserverRoleService service.
@@ -176,7 +176,7 @@ func _AppserverRoleService_Delete_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AppserverRoleService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "v1.appserverrole.AppserverRoleService",
+	ServiceName: "v1.appserver_role.AppserverRoleService",
 	HandlerType: (*AppserverRoleServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

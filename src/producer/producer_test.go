@@ -32,11 +32,11 @@ func TestKafkaProducer_SendMessage(t *testing.T) {
 			Producer: mockProducer,
 			Topic:    "test-topic",
 		}
-		mockAction := event.ActionType_ACTION_CREATE_CHANNEL
+		mockAction := event.ActionType_ACTION_ADD_CHANNEL
 		mockData := &channel.Channel{}
 		mockProducer.On("SendMessage", mock.Anything).Return(int32(1), int64(42), nil)
 		// ACT
-		err := kp.SendMessage(mockData, mockAction)
+		err := kp.SendMessage(mockData, mockAction, nil)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -51,10 +51,10 @@ func TestKafkaProducer_SendMessage(t *testing.T) {
 			Topic:    "test-topic",
 		}
 
-		mockAction := event.ActionType_ACTION_CREATE_CHANNEL
+		mockAction := event.ActionType_ACTION_ADD_CHANNEL
 
 		// ACT
-		err := kp.SendMessage("booM", mockAction)
+		err := kp.SendMessage("booM", mockAction, nil)
 
 		// ASSERT
 		assert.Error(t, err)
@@ -70,11 +70,11 @@ func TestKafkaProducer_SendMessage(t *testing.T) {
 		}
 		mockData := &channel.Channel{}
 
-		mockAction := event.ActionType_ACTION_CREATE_CHANNEL
+		mockAction := event.ActionType_ACTION_ADD_CHANNEL
 		mockProducer.On("SendMessage", mock.Anything).Return(int32(1), int64(42), sarama.ErrOutOfBrokers)
 
 		// ACT
-		err := kp.SendMessage(mockData, mockAction)
+		err := kp.SendMessage(mockData, mockAction, nil)
 
 		// ASSERT
 		assert.Error(t, err)

@@ -11,7 +11,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/producer"
-	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -30,8 +30,8 @@ func NewChannelService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier,
 }
 
 // Convert Channel db object to Channel protobuff object.
-func (s *ChannelService) PgTypeToPb(c *qx.Channel) *pb_channel.Channel {
-	return &pb_channel.Channel{
+func (s *ChannelService) PgTypeToPb(c *qx.Channel) *channel.Channel {
+	return &channel.Channel{
 		Id:          c.ID.String(),
 		Name:        c.Name,
 		AppserverId: c.AppserverID.String(),
@@ -47,7 +47,7 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 		return nil, message.DatabaseError(fmt.Sprintf("create channel error: %v", err))
 	}
 
-	err = s.p.SendMessage(s.PgTypeToPb(&channel), event.ActionType_ACTION_CREATE_CHANNEL)
+	err = s.p.SendMessage(s.PgTypeToPb(&channel), event.ActionType_ACTION_ADD_CHANNEL, nil)
 
 	if err != nil {
 		// TODO: send error to some other place to handle it

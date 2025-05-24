@@ -11,9 +11,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserver "mist/src/protos/v1/appserver"
-	pb_appserver_sub "mist/src/protos/v1/appserver_sub"
-	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appserver_sub"
+	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -28,8 +28,8 @@ func NewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Que
 	return &AppserverSubService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserver_sub.AppserverSub {
-	return &pb_appserver_sub.AppserverSub{
+func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *appserver_sub.AppserverSub {
+	return &appserver_sub.AppserverSub{
 		Id:          aSub.ID.String(),
 		AppserverId: aSub.AppserverID.String(),
 		CreatedAt:   timestamppb.New(aSub.CreatedAt.Time),
@@ -37,29 +37,29 @@ func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *pb_appserver_su
 	}
 }
 
-func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.ListUserServerSubsRow) *pb_appserver_sub.AppserverAndSub {
-	appserver := &pb_appserver.Appserver{
+func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.ListUserServerSubsRow) *appserver_sub.AppserverAndSub {
+	appserver := &appserver.Appserver{
 		Id:        res.ID.String(),
 		Name:      res.Name,
 		CreatedAt: timestamppb.New(res.CreatedAt.Time),
 		UpdatedAt: timestamppb.New(res.UpdatedAt.Time),
 	}
 
-	return &pb_appserver_sub.AppserverAndSub{
+	return &appserver_sub.AppserverAndSub{
 		Appserver: appserver,
 		SubId:     res.AppserverSubID.String(),
 	}
 }
 
-func (s *AppserverSubService) PgUserSubRowToPb(res *qx.ListAppserverUserSubsRow) *pb_appserver_sub.AppuserAndSub {
-	appuser := &pb_appuser.Appuser{
+func (s *AppserverSubService) PgUserSubRowToPb(res *qx.ListAppserverUserSubsRow) *appserver_sub.AppuserAndSub {
+	appuser := &appuser.Appuser{
 		Id:        res.ID.String(),
 		Username:  res.Username,
 		CreatedAt: timestamppb.New(res.CreatedAt.Time),
 		UpdatedAt: timestamppb.New(res.UpdatedAt.Time),
 	}
 
-	return &pb_appserver_sub.AppuserAndSub{
+	return &appserver_sub.AppuserAndSub{
 		Appuser: appuser,
 		SubId:   res.AppserverSubID.String(),
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"mist/src/errors/message"
-	pb_appserver_role_sub "mist/src/protos/v1/appserver_role_sub"
+	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -24,8 +24,8 @@ func NewAppserverRoleSubService(ctx context.Context, dbConn *pgxpool.Pool, db db
 	return &AppserverRoleSubService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *pb_appserver_role_sub.AppserverRoleSub {
-	return &pb_appserver_role_sub.AppserverRoleSub{
+func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *appserver_role_sub.AppserverRoleSub {
+	return &appserver_role_sub.AppserverRoleSub{
 		Id:              arSub.ID.String(),
 		AppserverRoleId: arSub.AppserverRoleID.String(),
 		AppuserId:       arSub.AppuserID.String(),

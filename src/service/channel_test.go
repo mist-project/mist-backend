@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_channel "mist/src/protos/v1/channel"
+	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -40,7 +40,7 @@ func TestChannelService_PgTypeToPb(t *testing.T) {
 		},
 	}
 
-	expected := &pb_channel.Channel{
+	expected := &channel.Channel{
 		Id:          id.String(),
 		Name:        "test channel",
 		CreatedAt:   timestamppb.New(now),
@@ -66,7 +66,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_CREATE_CHANNEL).Return(nil)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL).Return(nil)
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
@@ -88,7 +88,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(nil, fmt.Errorf("error on create"))
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_CREATE_CHANNEL).Return(nil)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL).Return(nil)
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
@@ -108,7 +108,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_CREATE_CHANNEL).Return(fmt.Errorf("boom"))
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL).Return(fmt.Errorf("boom"))
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT

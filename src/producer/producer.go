@@ -3,6 +3,7 @@ package producer
 import (
 	"fmt"
 	"mist/src/errors/message"
+	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
 
@@ -11,7 +12,7 @@ import (
 )
 
 type MessageProducer interface {
-	SendMessage(interface{}, event.ActionType) error
+	SendMessage(interface{}, event.ActionType, []*appuser.Appuser) error
 }
 
 type KafkaProducer struct {
@@ -23,8 +24,8 @@ func NewKafkaProducer(p sarama.SyncProducer, topic string) *KafkaProducer {
 	return &KafkaProducer{Producer: p, Topic: topic}
 }
 
-func (kp *KafkaProducer) SendMessage(data interface{}, action event.ActionType) error {
-	e, err := kp.marshall(data, action)
+func (kp *KafkaProducer) SendMessage(data interface{}, action event.ActionType, appusers []*appuser.Appuser) error {
+	e, err := kp.marshall(data, action, appusers)
 
 	if err != nil {
 		return message.UnknownError(fmt.Sprintf("error marshalling data for kafka: %v", err))
@@ -64,20 +65,24 @@ func (kp *KafkaProducer) SendMessage(data interface{}, action event.ActionType) 
 // 	return nil
 // }
 
-func (kp *KafkaProducer) marshall(data interface{}, action event.ActionType) ([]byte, error) {
+func (kp *KafkaProducer) marshall(data interface{}, action event.ActionType, appusers []*appuser.Appuser) ([]byte, error) {
 	var e *event.Event
-	switch action {
 
-	case event.ActionType_ACTION_CREATE_CHANNEL:
+	if appusers == nil {
+		appusers = []*appuser.Appuser{}
+	}
+
+	switch action {
+	case event.ActionType_ACTION_ADD_CHANNEL:
 		d, ok := data.(*channel.Channel)
 		if !ok {
 			return nil, fmt.Errorf("invalid data type for action %v", action)
 		}
 
 		data = &event.Event{
-			Meta: &event.Meta{Action: action},
-			Data: &event.Event_CreateChannel{
-				CreateChannel: &event.CreateChannel{
+			Meta: &event.Meta{Action: action, Appusers: appusers},
+			Data: &event.Event_AddChannel{
+				AddChannel: &event.AddChannel{
 					Channel: d,
 				},
 			},

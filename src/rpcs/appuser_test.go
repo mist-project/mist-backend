@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
@@ -25,7 +25,7 @@ func TestAppuserService_Create(t *testing.T) {
 
 		response, err := testutil.TestAppuserClient.Create(
 			ctx,
-			&pb_appuser.CreateRequest{Username: "someone", Id: uuid.NewString()})
+			&appuser.CreateRequest{Username: "someone", Id: uuid.NewString()})
 
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -42,7 +42,7 @@ func TestAppuserService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppuserClient.Create(ctx, &pb_appuser.CreateRequest{})
+		response, err := testutil.TestAppuserClient.Create(ctx, &appuser.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -63,7 +63,7 @@ func TestAppuserService_Create(t *testing.T) {
 		svc := &rpcs.AppuserGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
 
 		// ACT
-		_, err := svc.Create(ctx, &pb_appuser.CreateRequest{
+		_, err := svc.Create(ctx, &appuser.CreateRequest{
 			Id:       userId.String(),
 			Username: "boo",
 		})

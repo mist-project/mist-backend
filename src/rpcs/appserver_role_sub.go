@@ -8,14 +8,14 @@ import (
 	"mist/src/errors/message"
 	"mist/src/middleware"
 	"mist/src/permission"
-	pb_appserver_role_sub "mist/src/protos/v1/appserver_role_sub"
+	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
 func (s *AppserverRoleSubGRPCService) Create(
-	ctx context.Context, req *pb_appserver_role_sub.CreateRequest,
-) (*pb_appserver_role_sub.CreateResponse, error) {
+	ctx context.Context, req *appserver_role_sub.CreateRequest,
+) (*appserver_role_sub.CreateResponse, error) {
 
 	var err error
 
@@ -46,14 +46,14 @@ func (s *AppserverRoleSubGRPCService) Create(
 	}
 
 	// Return response
-	return &pb_appserver_role_sub.CreateResponse{
+	return &appserver_role_sub.CreateResponse{
 		AppserverRoleSub: roleSubS.PgTypeToPb(arSub),
 	}, nil
 }
 
 func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
-	ctx context.Context, req *pb_appserver_role_sub.ListServerRoleSubsRequest,
-) (*pb_appserver_role_sub.ListServerRoleSubsResponse, error) {
+	ctx context.Context, req *appserver_role_sub.ListServerRoleSubsRequest,
+) (*appserver_role_sub.ListServerRoleSubsResponse, error) {
 
 	var (
 		err error
@@ -68,13 +68,13 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db).ListServerRoleSubs(serverId)
 
 	// Construct the response
-	response := &pb_appserver_role_sub.ListServerRoleSubsResponse{
-		AppserverRoleSubs: make([]*pb_appserver_role_sub.AppserverRoleSub, 0, len(results)),
+	response := &appserver_role_sub.ListServerRoleSubsResponse{
+		AppserverRoleSubs: make([]*appserver_role_sub.AppserverRoleSub, 0, len(results)),
 	}
 
 	// Convert list of AppserveRoles to protobuf
 	for _, result := range results {
-		response.AppserverRoleSubs = append(response.AppserverRoleSubs, &pb_appserver_role_sub.AppserverRoleSub{
+		response.AppserverRoleSubs = append(response.AppserverRoleSubs, &appserver_role_sub.AppserverRoleSub{
 			Id:              result.ID.String(),
 			AppserverRoleId: result.AppserverRoleID.String(),
 			AppuserId:       result.AppuserID.String(),
@@ -86,8 +86,8 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 }
 
 func (s *AppserverRoleSubGRPCService) Delete(
-	ctx context.Context, req *pb_appserver_role_sub.DeleteRequest,
-) (*pb_appserver_role_sub.DeleteResponse, error) {
+	ctx context.Context, req *appserver_role_sub.DeleteRequest,
+) (*appserver_role_sub.DeleteResponse, error) {
 
 	var err error
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
@@ -112,5 +112,5 @@ func (s *AppserverRoleSubGRPCService) Delete(
 	}
 
 	// Return success response
-	return &pb_appserver_role_sub.DeleteResponse{}, nil
+	return &appserver_role_sub.DeleteResponse{}, nil
 }

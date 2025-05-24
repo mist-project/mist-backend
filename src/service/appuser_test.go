@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -26,11 +26,11 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 	id := uuid.New()
 	now := time.Now()
 
-	appuser := &qx.Appuser{ID: id, Username: "testuser", CreatedAt: pgtype.Timestamp{Time: now, Valid: true}}
-	expected := &pb_appuser.Appuser{Id: id.String(), Username: "testuser", CreatedAt: timestamppb.New(now)}
+	user := &qx.Appuser{ID: id, Username: "testuser", CreatedAt: pgtype.Timestamp{Time: now, Valid: true}}
+	expected := &appuser.Appuser{Id: id.String(), Username: "testuser", CreatedAt: timestamppb.New(now)}
 
 	// ACT
-	result := svc.PgTypeToPb(appuser)
+	result := svc.PgTypeToPb(user)
 
 	// ASSERT
 	assert.Equal(t, expected, result)

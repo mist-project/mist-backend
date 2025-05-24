@@ -13,7 +13,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_appserver_role "mist/src/protos/v1/appserver_role"
+	"mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
@@ -30,7 +30,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
-			ctx, &pb_appserver_role.ListServerRolesRequest{AppserverId: sub.AppserverID.String()},
+			ctx, &appserver_role.ListServerRolesRequest{AppserverId: sub.AppserverID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -49,7 +49,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
-			ctx, &pb_appserver_role.ListServerRolesRequest{AppserverId: sub.AppserverID.String()},
+			ctx, &appserver_role.ListServerRolesRequest{AppserverId: sub.AppserverID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -76,7 +76,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		response, err := svc.ListServerRoles(ctx, &pb_appserver_role.ListServerRolesRequest{
+		response, err := svc.ListServerRoles(ctx, &appserver_role.ListServerRolesRequest{
 			AppserverId: appserverId.String(),
 		})
 		s, ok := status.FromError(err)
@@ -103,7 +103,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 		// ACT
 		_, err := svc.ListServerRoles(
 			ctx,
-			&pb_appserver_role.ListServerRolesRequest{AppserverId: uuid.NewString()},
+			&appserver_role.ListServerRolesRequest{AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -123,7 +123,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 		appserver := testutil.TestAppserver(t, nil, true)
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.Create(ctx, &pb_appserver_role.CreateRequest{
+		response, err := testutil.TestAppserverRoleClient.Create(ctx, &appserver_role.CreateRequest{
 			AppserverId: appserver.ID.String(),
 			Name:        "foo",
 		})
@@ -140,7 +140,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.Create(ctx, &pb_appserver_role.CreateRequest{})
+		response, err := testutil.TestAppserverRoleClient.Create(ctx, &appserver_role.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -165,7 +165,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 		// ACT
 		_, err := svc.Create(
 			ctx,
-			&pb_appserver_role.CreateRequest{Name: "foo", AppserverId: uuid.NewString()},
+			&appserver_role.CreateRequest{Name: "foo", AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -191,7 +191,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 		// ACT
 		_, err := svc.Create(
 			ctx,
-			&pb_appserver_role.CreateRequest{Name: "foo", AppserverId: mockId},
+			&appserver_role.CreateRequest{Name: "foo", AppserverId: mockId},
 		)
 
 		s, ok := status.FromError(err)
@@ -211,7 +211,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.Delete(
-			ctx, &pb_appserver_role.DeleteRequest{Id: aRole.ID.String()},
+			ctx, &appserver_role.DeleteRequest{Id: aRole.ID.String()},
 		)
 
 		// ASSERT
@@ -226,7 +226,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.Delete(
-			ctx, &pb_appserver_role.DeleteRequest{Id: aRole.ID.String()})
+			ctx, &appserver_role.DeleteRequest{Id: aRole.ID.String()})
 
 		// ASSERT
 		assert.Nil(t, response)
@@ -239,7 +239,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.Delete(ctx, &pb_appserver_role.DeleteRequest{Id: uuid.NewString()})
+		response, err := testutil.TestAppserverRoleClient.Delete(ctx, &appserver_role.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -264,7 +264,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserver_role.DeleteRequest{Id: roleId},
+			&appserver_role.DeleteRequest{Id: roleId},
 		)
 
 		s, ok := status.FromError(err)
@@ -291,7 +291,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserver_role.DeleteRequest{Id: mockId},
+			&appserver_role.DeleteRequest{Id: mockId},
 		)
 
 		s, ok := status.FromError(err)

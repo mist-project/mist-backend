@@ -9,14 +9,14 @@ import (
 	"mist/src/errors/message"
 	"mist/src/middleware"
 	"mist/src/permission"
-	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
 func (s *AppserverGRPCService) Create(
-	ctx context.Context, req *pb_appserver.CreateRequest,
-) (*pb_appserver.CreateResponse, error) {
+	ctx context.Context, req *appserver.CreateRequest,
+) (*appserver.CreateResponse, error) {
 
 	var err error
 
@@ -28,25 +28,25 @@ func (s *AppserverGRPCService) Create(
 	userId, _ := uuid.Parse(claims.UserID)
 
 	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
-	appserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
+	aserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
 
 	if err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	res := serverS.PgTypeToPb(appserver)
-	res.IsOwner = appserver.AppuserID == userId
+	res := serverS.PgTypeToPb(aserver)
+	res.IsOwner = aserver.AppuserID == userId
 
-	return &pb_appserver.CreateResponse{Appserver: res}, nil
+	return &appserver.CreateResponse{Appserver: res}, nil
 }
 
 func (s *AppserverGRPCService) GetById(
-	ctx context.Context, req *pb_appserver.GetByIdRequest,
-) (*pb_appserver.GetByIdResponse, error) {
+	ctx context.Context, req *appserver.GetByIdRequest,
+) (*appserver.GetByIdResponse, error) {
 
 	var (
-		err       error
-		appserver *qx.Appserver
+		err     error
+		aserver *qx.Appserver
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead, permission.SubActionGetById); err != nil {
@@ -58,19 +58,19 @@ func (s *AppserverGRPCService) GetById(
 	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
 	id, _ := uuid.Parse(req.Id)
 
-	if appserver, err = as.GetById(id); err != nil {
+	if aserver, err = as.GetById(id); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	pbA := as.PgTypeToPb(appserver)
-	pbA.IsOwner = appserver.AppuserID.String() == claims.UserID
+	pbA := as.PgTypeToPb(aserver)
+	pbA.IsOwner = aserver.AppuserID.String() == claims.UserID
 
-	return &pb_appserver.GetByIdResponse{Appserver: pbA}, nil
+	return &appserver.GetByIdResponse{Appserver: pbA}, nil
 }
 
 func (s *AppserverGRPCService) List(
-	ctx context.Context, req *pb_appserver.ListRequest,
-) (*pb_appserver.ListResponse, error) {
+	ctx context.Context, req *appserver.ListRequest,
+) (*appserver.ListResponse, error) {
 
 	if err := s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionList); err != nil {
 		return nil, message.RpcErrorHandler(err)
@@ -88,10 +88,10 @@ func (s *AppserverGRPCService) List(
 	}
 
 	appservers, _ := as.List(qx.ListAppserversParams{Name: name, AppuserID: userId})
-	response := &pb_appserver.ListResponse{}
+	response := &appserver.ListResponse{}
 
 	// Resize the array
-	response.Appservers = make([]*pb_appserver.Appserver, 0, len(appservers))
+	response.Appservers = make([]*appserver.Appserver, 0, len(appservers))
 
 	for _, appserver := range appservers {
 		pbA := as.PgTypeToPb(&appserver)
@@ -103,8 +103,8 @@ func (s *AppserverGRPCService) List(
 }
 
 func (s *AppserverGRPCService) Delete(
-	ctx context.Context, req *pb_appserver.DeleteRequest,
-) (*pb_appserver.DeleteResponse, error) {
+	ctx context.Context, req *appserver.DeleteRequest,
+) (*appserver.DeleteResponse, error) {
 
 	var (
 		err error
@@ -122,5 +122,5 @@ func (s *AppserverGRPCService) Delete(
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	return &pb_appserver.DeleteResponse{}, nil
+	return &appserver.DeleteResponse{}, nil
 }

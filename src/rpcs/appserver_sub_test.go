@@ -12,7 +12,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_appserver_sub "mist/src/protos/v1/appserver_sub"
+	"mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
@@ -25,7 +25,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.ListUserServerSubs(
-			ctx, &pb_appserver_sub.ListUserServerSubsRequest{},
+			ctx, &appserver_sub.ListUserServerSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -47,7 +47,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.ListUserServerSubs(
-			ctx, &pb_appserver_sub.ListUserServerSubsRequest{},
+			ctx, &appserver_sub.ListUserServerSubsRequest{},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -72,7 +72,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 		// ACT
 		_, err := svc.ListUserServerSubs(
 			ctx,
-			&pb_appserver_sub.ListUserServerSubsRequest{},
+			&appserver_sub.ListUserServerSubsRequest{},
 		)
 
 		s, ok := status.FromError(err)
@@ -98,7 +98,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		// ACT
 		response, err := testutil.TestAppserverSubClient.ListAppserverUserSubs(
 			ctx,
-			&pb_appserver_sub.ListAppserverUserSubsRequest{AppserverId: sub.AppserverID.String()},
+			&appserver_sub.ListAppserverUserSubsRequest{AppserverId: sub.AppserverID.String()},
 		)
 
 		if err != nil {
@@ -124,7 +124,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		// ACT
 		_, err := svc.ListAppserverUserSubs(
 			ctx,
-			&pb_appserver_sub.ListAppserverUserSubsRequest{AppserverId: uuid.NewString()},
+			&appserver_sub.ListAppserverUserSubsRequest{AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -146,7 +146,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Create(
-			ctx, &pb_appserver_sub.CreateRequest{AppserverId: appserver.ID.String()},
+			ctx, &appserver_sub.CreateRequest{AppserverId: appserver.ID.String()},
 		)
 
 		if err != nil {
@@ -163,7 +163,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Create(
-			ctx, &pb_appserver_sub.CreateRequest{AppserverId: uuid.NewString()},
+			ctx, &appserver_sub.CreateRequest{AppserverId: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -180,7 +180,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Create(
-			ctx, &pb_appserver_sub.CreateRequest{},
+			ctx, &appserver_sub.CreateRequest{},
 		)
 		s, ok := status.FromError(err)
 
@@ -208,7 +208,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Delete(
-			ctx, &pb_appserver_sub.DeleteRequest{Id: appserverSub.ID.String()})
+			ctx, &appserver_sub.DeleteRequest{Id: appserverSub.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -221,7 +221,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Delete(
-			ctx, &pb_appserver_sub.DeleteRequest{Id: uuid.NewString()},
+			ctx, &appserver_sub.DeleteRequest{Id: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -249,7 +249,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserver_sub.DeleteRequest{Id: mockId},
+			&appserver_sub.DeleteRequest{Id: mockId},
 		)
 
 		s, ok := status.FromError(err)
@@ -275,7 +275,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserver_sub.DeleteRequest{Id: roleId},
+			&appserver_sub.DeleteRequest{Id: roleId},
 		)
 
 		s, ok := status.FromError(err)

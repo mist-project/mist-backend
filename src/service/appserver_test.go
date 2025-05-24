@@ -15,7 +15,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appserver"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -30,7 +30,7 @@ func TestAppserverService_PgTypeToPb(t *testing.T) {
 	id := uuid.New()
 	now := time.Now()
 
-	appserver := &qx.Appserver{
+	server := &qx.Appserver{
 		ID:   id,
 		Name: "example",
 		CreatedAt: pgtype.Timestamp{
@@ -39,14 +39,14 @@ func TestAppserverService_PgTypeToPb(t *testing.T) {
 		},
 	}
 
-	expected := &pb_appserver.Appserver{
+	expected := &appserver.Appserver{
 		Id:        id.String(),
 		Name:      "example",
 		CreatedAt: timestamppb.New(now),
 	}
 
 	// ACT
-	result := svc.PgTypeToPb(appserver)
+	result := svc.PgTypeToPb(server)
 
 	// ASSERT
 	assert.Equal(t, expected, result)

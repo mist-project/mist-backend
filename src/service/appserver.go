@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appserver"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -28,8 +28,8 @@ func NewAppserverService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querie
 }
 
 // Converts a database appserver object to protobuff appserver object
-func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *pb_appserver.Appserver {
-	return &pb_appserver.Appserver{
+func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *appserver.Appserver {
+	return &appserver.Appserver{
 		Id:        a.ID.String(),
 		Name:      a.Name,
 		CreatedAt: timestamppb.New(a.CreatedAt.Time),

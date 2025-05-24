@@ -7,15 +7,15 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_appserver_permission "mist/src/protos/v1/appserver_permission"
+	"mist/src/protos/v1/appserver_permission"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
 func (s *AppserverPermissionGRPCService) Create(
 	ctx context.Context,
-	req *pb_appserver_permission.CreateRequest,
-) (*pb_appserver_permission.CreateResponse, error) {
+	req *appserver_permission.CreateRequest,
+) (*appserver_permission.CreateResponse, error) {
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
@@ -37,13 +37,13 @@ func (s *AppserverPermissionGRPCService) Create(
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	return &pb_appserver_permission.CreateResponse{}, nil
+	return &appserver_permission.CreateResponse{}, nil
 }
 
 func (s *AppserverPermissionGRPCService) ListAppserverUsers(
 	ctx context.Context,
-	req *pb_appserver_permission.ListAppserverUsersRequest,
-) (*pb_appserver_permission.ListAppserverUsersResponse, error) {
+	req *appserver_permission.ListAppserverUsersRequest,
+) (*appserver_permission.ListAppserverUsersResponse, error) {
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
@@ -62,8 +62,8 @@ func (s *AppserverPermissionGRPCService) ListAppserverUsers(
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	response := &pb_appserver_permission.ListAppserverUsersResponse{
-		AppserverPermissions: make([]*pb_appserver_permission.AppserverPermission, 0, len(results)),
+	response := &appserver_permission.ListAppserverUsersResponse{
+		AppserverPermissions: make([]*appserver_permission.AppserverPermission, 0, len(results)),
 	}
 
 	for _, result := range results {
@@ -75,8 +75,8 @@ func (s *AppserverPermissionGRPCService) ListAppserverUsers(
 
 func (s *AppserverPermissionGRPCService) Delete(
 	ctx context.Context,
-	req *pb_appserver_permission.DeleteRequest,
-) (*pb_appserver_permission.DeleteResponse, error) {
+	req *appserver_permission.DeleteRequest,
+) (*appserver_permission.DeleteResponse, error) {
 	var err error
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
@@ -93,5 +93,5 @@ func (s *AppserverPermissionGRPCService) Delete(
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	return &pb_appserver_permission.DeleteResponse{}, nil
+	return &appserver_permission.DeleteResponse{}, nil
 }

@@ -13,7 +13,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_appserver "mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appserver"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
@@ -27,7 +27,7 @@ func TestAppserverService_List(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		// ACT
 		response, err := testutil.TestAppserverClient.List(
-			ctx, &pb_appserver.ListRequest{Name: wrapperspb.String("random")},
+			ctx, &appserver.ListRequest{Name: wrapperspb.String("random")},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -47,7 +47,7 @@ func TestAppserverService_List(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverClient.List(
-			ctx, &pb_appserver.ListRequest{},
+			ctx, &appserver.ListRequest{},
 		)
 
 		if err != nil {
@@ -63,12 +63,12 @@ func TestAppserverService_List(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID}, false)
+		aserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID}, false)
 		testutil.TestAppserver(t, nil, false)
 
 		// ACT
 		response, err := testutil.TestAppserverClient.List(
-			ctx, &pb_appserver.ListRequest{Name: wrapperspb.String(appserver.Name)},
+			ctx, &appserver.ListRequest{Name: wrapperspb.String(aserver.Name)},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -91,7 +91,7 @@ func TestAppserverService_List(t *testing.T) {
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		_, err := svc.List(ctx, &pb_appserver.ListRequest{Name: &wrapperspb.StringValue{Value: "foo"}})
+		_, err := svc.List(ctx, &appserver.ListRequest{Name: &wrapperspb.StringValue{Value: "foo"}})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -105,11 +105,11 @@ func TestAppserverSubService_GetById(t *testing.T) {
 	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil, false)
+		aserver := testutil.TestAppserver(t, nil, false)
 
 		// ACT
 		response, err := testutil.TestAppserverClient.GetById(
-			ctx, &pb_appserver.GetByIdRequest{Id: appserver.ID.String()},
+			ctx, &appserver.GetByIdRequest{Id: aserver.ID.String()},
 		)
 
 		if err != nil {
@@ -117,9 +117,9 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		}
 
 		// ASSERT
-		assert.Equal(t, appserver.ID.String(), response.GetAppserver().Id)
+		assert.Equal(t, aserver.ID.String(), response.GetAppserver().Id)
 		assert.Equal(t, false, response.GetAppserver().IsOwner)
-		assert.Equal(t, appserver.Name, response.GetAppserver().Name)
+		assert.Equal(t, aserver.Name, response.GetAppserver().Name)
 	})
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
@@ -128,7 +128,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverClient.GetById(
-			ctx, &pb_appserver.GetByIdRequest{Id: uuid.NewString()},
+			ctx, &appserver.GetByIdRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -141,7 +141,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		// ACT
 		response, err = svc.GetById(
-			ctx, &pb_appserver.GetByIdRequest{Id: uuid.NewString()},
+			ctx, &appserver.GetByIdRequest{Id: uuid.NewString()},
 		)
 		s, ok = status.FromError(err)
 
@@ -158,7 +158,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverClient.GetById(
-			ctx, &pb_appserver.GetByIdRequest{Id: "foo"},
+			ctx, &appserver.GetByIdRequest{Id: "foo"},
 		)
 		s, ok := status.FromError(err)
 
@@ -182,7 +182,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		_, err := svc.GetById(ctx, &pb_appserver.GetByIdRequest{Id: "foo"})
+		_, err := svc.GetById(ctx, &appserver.GetByIdRequest{Id: "foo"})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -203,7 +203,7 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverClient.Create(
-			ctx, &pb_appserver.CreateRequest{Name: "someone"},
+			ctx, &appserver.CreateRequest{Name: "someone"},
 		)
 
 		if err != nil {
@@ -226,7 +226,7 @@ func TestAppserverService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverClient.Create(ctx, &pb_appserver.CreateRequest{})
+		response, err := testutil.TestAppserverClient.Create(ctx, &appserver.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -254,7 +254,7 @@ func TestAppserverService_Create(t *testing.T) {
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		_, err := svc.Create(ctx, &pb_appserver.CreateRequest{
+		_, err := svc.Create(ctx, &appserver.CreateRequest{
 			Name: "boo",
 		})
 
@@ -276,7 +276,7 @@ func TestAppserverService_Create(t *testing.T) {
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		_, err := svc.Create(ctx, &pb_appserver.CreateRequest{
+		_, err := svc.Create(ctx, &appserver.CreateRequest{
 			Name: "boo",
 		})
 		s, ok := status.FromError(err)
@@ -295,8 +295,8 @@ func TestAppserverService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid}, false)
-		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: parsedUid}, false)
+		aserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid}, false)
+		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: aserver.ID, AppuserID: parsedUid}, false)
 
 		subService := service.NewAppserverSubService(ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
 
@@ -306,7 +306,7 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverClient.Delete(
-			ctx, &pb_appserver.DeleteRequest{Id: appserver.ID.String()},
+			ctx, &appserver.DeleteRequest{Id: aserver.ID.String()},
 		)
 
 		// ASSERT
@@ -321,7 +321,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverClient.Delete(ctx, &pb_appserver.DeleteRequest{Id: uuid.NewString()})
+		response, err := testutil.TestAppserverClient.Delete(ctx, &appserver.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -338,7 +338,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete, permission.SubActionDelete).Return(nil)
 		// ACT
 		svc := &rpcs.AppserverGRPCService{Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth}
-		_, err := svc.Delete(ctx, &pb_appserver.DeleteRequest{Id: uuid.NewString()})
+		_, err := svc.Delete(ctx, &appserver.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// // ASSERT
@@ -362,7 +362,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserver.DeleteRequest{Id: roleId},
+			&appserver.DeleteRequest{Id: roleId},
 		)
 
 		s, ok := status.FromError(err)

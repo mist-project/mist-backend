@@ -23,28 +23,28 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"mist/src/middleware"
-	pb_appserver "mist/src/protos/v1/appserver"
-	pb_appserver_permission "mist/src/protos/v1/appserver_permission"
-	pb_appserver_role "mist/src/protos/v1/appserver_role"
-	pb_appserver_role_sub "mist/src/protos/v1/appserver_role_sub"
-	pb_appserver_sub "mist/src/protos/v1/appserver_sub"
-	pb_appuser "mist/src/protos/v1/appuser"
-	pb_channel "mist/src/protos/v1/channel"
-	pb_channel_role "mist/src/protos/v1/channel_role"
+	"mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appserver_permission"
+	"mist/src/protos/v1/appserver_role"
+	"mist/src/protos/v1/appserver_role_sub"
+	"mist/src/protos/v1/appserver_sub"
+	"mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/channel"
+	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )
 
 var (
 	testServer                    *grpc.Server
-	TestAppserverClient           pb_appserver.AppserverServiceClient
-	TestAppserverPermissionClient pb_appserver_permission.AppserverPermissionServiceClient
-	TestAppserverRoleClient       pb_appserver_role.AppserverRoleServiceClient
-	TestAppserverRoleSubClient    pb_appserver_role_sub.AppserverRoleSubServiceClient
-	TestAppserverSubClient        pb_appserver_sub.AppserverSubServiceClient
-	TestAppuserClient             pb_appuser.AppuserServiceClient
-	TestChannelClient             pb_channel.ChannelServiceClient
-	TestChannelRoleClient         pb_channel_role.ChannelRoleServiceClient
+	TestAppserverClient           appserver.AppserverServiceClient
+	TestAppserverPermissionClient appserver_permission.AppserverPermissionServiceClient
+	TestAppserverRoleClient       appserver_role.AppserverRoleServiceClient
+	TestAppserverRoleSubClient    appserver_role_sub.AppserverRoleSubServiceClient
+	TestAppserverSubClient        appserver_sub.AppserverSubServiceClient
+	TestAppuserClient             appuser.AppuserServiceClient
+	TestChannelClient             channel.ChannelServiceClient
+	TestChannelRoleClient         channel_role.ChannelRoleServiceClient
 	testClientConn                *grpc.ClientConn
 
 	TestDbConn    *pgxpool.Pool
@@ -130,14 +130,14 @@ func SetupTestGRPCServicesAndClient() {
 		log.Fatalf("did not connect: %v", err)
 	}
 
-	TestAppuserClient = pb_appuser.NewAppuserServiceClient(testClientConn)
-	TestAppserverClient = pb_appserver.NewAppserverServiceClient(testClientConn)
-	TestAppserverPermissionClient = pb_appserver_permission.NewAppserverPermissionServiceClient(testClientConn)
-	TestAppserverRoleClient = pb_appserver_role.NewAppserverRoleServiceClient(testClientConn)
-	TestAppserverRoleSubClient = pb_appserver_role_sub.NewAppserverRoleSubServiceClient(testClientConn)
-	TestAppserverSubClient = pb_appserver_sub.NewAppserverSubServiceClient(testClientConn)
-	TestChannelClient = pb_channel.NewChannelServiceClient(testClientConn)
-	TestChannelRoleClient = pb_channel_role.NewChannelRoleServiceClient(testClientConn)
+	TestAppuserClient = appuser.NewAppuserServiceClient(testClientConn)
+	TestAppserverClient = appserver.NewAppserverServiceClient(testClientConn)
+	TestAppserverPermissionClient = appserver_permission.NewAppserverPermissionServiceClient(testClientConn)
+	TestAppserverRoleClient = appserver_role.NewAppserverRoleServiceClient(testClientConn)
+	TestAppserverRoleSubClient = appserver_role_sub.NewAppserverRoleSubServiceClient(testClientConn)
+	TestAppserverSubClient = appserver_sub.NewAppserverSubServiceClient(testClientConn)
+	TestChannelClient = channel.NewChannelServiceClient(testClientConn)
+	TestChannelRoleClient = channel_role.NewChannelRoleServiceClient(testClientConn)
 }
 
 func RpcTestCleanup() {

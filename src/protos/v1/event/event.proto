@@ -9,6 +9,7 @@ import "google/protobuf/wrappers.proto";
 
 import "v1/appserver/appserver.proto";
 import "v1/appserver_role/appserver_role.proto";
+import "v1/appuser/appuser.proto";
 import "v1/channel/channel.proto";
 
 // ----- SHARED -----
@@ -20,21 +21,24 @@ message Event {
     ListChannels list_channels = 3;
     ListRoles list_roles = 4;
 
-    // CREATE
-    CreateServer create_server = 100;
-    CreateChannel create_channel = 101;
-    CreateRole create_role = 102;
+    // ADD
+    AddServer add_server = 100;
+    AddChannel add_channel = 101;
+    AddRole add_role = 102;
 
     // UPDATE
 
-    // DELETE
-    DeleteServer delete_server = 300;
-    DeleteChannel delete_channel = 301;
-    DeleteRole delete_role = 302;
+    // REMOVE
+    RemoveServer remove_server = 300;
+    RemoveChannel remove_channel = 301;
+    RemoveRole remove_role = 302;
   };
 }
 
-message Meta { ActionType action = 1; }
+message Meta {
+  ActionType action = 1;
+  repeated appuser.Appuser appusers = 2;
+}
 
 enum ActionType {
   ACTION_TYPE_UNSPECIFIED = 0;
@@ -43,17 +47,17 @@ enum ActionType {
   ACTION_LIST_CHANNELS = 2;
   ACTION_LIST_ROLES = 3;
 
-  // CREATE
-  ACTION_CREATE_SERVER = 100;
-  ACTION_CREATE_CHANNEL = 101;
-  ACTION_CREATE_ROLE = 102;
+  // ADD
+  ACTION_ADD_SERVER = 100;
+  ACTION_ADD_CHANNEL = 101;
+  ACTION_ADD_ROLE = 102;
 
   // UPDATE
 
-  // DELETE
-  ACTION_DELETE_SERVER = 300;
-  ACTION_DELETE_CHANNEL = 301;
-  ACTION_DELETE_ROLE = 302;
+  // REMOVE
+  ACTION_REMOVE_SERVER = 300;
+  ACTION_REMOVE_CHANNEL = 301;
+  ACTION_REMOVE_ROLE = 302;
 }
 
 // MESSAGES
@@ -62,14 +66,14 @@ message ListServers { repeated appserver.Appserver appservers = 1; }
 message ListChannels { repeated channel.Channel channels = 1; }
 message ListRoles { repeated appserver_role.AppserverRole roles = 1; }
 
-// ----- CREATE ------
-message CreateServer { appserver.Appserver appserver = 1; }
-message CreateChannel { channel.Channel channel = 1; }
-message CreateRole { appserver_role.AppserverRole role = 1; }
+// ----- ADD ------
+message AddServer { appserver.Appserver appserver = 1; }
+message AddChannel { channel.Channel channel = 1; }
+message AddRole { appserver_role.AppserverRole role = 1; }
 
 // ----- UPDATE ------
 
-// ----- DELETE ------
-message DeleteServer { string id = 1; }
-message DeleteChannel { string id = 1; }
-message DeleteRole { string id = 1; }
+// ----- REMOVE ------
+message RemoveServer { string id = 1; }
+message RemoveChannel { string id = 1; }
+message RemoveRole { string id = 1; }

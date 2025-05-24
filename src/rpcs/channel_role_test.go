@@ -13,7 +13,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_channel_role "mist/src/protos/v1/channel_role"
+	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
@@ -30,7 +30,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestChannelRoleClient.ListChannelRoles(
-			ctx, &pb_channel_role.ListChannelRolesRequest{AppserverId: sub.AppserverID.String(), ChannelId: uuid.NewString()},
+			ctx, &channel_role.ListChannelRolesRequest{AppserverId: sub.AppserverID.String(), ChannelId: uuid.NewString()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -50,7 +50,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		// ACT
 		response, err := testutil.TestChannelRoleClient.ListChannelRoles(
 			ctx,
-			&pb_channel_role.ListChannelRolesRequest{AppserverId: role.AppserverID.String(), ChannelId: role.ChannelID.String()},
+			&channel_role.ListChannelRolesRequest{AppserverId: role.AppserverID.String(), ChannelId: role.ChannelID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -77,7 +77,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		response, err := svc.ListChannelRoles(ctx, &pb_channel_role.ListChannelRolesRequest{
+		response, err := svc.ListChannelRoles(ctx, &channel_role.ListChannelRolesRequest{
 			AppserverId: appserverId.String(),
 		})
 		s, ok := status.FromError(err)
@@ -104,7 +104,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		// ACT
 		_, err := svc.ListChannelRoles(
 			ctx,
-			&pb_channel_role.ListChannelRolesRequest{AppserverId: uuid.NewString()},
+			&channel_role.ListChannelRolesRequest{AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -125,7 +125,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		channel := testutil.TestChannel(t, &qx.Channel{AppserverID: role.AppserverID, Name: "foo"}, true)
 
 		// ACT
-		response, err := testutil.TestChannelRoleClient.Create(ctx, &pb_channel_role.CreateRequest{
+		response, err := testutil.TestChannelRoleClient.Create(ctx, &channel_role.CreateRequest{
 			AppserverId:     role.AppserverID.String(),
 			AppserverRoleId: role.ID.String(),
 			ChannelId:       channel.ID.String(),
@@ -143,7 +143,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestChannelRoleClient.Create(ctx, &pb_channel_role.CreateRequest{})
+		response, err := testutil.TestChannelRoleClient.Create(ctx, &channel_role.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -168,7 +168,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		// ACT
 		_, err := svc.Create(
 			ctx,
-			&pb_channel_role.CreateRequest{
+			&channel_role.CreateRequest{
 				ChannelId: uuid.NewString(), AppserverId: uuid.NewString(), AppserverRoleId: uuid.NewString(),
 			},
 		)
@@ -195,7 +195,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		// ACT
 		_, err := svc.Create(
 			ctx,
-			&pb_channel_role.CreateRequest{
+			&channel_role.CreateRequest{
 				ChannelId: uuid.NewString(), AppserverId: uuid.NewString(), AppserverRoleId: uuid.NewString(),
 			},
 		)
@@ -217,7 +217,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestChannelRoleClient.Delete(
-			ctx, &pb_channel_role.DeleteRequest{Id: aRole.ID.String()},
+			ctx, &channel_role.DeleteRequest{Id: aRole.ID.String()},
 		)
 
 		// ASSERT
@@ -232,7 +232,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestChannelRoleClient.Delete(
-			ctx, &pb_channel_role.DeleteRequest{Id: aRole.ID.String()})
+			ctx, &channel_role.DeleteRequest{Id: aRole.ID.String()})
 
 		// ASSERT
 		assert.Nil(t, response)
@@ -245,7 +245,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestChannelRoleClient.Delete(ctx, &pb_channel_role.DeleteRequest{Id: uuid.NewString()})
+		response, err := testutil.TestChannelRoleClient.Delete(ctx, &channel_role.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -270,7 +270,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_channel_role.DeleteRequest{Id: roleId},
+			&channel_role.DeleteRequest{Id: roleId},
 		)
 
 		s, ok := status.FromError(err)
@@ -297,7 +297,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_channel_role.DeleteRequest{Id: mockId},
+			&channel_role.DeleteRequest{Id: mockId},
 		)
 
 		s, ok := status.FromError(err)

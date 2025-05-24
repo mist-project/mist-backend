@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_channel_role "mist/src/protos/v1/channel_role"
+	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -25,8 +25,8 @@ func NewChannelRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Quer
 	return &ChannelRoleService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *ChannelRoleService) PgTypeToPb(cRole *qx.ChannelRole) *pb_channel_role.ChannelRole {
-	return &pb_channel_role.ChannelRole{
+func (s *ChannelRoleService) PgTypeToPb(cRole *qx.ChannelRole) *channel_role.ChannelRole {
+	return &channel_role.ChannelRole{
 		Id:              cRole.ID.String(),
 		ChannelId:       cRole.ChannelID.String(),
 		AppserverRoleId: cRole.AppserverRoleID.String(),

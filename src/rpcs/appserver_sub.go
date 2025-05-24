@@ -8,14 +8,14 @@ import (
 	"mist/src/errors/message"
 	"mist/src/middleware"
 	"mist/src/permission"
-	pb_appserver_sub "mist/src/protos/v1/appserver_sub"
+	"mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
 func (s *AppserverSubGRPCService) Create(
-	ctx context.Context, req *pb_appserver_sub.CreateRequest,
-) (*pb_appserver_sub.CreateResponse, error) {
+	ctx context.Context, req *appserver_sub.CreateRequest,
+) (*appserver_sub.CreateResponse, error) {
 
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -30,14 +30,14 @@ func (s *AppserverSubGRPCService) Create(
 	}
 
 	// Return response
-	return &pb_appserver_sub.CreateResponse{
+	return &appserver_sub.CreateResponse{
 		AppserverSub: subService.PgTypeToPb(appserverSub),
 	}, nil
 }
 
 func (s *AppserverSubGRPCService) ListUserServerSubs(
-	ctx context.Context, req *pb_appserver_sub.ListUserServerSubsRequest,
-) (*pb_appserver_sub.ListUserServerSubsResponse, error) {
+	ctx context.Context, req *appserver_sub.ListUserServerSubsRequest,
+) (*appserver_sub.ListUserServerSubsResponse, error) {
 
 	var err error
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListUserServerSubs); err != nil {
@@ -54,8 +54,8 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 	results, _ := subService.ListUserServerSubs(userId)
 
 	// Construct the response
-	response := &pb_appserver_sub.ListUserServerSubsResponse{
-		Appservers: make([]*pb_appserver_sub.AppserverAndSub, 0, len(results)),
+	response := &appserver_sub.ListUserServerSubsResponse{
+		Appservers: make([]*appserver_sub.AppserverAndSub, 0, len(results)),
 	}
 
 	// Convert list of AppserverSubs to protobuf
@@ -69,8 +69,8 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 }
 
 func (s *AppserverSubGRPCService) ListAppserverUserSubs(
-	ctx context.Context, req *pb_appserver_sub.ListAppserverUserSubsRequest,
-) (*pb_appserver_sub.ListAppserverUserSubsResponse, error) {
+	ctx context.Context, req *appserver_sub.ListAppserverUserSubsRequest,
+) (*appserver_sub.ListAppserverUserSubsResponse, error) {
 
 	var err error
 	serverId, _ := uuid.Parse(req.AppserverId)
@@ -85,8 +85,8 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 	results, _ := subService.ListAppserverUserSubs(serverId)
 
 	// Construct the response
-	response := &pb_appserver_sub.ListAppserverUserSubsResponse{
-		Appusers: make([]*pb_appserver_sub.AppuserAndSub, 0, len(results)),
+	response := &appserver_sub.ListAppserverUserSubsResponse{
+		Appusers: make([]*appserver_sub.AppuserAndSub, 0, len(results)),
 	}
 
 	// Convert list of AppserverSubs to protobuf
@@ -98,8 +98,8 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 }
 
 func (s *AppserverSubGRPCService) Delete(
-	ctx context.Context, req *pb_appserver_sub.DeleteRequest,
-) (*pb_appserver_sub.DeleteResponse, error) {
+	ctx context.Context, req *appserver_sub.DeleteRequest,
+) (*appserver_sub.DeleteResponse, error) {
 
 	var err error
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
@@ -116,5 +116,5 @@ func (s *AppserverSubGRPCService) Delete(
 	}
 
 	// Return success response
-	return &pb_appserver_sub.DeleteResponse{}, nil
+	return &appserver_sub.DeleteResponse{}, nil
 }

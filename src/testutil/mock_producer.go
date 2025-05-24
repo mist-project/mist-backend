@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/event"
 
 	"github.com/IBM/sarama"
@@ -16,7 +17,7 @@ type MockSyncProducer struct {
 }
 
 // ------ MockProducer ------
-func (m *MockProducer) SendMessage(value interface{}, action event.ActionType) error {
+func (m *MockProducer) SendMessage(value interface{}, action event.ActionType, appuser []*appuser.Appuser) error {
 	args := m.Called(value, action)
 	return args.Error(0)
 }

@@ -12,7 +12,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_appserver_role_sub "mist/src/protos/v1/appserver_role_sub"
+	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
@@ -30,7 +30,7 @@ func TestAppserveRoleSubService_Create(t *testing.T) {
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.Create(
 			ctx,
-			&pb_appserver_role_sub.CreateRequest{
+			&appserver_role_sub.CreateRequest{
 				AppserverSubId:  sub.ID.String(),
 				AppserverRoleId: role.ID.String(),
 				AppserverId:     appserver.ID.String(),
@@ -51,7 +51,7 @@ func TestAppserveRoleSubService_Create(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.Create(
-			ctx, &pb_appserver_role_sub.CreateRequest{
+			ctx, &appserver_role_sub.CreateRequest{
 				AppserverRoleId: uuid.NewString(),
 				AppserverSubId:  uuid.NewString(),
 				AppserverId:     uuid.NewString(),
@@ -72,7 +72,7 @@ func TestAppserveRoleSubService_Create(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.Create(
-			ctx, &pb_appserver_role_sub.CreateRequest{},
+			ctx, &appserver_role_sub.CreateRequest{},
 		)
 		s, ok := status.FromError(err)
 
@@ -92,7 +92,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.ListServerRoleSubs(
-			ctx, &pb_appserver_role_sub.ListServerRoleSubsRequest{AppserverId: sub.AppserverID.String()},
+			ctx, &appserver_role_sub.ListServerRoleSubsRequest{AppserverId: sub.AppserverID.String()},
 		)
 
 		if err != nil {
@@ -118,7 +118,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 		// ACT
 		_, err := svc.ListServerRoleSubs(
 			ctx,
-			&pb_appserver_role_sub.ListServerRoleSubsRequest{AppserverId: uuid.NewString()},
+			&appserver_role_sub.ListServerRoleSubsRequest{AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -157,7 +157,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.ListServerRoleSubs(
-			ctx, &pb_appserver_role_sub.ListServerRoleSubsRequest{AppserverId: sub.AppserverID.String()},
+			ctx, &appserver_role_sub.ListServerRoleSubsRequest{AppserverId: sub.AppserverID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -187,7 +187,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.Delete(
 			ctx,
-			&pb_appserver_role_sub.DeleteRequest{Id: roleSub.ID.String()},
+			&appserver_role_sub.DeleteRequest{Id: roleSub.ID.String()},
 		)
 
 		// ASSERT
@@ -210,7 +210,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserver_role_sub.DeleteRequest{Id: roleId},
+			&appserver_role_sub.DeleteRequest{Id: roleId},
 		)
 
 		s, ok := status.FromError(err)
@@ -237,7 +237,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserver_role_sub.DeleteRequest{Id: mockId},
+			&appserver_role_sub.DeleteRequest{Id: mockId},
 		)
 
 		s, ok := status.FromError(err)
@@ -255,7 +255,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.Delete(
 			ctx,
-			&pb_appserver_role_sub.DeleteRequest{Id: uuid.NewString()},
+			&appserver_role_sub.DeleteRequest{Id: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 

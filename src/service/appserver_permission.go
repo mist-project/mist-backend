@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserver_permission "mist/src/protos/v1/appserver_permission"
+	"mist/src/protos/v1/appserver_permission"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -25,8 +25,8 @@ func NewAppserverPermissionService(ctx context.Context, dbConn *pgxpool.Pool, db
 	return &AppserverPermissionService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *AppserverPermissionService) PgTypeToPb(p *qx.AppserverPermission) *pb_appserver_permission.AppserverPermission {
-	return &pb_appserver_permission.AppserverPermission{
+func (s *AppserverPermissionService) PgTypeToPb(p *qx.AppserverPermission) *appserver_permission.AppserverPermission {
+	return &appserver_permission.AppserverPermission{
 		Id:          p.ID.String(),
 		AppserverId: p.AppserverID.String(),
 		AppuserId:   p.AppuserID.String(),

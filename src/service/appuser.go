@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appuser "mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -25,8 +25,8 @@ func NewAppuserService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier)
 }
 
 // Convert Appuser db object to Appuser protobuff object.
-func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *pb_appuser.Appuser {
-	return &pb_appuser.Appuser{
+func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *appuser.Appuser {
+	return &appuser.Appuser{
 		Id:        a.ID.String(),
 		Username:  a.Username,
 		CreatedAt: timestamppb.New(a.CreatedAt.Time),

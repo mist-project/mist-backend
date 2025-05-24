@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package v1.event;
+option go_package = "mist/src/protos/v1/event;event";
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "v1/appserver/appserver.proto";
+import "v1/appserver_role/appserver_role.proto";
+import "v1/channel/channel.proto";
+
+// ----- SHARED -----
+message Event {
+  Meta meta = 1;
+  oneof data {
+    // LIST
+    ListServers list_servers = 2;
+    ListChannels list_channels = 3;
+    ListRoles list_roles = 4;
+
+    // CREATE
+    CreateServer create_server = 100;
+    CreateChannel create_channel = 101;
+    CreateRole create_role = 102;
+
+    // UPDATE
+
+    // DELETE
+    DeleteServer delete_server = 300;
+    DeleteChannel delete_channel = 301;
+    DeleteRole delete_role = 302;
+  };
+}
+
+message Meta { ActionType action = 1; }
+
+enum ActionType {
+  ACTION_TYPE_UNSPECIFIED = 0;
+  // LIST
+  ACTION_LIST_SERVERS = 1;
+  ACTION_LIST_CHANNELS = 2;
+  ACTION_LIST_ROLES = 3;
+
+  // CREATE
+  ACTION_CREATE_SERVER = 100;
+  ACTION_CREATE_CHANNEL = 101;
+  ACTION_CREATE_ROLE = 102;
+
+  // UPDATE
+
+  // DELETE
+  ACTION_DELETE_SERVER = 300;
+  ACTION_DELETE_CHANNEL = 301;
+  ACTION_DELETE_ROLE = 302;
+}
+
+// MESSAGES
+// ----- LIST ------
+message ListServers { repeated appserver.Appserver appservers = 1; }
+message ListChannels { repeated channel.Channel channels = 1; }
+message ListRoles { repeated appserver_role.AppserverRole roles = 1; }
+
+// ----- CREATE ------
+message CreateServer { appserver.Appserver appserver = 1; }
+message CreateChannel { channel.Channel channel = 1; }
+message CreateRole { appserver_role.AppserverRole role = 1; }
+
+// ----- UPDATE ------
+
+// ----- DELETE ------
+message DeleteServer { string id = 1; }
+message DeleteChannel { string id = 1; }
+message DeleteRole { string id = 1; }

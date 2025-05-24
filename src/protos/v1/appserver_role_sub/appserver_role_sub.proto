@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package v1.appserverrolesub;
-option go_package = "mist/src/protos/v1/appserverrolesub;appserverrolesub";
+package v1.appserver_role_sub;
+option go_package = "mist/src/protos/v1/appserver_role_sub;appserver_role_sub";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";

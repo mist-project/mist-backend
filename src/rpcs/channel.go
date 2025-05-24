@@ -26,8 +26,7 @@ func (s *ChannelGRPCService) Create(
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
-
-	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
+	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
 	channel, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId})
 
 	if err != nil {
@@ -49,7 +48,7 @@ func (s *ChannelGRPCService) GetById(
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
+	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
 	id, err := uuid.Parse(req.Id)
 	channel, err := cs.GetById(id)
 
@@ -75,7 +74,7 @@ func (s *ChannelGRPCService) ListServerChannels(
 		return nil, message.RpcErrorHandler(err)
 	}
 
-	cs := service.NewChannelService(ctx, s.DbConn, s.Db)
+	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
 
 	if req.Name != nil {
 		nameFilter = pgtype.Text{Valid: true, String: req.Name.Value}
@@ -103,7 +102,7 @@ func (s *ChannelGRPCService) Delete(
 	}
 
 	id, _ := uuid.Parse(req.Id)
-	if err := service.NewChannelService(ctx, s.DbConn, s.Db).Delete(id); err != nil {
+	if err := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer).Delete(id); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

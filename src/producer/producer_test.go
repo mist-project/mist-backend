@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"mist/src/producer"
+	"mist/src/protos/v1/channel"
+	"mist/src/protos/v1/event"
 	"mist/src/testutil"
 )
 
@@ -30,18 +32,33 @@ func TestKafkaProducer_SendMessage(t *testing.T) {
 			Producer: mockProducer,
 			Topic:    "test-topic",
 		}
-
-		mockProducer.On("SendMessage", mock.MatchedBy(func(msg *sarama.ProducerMessage) bool {
-			// Optional: deep check of fields if you want
-			return msg.Topic == "test-topic"
-		})).Return(int32(1), int64(42), nil)
-
+		mockAction := event.ActionType_ACTION_CREATE_CHANNEL
+		mockData := &channel.Channel{}
+		mockProducer.On("SendMessage", mock.Anything).Return(int32(1), int64(42), nil)
 		// ACT
-		err := kp.SendMessage([]byte("key"), []byte("value"))
+		err := kp.SendMessage(mockData, mockAction)
 
 		// ASSERT
 		assert.NoError(t, err)
 		mockProducer.AssertExpectations(t)
+	})
+
+	t.Run("Error:invalid_data_structures_have_marshall_error", func(t *testing.T) {
+		// ARRANGE
+		mockProducer := new(testutil.MockSyncProducer)
+		kp := &producer.KafkaProducer{
+			Producer: mockProducer,
+			Topic:    "test-topic",
+		}
+
+		mockAction := event.ActionType_ACTION_CREATE_CHANNEL
+
+		// ACT
+		err := kp.SendMessage("booM", mockAction)
+
+		// ASSERT
+		assert.Error(t, err)
+		mockProducer.AssertNotCalled(t, "SendMessage", mock.Anything)
 	})
 
 	t.Run("Error:message_not_sent", func(t *testing.T) {
@@ -51,11 +68,13 @@ func TestKafkaProducer_SendMessage(t *testing.T) {
 			Producer: mockProducer,
 			Topic:    "test-topic",
 		}
+		mockData := &channel.Channel{}
 
-		mockProducer.On("SendMessage", mock.Anything).Return(int32(0), int64(0), sarama.ErrOutOfBrokers)
+		mockAction := event.ActionType_ACTION_CREATE_CHANNEL
+		mockProducer.On("SendMessage", mock.Anything).Return(int32(1), int64(42), sarama.ErrOutOfBrokers)
 
 		// ACT
-		err := kp.SendMessage([]byte("key"), []byte("value"))
+		err := kp.SendMessage(mockData, mockAction)
 
 		// ASSERT
 		assert.Error(t, err)

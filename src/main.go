@@ -60,7 +60,7 @@ func main() {
 		log.Fatalf("failed to create Kafka producer: %v", err)
 	}
 
-	kp := producer.NewKafkaProducer(p, os.Getenv("KAFKA_TOPIC"))
+	kp := producer.NewKafkaProducer(p, os.Getenv("KAFKA_EVENT_TOPIC"))
 	defer kp.Producer.Close()
 
 	// Check if producer was able to connect to kafka server successfully

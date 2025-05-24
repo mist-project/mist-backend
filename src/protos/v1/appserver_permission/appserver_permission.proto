@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package v1.appserverpermission;
-option go_package = "mist/src/protos/v1/appserverpermission;appserverpermission";
+package v1.appserver_permission;
+option go_package = "mist/src/protos/v1/appserver_permission;appserver_permission";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
@@ -34,7 +34,7 @@ message ListAppserverUsersRequest {
   string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
 }
 message ListAppserverUsersResponse {
-  repeated AppserverPermission appserver_roles = 1;
+  repeated AppserverPermission appserver_permissions = 1;
 }
 
 message DeleteRequest {

@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserversub "mist/src/protos/v1/appserver_sub"
+	pb_appserver_sub "mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -32,7 +32,7 @@ func TestAppserverSubService_PgTypeToPb(t *testing.T) {
 		UpdatedAt:   pgtype.Timestamp{Time: now, Valid: true},
 	}
 
-	expected := &pb_appserversub.AppserverSub{
+	expected := &pb_appserver_sub.AppserverSub{
 		Id:          id.String(),
 		AppserverId: appserverId.String(),
 		CreatedAt:   timestamppb.New(now),

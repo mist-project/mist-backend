@@ -125,7 +125,7 @@ test-producer: setup-test
 
 # ----- FORMAT -----
 lint:
-	golangci-lint run --disable-all -E errcheck
+	golangci-lint run -E errcheck
 
 lint-proto:
 	@buf lint

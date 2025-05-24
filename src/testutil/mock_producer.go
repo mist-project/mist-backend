@@ -1,6 +1,8 @@
 package testutil
 
 import (
+	"mist/src/protos/v1/event"
+
 	"github.com/IBM/sarama"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,8 +16,8 @@ type MockSyncProducer struct {
 }
 
 // ------ MockProducer ------
-func (m *MockProducer) SendMessage(key, value []byte) error {
-	args := m.Called(key, value)
+func (m *MockProducer) SendMessage(value interface{}, action event.ActionType) error {
+	args := m.Called(value, action)
 	return args.Error(0)
 }
 

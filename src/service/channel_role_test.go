@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_channelrole "mist/src/protos/v1/channel_role"
+	pb_channel_role "mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -33,7 +33,7 @@ func TestChannelRoleService_PgTypeToPb(t *testing.T) {
 		UpdatedAt:       pgtype.Timestamp{Time: now, Valid: true},
 	}
 
-	expected := &pb_channelrole.ChannelRole{
+	expected := &pb_channel_role.ChannelRole{
 		Id:              id.String(),
 		ChannelId:       channelId.String(),
 		AppserverRoleId: roleId.String(),

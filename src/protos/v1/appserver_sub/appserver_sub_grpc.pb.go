@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: v1/appserver_sub/appserver_sub.proto
 
-package appserversub
+package appserver_sub
 
 import (
 	context "context"
@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AppserverSubService_Create_FullMethodName                = "/v1.appserversub.AppserverSubService/Create"
-	AppserverSubService_ListUserServerSubs_FullMethodName    = "/v1.appserversub.AppserverSubService/ListUserServerSubs"
-	AppserverSubService_ListAppserverUserSubs_FullMethodName = "/v1.appserversub.AppserverSubService/ListAppserverUserSubs"
-	AppserverSubService_Delete_FullMethodName                = "/v1.appserversub.AppserverSubService/Delete"
+	AppserverSubService_Create_FullMethodName                = "/v1.appserver_sub.AppserverSubService/Create"
+	AppserverSubService_ListUserServerSubs_FullMethodName    = "/v1.appserver_sub.AppserverSubService/ListUserServerSubs"
+	AppserverSubService_ListAppserverUserSubs_FullMethodName = "/v1.appserver_sub.AppserverSubService/ListAppserverUserSubs"
+	AppserverSubService_Delete_FullMethodName                = "/v1.appserver_sub.AppserverSubService/Delete"
 )
 
 // AppserverSubServiceClient is the client API for AppserverSubService service.
@@ -210,7 +210,7 @@ func _AppserverSubService_Delete_Handler(srv interface{}, ctx context.Context, d
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AppserverSubService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "v1.appserversub.AppserverSubService",
+	ServiceName: "v1.appserver_sub.AppserverSubService",
 	HandlerType: (*AppserverSubServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

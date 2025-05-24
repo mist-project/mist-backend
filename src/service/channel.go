@@ -21,14 +21,14 @@ type ChannelService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
-	p      producer.MessageProducer
+	mp     producer.MessageProducer
 }
 
 // Creates a new ChannelService struct.
 func NewChannelService(
-	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, p producer.MessageProducer,
+	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer,
 ) *ChannelService {
-	return &ChannelService{ctx: ctx, dbConn: dbConn, db: db, p: p}
+	return &ChannelService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
 }
 
 // Convert Channel db object to Channel protobuff object.
@@ -49,13 +49,7 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 		return nil, message.DatabaseError(fmt.Sprintf("create channel error: %v", err))
 	}
 
-	err = s.p.SendMessage(s.PgTypeToPb(&channel), event.ActionType_ACTION_ADD_CHANNEL, nil)
-
-	if err != nil {
-		// TODO: send error to some other place to handle it
-		fmt.Println(err)
-		err = nil
-	}
+	s.mp.SendMessage(s.PgTypeToPb(&channel), event.ActionType_ACTION_ADD_CHANNEL, nil)
 
 	return &channel, err
 }

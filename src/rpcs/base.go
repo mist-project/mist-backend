@@ -48,7 +48,7 @@ type AppserverSubGRPCService struct {
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
-	Producer *producer.MessageProducer
+	Producer producer.MessageProducer
 }
 
 type AppserverRoleGRPCService struct {
@@ -99,9 +99,10 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.Mess
 	appserver.RegisterAppserverServiceServer(
 		s,
 		&AppserverGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-			Auth:   permission.NewAppserverAuthorizer(dbConn, querier),
+			Db:       querier,
+			DbConn:   dbConn,
+			Auth:     permission.NewAppserverAuthorizer(dbConn, querier),
+			Producer: mp,
 		},
 	)
 
@@ -109,27 +110,32 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.Mess
 	appserver_permission.RegisterAppserverPermissionServiceServer(
 		s,
 		&AppserverPermissionGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-			Auth:   permission.NewAppserverPermissionAuthorizer(dbConn, querier)},
+			Db:       querier,
+			DbConn:   dbConn,
+			Auth:     permission.NewAppserverPermissionAuthorizer(dbConn, querier),
+			Producer: mp,
+		},
 	)
 
 	// ----- APPSERVER ROLE -----
 	appserver_role.RegisterAppserverRoleServiceServer(
 		s,
 		&AppserverRoleGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-			Auth:   permission.NewAppserverRoleAuthorizer(dbConn, querier)},
+			Db:       querier,
+			DbConn:   dbConn,
+			Auth:     permission.NewAppserverRoleAuthorizer(dbConn, querier),
+			Producer: mp,
+		},
 	)
 
 	// ----- APPSERVER ROLE SUB -----
 	appserver_role_sub.RegisterAppserverRoleSubServiceServer(
 		s,
 		&AppserverRoleSubGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-			Auth:   permission.NewAppserverRoleSubAuthorizer(dbConn, querier),
+			Db:       querier,
+			DbConn:   dbConn,
+			Auth:     permission.NewAppserverRoleSubAuthorizer(dbConn, querier),
+			Producer: mp,
 		},
 	)
 
@@ -137,9 +143,10 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.Mess
 	appserver_sub.RegisterAppserverSubServiceServer(
 		s,
 		&AppserverSubGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-			Auth:   permission.NewAppserverSubAuthorizer(dbConn, querier),
+			Db:       querier,
+			DbConn:   dbConn,
+			Auth:     permission.NewAppserverSubAuthorizer(dbConn, querier),
+			Producer: mp,
 		},
 	)
 
@@ -151,7 +158,8 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.Mess
 			DbConn:   dbConn,
 			Auth:     permission.NewChannelAuthorizer(dbConn, querier),
 			Producer: mp,
-		})
+		},
+	)
 
 	// ----- CHANNEL ROLE -----
 	channel_role.RegisterChannelRoleServiceServer(
@@ -161,7 +169,8 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.Mess
 			DbConn:   dbConn,
 			Auth:     permission.NewChannelRoleAuthorizer(dbConn, querier),
 			Producer: mp,
-		})
+		},
+	)
 }
 
 var NewValidator = func() (protovalidate.Validator, error) {

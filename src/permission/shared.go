@@ -41,7 +41,7 @@ func (auth *SharedAuthorizer) UserIsServerOwner(ctx context.Context, userId uuid
 
 // Helper function to determine whether a user is owner of the server.
 func (auth *SharedAuthorizer) UserHasServerSub(ctx context.Context, userId uuid.UUID, serverId uuid.UUID) (bool, error) {
-	sub, err := service.NewAppserverSubService(ctx, auth.DbConn, auth.Db).Filter(
+	sub, err := service.NewAppserverSubService(ctx, auth.DbConn, auth.Db, nil).Filter(
 		qx.FilterAppserverSubParams{
 			AppserverID: pgtype.UUID{Valid: true, Bytes: serverId},
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userId},

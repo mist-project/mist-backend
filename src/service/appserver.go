@@ -23,14 +23,14 @@ type AppserverService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
-	p      producer.MessageProducer
+	mp     producer.MessageProducer
 }
 
 // Creates a new AppserverService struct.
 func NewAppserverService(
-	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, p producer.MessageProducer,
+	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer,
 ) *AppserverService {
-	return &AppserverService{ctx: ctx, dbConn: dbConn, db: db, p: p}
+	return &AppserverService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
 }
 
 // Converts a database appserver object to protobuff appserver object
@@ -71,7 +71,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	}
 
 	// once the appserver is created, add user as a subscriber
-	_, err = NewAppserverSubService(s.ctx, s.dbConn, s.db).CreateWithTx(
+	_, err = NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).CreateWithTx(
 		qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: obj.AppuserID},
 		tx,
 	)
@@ -120,7 +120,7 @@ func (s *AppserverService) List(params qx.ListAppserversParams) ([]qx.Appserver,
 func (s *AppserverService) Delete(id uuid.UUID) error {
 
 	// Get all subs for the appserver
-	subs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db).ListAppserverUserSubs(id)
+	subs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).ListAppserverUserSubs(id)
 
 	if err != nil {
 		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
@@ -142,7 +142,8 @@ func (s *AppserverService) Delete(id uuid.UUID) error {
 			Username: sub.Username,
 		})
 	}
-	err = s.p.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, users)
+
+	s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, users)
 
 	return err
 }

@@ -28,7 +28,8 @@ func (kp *KafkaProducer) SendMessage(data interface{}, action event.ActionType, 
 	e, err := kp.marshall(data, action, appusers)
 
 	if err != nil {
-		return message.UnknownError(fmt.Sprintf("error marshalling data for kafka: %v", err))
+		kp.NotifyMessageFailure(fmt.Errorf("error marshalling data for kafka: %v", err))
+		return err
 	}
 
 	msg := &sarama.ProducerMessage{
@@ -38,11 +39,10 @@ func (kp *KafkaProducer) SendMessage(data interface{}, action event.ActionType, 
 	_, _, err = kp.Producer.SendMessage(msg)
 
 	if err != nil {
-		return message.UnknownError(fmt.Sprintf("error sending data to kafka: %v", err))
+		kp.NotifyMessageFailure(fmt.Errorf("error sending data to kafka: %v", err))
 	}
 
-	println("Message to kafka successfully sent")
-	return nil
+	return err
 }
 
 // func (kp *KafkaProducer) SendMessageWithKey(key, value []byte) error {
@@ -75,6 +75,7 @@ func (kp *KafkaProducer) marshall(data interface{}, action event.ActionType, app
 	switch action {
 	case event.ActionType_ACTION_ADD_CHANNEL:
 		d, ok := data.(*channel.Channel)
+
 		if !ok {
 			return nil, fmt.Errorf("invalid data type for action %v", action)
 		}
@@ -87,7 +88,11 @@ func (kp *KafkaProducer) marshall(data interface{}, action event.ActionType, app
 				},
 			},
 		}
-
 	}
+
 	return proto.Marshal(e)
+}
+
+func (kp *KafkaProducer) NotifyMessageFailure(err error) error {
+	return message.UnknownError(fmt.Sprintf("error notifying message failure to kafka: %v", err))
 }

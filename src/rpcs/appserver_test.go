@@ -214,7 +214,7 @@ func TestAppserverService_Create(t *testing.T) {
 		testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
 
 		serverSubs, _ := service.NewAppserverSubService(
-			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)),
+			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)), new(testutil.MockProducer),
 		).ListUserServerSubs(appuser.ID)
 		assert.NotNil(t, response.Appserver)
 		assert.Equal(t, 1, len(serverSubs))
@@ -298,7 +298,9 @@ func TestAppserverService_Delete(t *testing.T) {
 		aserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid}, false)
 		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: aserver.ID, AppuserID: parsedUid}, false)
 
-		subService := service.NewAppserverSubService(ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
+		subService := service.NewAppserverSubService(
+			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)), new(testutil.MockProducer),
+		)
 
 		// ASSERT
 		serverSubs, _ := subService.ListUserServerSubs(appuser.ID)

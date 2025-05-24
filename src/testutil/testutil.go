@@ -111,7 +111,7 @@ func SetupTestGRPCServicesAndClient() {
 	testServer = grpc.NewServer(interceptors)
 	// for now we will mock all the producer calls to be successful. unit tests should
 	// enture that the producer is called where it should happen
-	TestKProducer.On("SendMessage", mock.Anything, mock.Anything).Return(nil)
+	TestKProducer.On("SendMessage", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	rpcs.RegisterGrpcServices(testServer, TestDbConn, TestKProducer)
 
 	go func() {

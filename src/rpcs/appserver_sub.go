@@ -17,7 +17,7 @@ func (s *AppserverSubGRPCService) Create(
 	ctx context.Context, req *appserver_sub.CreateRequest,
 ) (*appserver_sub.CreateResponse, error) {
 
-	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
+	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer)
 	claims, _ := middleware.GetJWTClaims(ctx)
 
 	serverId, _ := uuid.Parse(req.AppserverId)
@@ -45,7 +45,7 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 	}
 
 	// Initialize the service for AppserverSub
-	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
+	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer)
 
 	claims, _ := middleware.GetJWTClaims(ctx)
 
@@ -81,7 +81,7 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 	}
 
 	// Initialize the service for AppserverSub
-	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db)
+	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer)
 	results, _ := subService.ListAppserverUserSubs(serverId)
 
 	// Construct the response
@@ -107,7 +107,7 @@ func (s *AppserverSubGRPCService) Delete(
 	}
 
 	id, _ := uuid.Parse((req.Id))
-	err = service.NewAppserverSubService(ctx, s.DbConn, s.Db).Delete(id)
+	err = service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer).Delete(id)
 
 	// Error handling
 	if err != nil {

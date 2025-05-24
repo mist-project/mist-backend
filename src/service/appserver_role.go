@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserverrole "mist/src/protos/v1/appserver_role"
+	pb_appserver_role "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -25,8 +25,8 @@ func NewAppserverRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Qu
 	return &AppserverRoleService{ctx: ctx, dbConn: dbConn, db: db}
 }
 
-func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserverrole.AppserverRole {
-	return &pb_appserverrole.AppserverRole{
+func (s *AppserverRoleService) PgTypeToPb(aRole *qx.AppserverRole) *pb_appserver_role.AppserverRole {
+	return &pb_appserver_role.AppserverRole{
 		Id:          aRole.ID.String(),
 		AppserverId: aRole.AppserverID.String(),
 		Name:        aRole.Name,

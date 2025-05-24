@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: v1/channel_role/channel_role.proto
 
-package channelrole
+package channel_role
 
 import (
 	context "context"
@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ChannelRoleService_Create_FullMethodName           = "/v1.channelrole.ChannelRoleService/Create"
-	ChannelRoleService_ListChannelRoles_FullMethodName = "/v1.channelrole.ChannelRoleService/ListChannelRoles"
-	ChannelRoleService_Delete_FullMethodName           = "/v1.channelrole.ChannelRoleService/Delete"
+	ChannelRoleService_Create_FullMethodName           = "/v1.channel_role.ChannelRoleService/Create"
+	ChannelRoleService_ListChannelRoles_FullMethodName = "/v1.channel_role.ChannelRoleService/ListChannelRoles"
+	ChannelRoleService_Delete_FullMethodName           = "/v1.channel_role.ChannelRoleService/Delete"
 )
 
 // ChannelRoleServiceClient is the client API for ChannelRoleService service.
@@ -176,7 +176,7 @@ func _ChannelRoleService_Delete_Handler(srv interface{}, ctx context.Context, de
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ChannelRoleService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "v1.channelrole.ChannelRoleService",
+	ServiceName: "v1.channel_role.ChannelRoleService",
 	HandlerType: (*ChannelRoleServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

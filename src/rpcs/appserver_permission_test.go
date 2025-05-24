@@ -12,7 +12,7 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_appserverpermission "mist/src/protos/v1/appserver_permission"
+	pb_appserver_permission "mist/src/protos/v1/appserver_permission"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
@@ -26,7 +26,7 @@ func TestAppserverPermissionService_Create(t *testing.T) {
 		user := testutil.TestAppuser(t, nil, true)
 
 		// ACT
-		response, err := testutil.TestAppserverPermissionClient.Create(ctx, &pb_appserverpermission.CreateRequest{
+		response, err := testutil.TestAppserverPermissionClient.Create(ctx, &pb_appserver_permission.CreateRequest{
 			AppserverId: appserver.ID.String(),
 			AppuserId:   user.ID.String(),
 		})
@@ -41,7 +41,7 @@ func TestAppserverPermissionService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverPermissionClient.Create(ctx, &pb_appserverpermission.CreateRequest{})
+		response, err := testutil.TestAppserverPermissionClient.Create(ctx, &pb_appserver_permission.CreateRequest{})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -65,7 +65,7 @@ func TestAppserverPermissionService_Create(t *testing.T) {
 		// ACT
 		_, err := svc.Create(
 			ctx,
-			&pb_appserverpermission.CreateRequest{AppserverId: uuid.NewString(), AppuserId: uuid.NewString()},
+			&pb_appserver_permission.CreateRequest{AppserverId: uuid.NewString(), AppuserId: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -89,7 +89,7 @@ func TestAppserverPermissionService_Create(t *testing.T) {
 		// ACT
 		_, err := svc.Create(
 			ctx,
-			&pb_appserverpermission.CreateRequest{AppserverId: mockId, AppuserId: mockId},
+			&pb_appserver_permission.CreateRequest{AppserverId: mockId, AppuserId: mockId},
 		)
 		s, ok := status.FromError(err)
 
@@ -107,14 +107,14 @@ func TestAppserverPermissionService_ListAppserverUsers(t *testing.T) {
 		appserver := testutil.TestAppserver(t, nil, true)
 
 		// ACT
-		response, err := testutil.TestAppserverPermissionClient.ListAppserverUsers(ctx, &pb_appserverpermission.ListAppserverUsersRequest{
+		response, err := testutil.TestAppserverPermissionClient.ListAppserverUsers(ctx, &pb_appserver_permission.ListAppserverUsersRequest{
 			AppserverId: appserver.ID.String(),
 		})
 
 		// ASSERT
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
-		assert.Equal(t, 0, len(response.AppserverRoles))
+		assert.Equal(t, 0, len(response.AppserverPermissions))
 	})
 
 	t.Run("Successful:can_return_multiple_users_successfully", func(t *testing.T) {
@@ -127,14 +127,14 @@ func TestAppserverPermissionService_ListAppserverUsers(t *testing.T) {
 		testutil.TestAppserverPermission(t, &qx.AppserverPermission{AppserverID: appserver.ID, AppuserID: user2.ID}, false)
 
 		// ACT
-		response, err := testutil.TestAppserverPermissionClient.ListAppserverUsers(ctx, &pb_appserverpermission.ListAppserverUsersRequest{
+		response, err := testutil.TestAppserverPermissionClient.ListAppserverUsers(ctx, &pb_appserver_permission.ListAppserverUsersRequest{
 			AppserverId: appserver.ID.String(),
 		})
 
 		// ASSERT
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
-		assert.Equal(t, 2, len(response.AppserverRoles))
+		assert.Equal(t, 2, len(response.AppserverPermissions))
 	})
 
 	t.Run("Error:on_database_failure_it_errors", func(t *testing.T) {
@@ -148,7 +148,7 @@ func TestAppserverPermissionService_ListAppserverUsers(t *testing.T) {
 		svc := &rpcs.AppserverPermissionGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		response, err := svc.ListAppserverUsers(ctx, &pb_appserverpermission.ListAppserverUsersRequest{
+		response, err := svc.ListAppserverUsers(ctx, &pb_appserver_permission.ListAppserverUsersRequest{
 			AppserverId: appserverId.String(),
 		})
 		s, ok := status.FromError(err)
@@ -174,7 +174,7 @@ func TestAppserverPermissionService_ListAppserverUsers(t *testing.T) {
 		// ACT
 		_, err := svc.ListAppserverUsers(
 			ctx,
-			&pb_appserverpermission.ListAppserverUsersRequest{AppserverId: uuid.NewString()},
+			&pb_appserver_permission.ListAppserverUsersRequest{AppserverId: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 
@@ -192,7 +192,7 @@ func TestAppserverPermissionService_Delete(t *testing.T) {
 		permissionEntry := testutil.TestAppserverPermission(t, nil, true)
 
 		// ACT
-		response, err := testutil.TestAppserverPermissionClient.Delete(ctx, &pb_appserverpermission.DeleteRequest{
+		response, err := testutil.TestAppserverPermissionClient.Delete(ctx, &pb_appserver_permission.DeleteRequest{
 			Id: permissionEntry.ID.String(),
 		})
 
@@ -206,7 +206,7 @@ func TestAppserverPermissionService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverPermissionClient.Delete(ctx, &pb_appserverpermission.DeleteRequest{
+		response, err := testutil.TestAppserverPermissionClient.Delete(ctx, &pb_appserver_permission.DeleteRequest{
 			Id: uuid.NewString(),
 		})
 		s, ok := status.FromError(err)
@@ -232,7 +232,7 @@ func TestAppserverPermissionService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserverpermission.DeleteRequest{Id: permId},
+			&pb_appserver_permission.DeleteRequest{Id: permId},
 		)
 		s, ok := status.FromError(err)
 
@@ -255,7 +255,7 @@ func TestAppserverPermissionService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&pb_appserverpermission.DeleteRequest{Id: mockId},
+			&pb_appserver_permission.DeleteRequest{Id: mockId},
 		)
 		s, ok := status.FromError(err)
 

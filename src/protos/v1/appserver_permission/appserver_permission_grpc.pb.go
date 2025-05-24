@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: v1/appserver_permission/appserver_permission.proto
 
-package appserverpermission
+package appserver_permission
 
 import (
 	context "context"
@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AppserverPermissionService_Create_FullMethodName             = "/v1.appserverpermission.AppserverPermissionService/Create"
-	AppserverPermissionService_ListAppserverUsers_FullMethodName = "/v1.appserverpermission.AppserverPermissionService/ListAppserverUsers"
-	AppserverPermissionService_Delete_FullMethodName             = "/v1.appserverpermission.AppserverPermissionService/Delete"
+	AppserverPermissionService_Create_FullMethodName             = "/v1.appserver_permission.AppserverPermissionService/Create"
+	AppserverPermissionService_ListAppserverUsers_FullMethodName = "/v1.appserver_permission.AppserverPermissionService/ListAppserverUsers"
+	AppserverPermissionService_Delete_FullMethodName             = "/v1.appserver_permission.AppserverPermissionService/Delete"
 )
 
 // AppserverPermissionServiceClient is the client API for AppserverPermissionService service.
@@ -177,7 +177,7 @@ func _AppserverPermissionService_Delete_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AppserverPermissionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "v1.appserverpermission.AppserverPermissionService",
+	ServiceName: "v1.appserver_permission.AppserverPermissionService",
 	HandlerType: (*AppserverPermissionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

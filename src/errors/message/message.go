@@ -36,26 +36,26 @@ var (
 )
 
 func ValidateError(s string) error {
-	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", ValidationErrorString, s)))
+	return fmt.Errorf("%s %s", ValidationErrorString, s)
 }
 
 func NotFoundError(s string) error {
-	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", NotFoundErrorString, s)))
+	return fmt.Errorf("%s %s", NotFoundErrorString, s)
 }
 func DatabaseError(s string) error {
-	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", DatabaseErrorString, s)))
+	return fmt.Errorf("%s %s", DatabaseErrorString, s)
 }
 
 func UnauthenticatedError(s string) error {
-	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", AuthenticationErrorString, s)))
+	return fmt.Errorf("%s %s", AuthenticationErrorString, s)
 }
 
 func UnauthorizedError(s string) error {
-	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", AuthorizationErrorString, s)))
+	return fmt.Errorf("%s %s", AuthorizationErrorString, s)
 }
 
 func UnknownError(s string) error {
-	return fmt.Errorf(fmt.Sprint(fmt.Sprintf("%s %s", UnknownErrorString, s)))
+	return fmt.Errorf("%s %s", UnknownErrorString, s)
 }
 
 func ParseError(s string) int {

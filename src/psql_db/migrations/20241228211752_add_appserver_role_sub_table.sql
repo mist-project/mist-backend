@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS appserver_role_sub (
 
     CONSTRAINT appserver_role_sub_uk_role_sub_server UNIQUE (appserver_role_id, appserver_sub_id, appserver_id),
 
-      -- enforce that the sub really belongs to that server + user
+    -- enforce that the sub really belongs to that server + user
     CONSTRAINT appserver_role_sub_uk_server_and_sub FOREIGN KEY (appserver_id, appserver_sub_id)
     REFERENCES appserver_sub(appserver_id, id) ON DELETE CASCADE,
 

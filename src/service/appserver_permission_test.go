@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
-	pb_appserverpermission "mist/src/protos/v1/appserver_permission"
+	pb_appserver_permission "mist/src/protos/v1/appserver_permission"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -33,7 +33,7 @@ func TestAppserverPermissionService_PgTypeToPb(t *testing.T) {
 		UpdatedAt:   pgtype.Timestamp{Time: now, Valid: true},
 	}
 
-	expected := &pb_appserverpermission.AppserverPermission{
+	expected := &pb_appserver_permission.AppserverPermission{
 		Id:          id.String(),
 		AppserverId: appserverId.String(),
 		AppuserId:   appuserId.String(),

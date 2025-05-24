@@ -7,14 +7,14 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_channelrole "mist/src/protos/v1/channel_role"
+	pb_channel_role "mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
 func (s *ChannelRoleGRPCService) Create(
-	ctx context.Context, req *pb_channelrole.CreateRequest,
-) (*pb_channelrole.CreateResponse, error) {
+	ctx context.Context, req *pb_channel_role.CreateRequest,
+) (*pb_channel_role.CreateResponse, error) {
 
 	var err error
 
@@ -41,14 +41,14 @@ func (s *ChannelRoleGRPCService) Create(
 	}
 
 	// Return response
-	return &pb_channelrole.CreateResponse{
+	return &pb_channel_role.CreateResponse{
 		ChannelRole: roleService.PgTypeToPb(roles),
 	}, nil
 }
 
 func (s *ChannelRoleGRPCService) ListChannelRoles(
-	ctx context.Context, req *pb_channelrole.ListChannelRolesRequest,
-) (*pb_channelrole.ListChannelRolesResponse, error) {
+	ctx context.Context, req *pb_channel_role.ListChannelRolesRequest,
+) (*pb_channel_role.ListChannelRolesResponse, error) {
 
 	var (
 		err error
@@ -70,8 +70,8 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 	}
 
 	// Construct the response
-	response := &pb_channelrole.ListChannelRolesResponse{
-		ChannelRoles: make([]*pb_channelrole.ChannelRole, 0, len(results)),
+	response := &pb_channel_role.ListChannelRolesResponse{
+		ChannelRoles: make([]*pb_channel_role.ChannelRole, 0, len(results)),
 	}
 	// Convert list of AppserveRoles to protobuf
 	for _, result := range results {
@@ -82,8 +82,8 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 }
 
 func (s *ChannelRoleGRPCService) Delete(
-	ctx context.Context, req *pb_channelrole.DeleteRequest,
-) (*pb_channelrole.DeleteResponse, error) {
+	ctx context.Context, req *pb_channel_role.DeleteRequest,
+) (*pb_channel_role.DeleteResponse, error) {
 
 	var err error
 
@@ -103,5 +103,5 @@ func (s *ChannelRoleGRPCService) Delete(
 	}
 
 	// Return success response
-	return &pb_channelrole.DeleteResponse{}, nil
+	return &pb_channel_role.DeleteResponse{}, nil
 }

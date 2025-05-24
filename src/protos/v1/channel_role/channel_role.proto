@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package v1.channelrole;
-option go_package = "mist/src/protos/v1/channelrole;channelrole";
+package v1.channel_role;
+option go_package = "mist/src/protos/v1/channel_role;channel_role";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";

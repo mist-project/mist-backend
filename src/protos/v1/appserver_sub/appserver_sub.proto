@@ -1,11 +1,12 @@
 syntax = "proto3";
 
-package v1.appserversub;
-option go_package = "mist/src/protos/v1/appserversub;appserversub";
+package v1.appserver_sub;
+option go_package = "mist/src/protos/v1/appserver_sub;appserver_sub";
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
+
 import "v1/appuser/appuser.proto";
 import "v1/appserver/appserver.proto";
 

@@ -76,6 +76,19 @@ func TestUnauthorizedError(t *testing.T) {
 	require.Contains(t, err.Error(), expectedSubstring)
 }
 
+func TestUnknownError(t *testing.T) {
+	// ARRANGE
+	expectedSubstring := "test unauthorized error"
+
+	// ACT
+	err := message.UnknownError(expectedSubstring)
+
+	// ASSERT
+	require.Error(t, err)
+	require.Contains(t, err.Error(), message.UnknownErrorString)
+	require.Contains(t, err.Error(), expectedSubstring)
+}
+
 func TestParseError(t *testing.T) {
 	tests := []struct {
 		name     string

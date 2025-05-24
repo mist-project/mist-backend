@@ -7,14 +7,14 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/permission"
-	pb_appserverrole "mist/src/protos/v1/appserver_role"
+	pb_appserver_role "mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 )
 
 func (s *AppserverRoleGRPCService) Create(
-	ctx context.Context, req *pb_appserverrole.CreateRequest,
-) (*pb_appserverrole.CreateResponse, error) {
+	ctx context.Context, req *pb_appserver_role.CreateRequest,
+) (*pb_appserver_role.CreateResponse, error) {
 
 	var err error
 
@@ -36,14 +36,14 @@ func (s *AppserverRoleGRPCService) Create(
 	}
 
 	// Return response
-	return &pb_appserverrole.CreateResponse{
+	return &pb_appserver_role.CreateResponse{
 		AppserverRole: roleService.PgTypeToPb(aRole),
 	}, nil
 }
 
 func (s *AppserverRoleGRPCService) ListServerRoles(
-	ctx context.Context, req *pb_appserverrole.ListServerRolesRequest,
-) (*pb_appserverrole.ListServerRolesResponse, error) {
+	ctx context.Context, req *pb_appserver_role.ListServerRolesRequest,
+) (*pb_appserver_role.ListServerRolesResponse, error) {
 
 	var (
 		err error
@@ -64,8 +64,8 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 	}
 
 	// Construct the response
-	response := &pb_appserverrole.ListServerRolesResponse{
-		AppserverRoles: make([]*pb_appserverrole.AppserverRole, 0, len(results)),
+	response := &pb_appserver_role.ListServerRolesResponse{
+		AppserverRoles: make([]*pb_appserver_role.AppserverRole, 0, len(results)),
 	}
 	// Convert list of AppserveRoles to protobuf
 	for _, result := range results {
@@ -76,8 +76,8 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 }
 
 func (s *AppserverRoleGRPCService) Delete(
-	ctx context.Context, req *pb_appserverrole.DeleteRequest,
-) (*pb_appserverrole.DeleteResponse, error) {
+	ctx context.Context, req *pb_appserver_role.DeleteRequest,
+) (*pb_appserver_role.DeleteResponse, error) {
 
 	var err error
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
@@ -96,5 +96,5 @@ func (s *AppserverRoleGRPCService) Delete(
 	}
 
 	// Return success response
-	return &pb_appserverrole.DeleteResponse{}, nil
+	return &pb_appserver_role.DeleteResponse{}, nil
 }

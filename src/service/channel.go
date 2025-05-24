@@ -25,7 +25,9 @@ type ChannelService struct {
 }
 
 // Creates a new ChannelService struct.
-func NewChannelService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, p producer.MessageProducer) *ChannelService {
+func NewChannelService(
+	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, p producer.MessageProducer,
+) *ChannelService {
 	return &ChannelService{ctx: ctx, dbConn: dbConn, db: db, p: p}
 }
 

@@ -27,7 +27,7 @@ func (s *AppserverGRPCService) Create(
 	claims, _ := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 
-	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db)
+	serverS := service.NewAppserverService(ctx, s.DbConn, s.Db, s.Producer)
 	aserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
 
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *AppserverGRPCService) GetById(
 
 	claims, _ := middleware.GetJWTClaims(ctx)
 
-	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db, s.Producer)
 	id, _ := uuid.Parse(req.Id)
 
 	if aserver, err = as.GetById(id); err != nil {
@@ -79,7 +79,7 @@ func (s *AppserverGRPCService) List(
 	claims, _ := middleware.GetJWTClaims(ctx)
 	userId, _ := uuid.Parse(claims.UserID)
 
-	as := service.NewAppserverService(ctx, s.DbConn, s.Db)
+	as := service.NewAppserverService(ctx, s.DbConn, s.Db, s.Producer)
 	var name = pgtype.Text{Valid: false, String: ""}
 
 	if req.Name != nil {
@@ -116,7 +116,7 @@ func (s *AppserverGRPCService) Delete(
 	}
 
 	id, _ = uuid.Parse(req.Id)
-	err = service.NewAppserverService(ctx, s.DbConn, s.Db).Delete(id)
+	err = service.NewAppserverService(ctx, s.DbConn, s.Db, s.Producer).Delete(id)
 
 	if err != nil {
 		return nil, message.RpcErrorHandler(err)

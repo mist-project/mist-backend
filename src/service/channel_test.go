@@ -66,7 +66,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL).Return(nil)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL, mock.Anything).Return(nil)
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
@@ -88,7 +88,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(nil, fmt.Errorf("error on create"))
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL).Return(nil)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL, mock.Anything).Return(nil)
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
@@ -108,7 +108,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL).Return(fmt.Errorf("boom"))
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL, mock.Anything).Return(fmt.Errorf("boom"))
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT

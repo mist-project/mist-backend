@@ -11,9 +11,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
+	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
 	"mist/src/protos/v1/appserver_sub"
 	"mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/event"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -22,10 +24,13 @@ type AppserverSubService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
+	mp     producer.MessageProducer
 }
 
-func NewAppserverSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverSubService {
-	return &AppserverSubService{ctx: ctx, dbConn: dbConn, db: db}
+func NewAppserverSubService(
+	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer,
+) *AppserverSubService {
+	return &AppserverSubService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
 }
 
 func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *appserver_sub.AppserverSub {
@@ -139,12 +144,23 @@ func (s *AppserverSubService) Filter(args qx.FilterAppserverSubParams) ([]qx.Fil
 
 // Removes user from server.
 func (s *AppserverSubService) Delete(id uuid.UUID) error {
+	// TODO: doing double queries here "fetching" the sub and then deleting it. maybe change this so that
+	// we can do it in one query.
+	sub, subErr := s.db.GetAppserverSubById(s.ctx, id)
 	deleted, err := s.db.DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {
 		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
 		return message.NotFoundError(message.NotFound)
+	}
+
+	if subErr == nil {
+		user := []*appuser.Appuser{
+			{Id: sub.AppuserID.String()},
+		}
+
+		s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, user)
 	}
 
 	return nil

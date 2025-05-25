@@ -96,6 +96,9 @@ func (s *ChannelGRPCService) Delete(
 ) (*channel.DeleteResponse, error) {
 
 	var err error
+	serverId, _ := uuid.Parse(req.Id)
+
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)

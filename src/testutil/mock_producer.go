@@ -18,7 +18,12 @@ type MockSyncProducer struct {
 
 // ------ MockProducer ------
 func (m *MockProducer) SendMessage(value interface{}, action event.ActionType, appuser []*appuser.Appuser) error {
-	args := m.Called(value, action)
+	args := m.Called(value, action, appuser)
+	return args.Error(0)
+}
+
+func (m *MockProducer) NotifyMessageFailure(err error) error {
+	args := m.Called(err)
 	return args.Error(0)
 }
 

@@ -16,6 +16,8 @@ import (
 
 	"mist/src/errors/message"
 	"mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/event"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -25,7 +27,7 @@ func TestAppserverService_PgTypeToPb(t *testing.T) {
 
 	// ARANGE
 	ctx := context.Background()
-	svc := service.NewAppserverService(ctx, testutil.TestDbConn, new(testutil.MockQuerier))
+	svc := service.NewAppserverService(ctx, testutil.TestDbConn, new(testutil.MockQuerier), new(testutil.MockProducer))
 
 	id := uuid.New()
 	now := time.Now()
@@ -75,7 +77,7 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
 
 		// Service initialization
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 
 		// ACT
 		response, err := svc.Create(expectedRequest)
@@ -99,7 +101,7 @@ func TestAppserverService_Create(t *testing.T) {
 		expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: parsedUid}
 		mockQuerier := new(testutil.MockQuerier)
 
-		svc := service.NewAppserverService(ctx, badConnection, mockQuerier)
+		svc := service.NewAppserverService(ctx, badConnection, mockQuerier, new(testutil.MockProducer))
 
 		// // ACT
 		_, err = svc.Create(expectedRequest)
@@ -120,7 +122,7 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 
 		// // ACT
 		_, err := svc.Create(expectedRequest)
@@ -144,7 +146,7 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 
 		// // ACT
 		_, err := svc.Create(expectedRequest)
@@ -178,7 +180,7 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 
 		// ACT
 		_, err := svc.CreateWithTx(expectedServer, mockTx)
@@ -201,7 +203,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", ctx, appserverId).Return(expected, nil)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 
 		// ACT
 		actual, err := svc.GetById(appserverId)
@@ -220,7 +222,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		mockQuerier.On("GetAppserverById", ctx, appserverId).
 			Return(nil, fmt.Errorf(message.DbNotFound))
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 
 		// ACT
 		_, err := svc.GetById(appserverId)
@@ -238,7 +240,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		mockQuerier.On("GetAppserverById", ctx, appserverId).
 			Return(nil, fmt.Errorf("connection reset by peer"))
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 
 		// ACT
 		_, err := svc.GetById(appserverId)
@@ -265,7 +267,7 @@ func TestAppserverService_List(t *testing.T) {
 			return p.AppuserID == ownerID && p.Name.Valid && p.Name.String == nameFilter
 		})).Return(expected, nil)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 		var name = pgtype.Text{Valid: true, String: nameFilter}
 
 		// ACT
@@ -289,7 +291,7 @@ func TestAppserverService_List(t *testing.T) {
 			return p.AppuserID == ownerID && !p.Name.Valid
 		})).Return(expected, nil)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 		var name = pgtype.Text{Valid: false, String: ""}
 
 		// ACT
@@ -308,7 +310,7 @@ func TestAppserverService_List(t *testing.T) {
 		mockQuerier.On("ListAppservers", ctx, mock.Anything).
 			Return([]qx.Appserver(nil), fmt.Errorf("some db error"))
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, new(testutil.MockProducer))
 		var name = pgtype.Text{Valid: false, String: ""}
 
 		// ACT
@@ -326,10 +328,15 @@ func TestAppserverService_Delete(t *testing.T) {
 	appserverId := uuid.New()
 
 	t.Run("Successful:deletion", func(t *testing.T) {
-		// ARRANGE
+		// ARRANGE\
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(1), nil)
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return([]qx.ListAppserverUserSubsRow{}, nil)
+
+		mockProducer := new(testutil.MockProducer)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_SERVER, []*appuser.Appuser{}).Return(nil)
+
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		err := svc.Delete(appserverId)
@@ -338,12 +345,47 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("Successful:deletion_with_subs_sends_notification", func(t *testing.T) {
+		// ARRANGE
+		subs := []qx.ListAppserverUserSubsRow{
+			{ID: uuid.New(), Username: "user1"},
+			{ID: uuid.New(), Username: "user2"},
+		}
+		users := make([]*appuser.Appuser, 0, len(subs))
+		for _, sub := range subs {
+			users = append(users, &appuser.Appuser{
+				Id:       sub.ID.String(),
+				Username: sub.Username,
+			})
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(1), nil)
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return(subs, nil)
+
+		mockProducer := new(testutil.MockProducer)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_SERVER, users).Return(nil)
+
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc.Delete(appserverId)
+
+		// ACT
+		err := svc.Delete(appserverId)
+
+		// ASSERT
+		assert.NoError(t, err)
+		mockProducer.AssertExpectations(t)
+
+	})
+
 	t.Run("Error:on_no_rows_deleted", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return([]qx.ListAppserverUserSubsRow{}, nil)
 		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(0), nil)
+		mockProducer := new(testutil.MockProducer)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		err := svc.Delete(appserverId)
@@ -353,12 +395,30 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
-	t.Run("Error:on_db_failure", func(t *testing.T) {
+	t.Run("Error:on_db_list_subs_failure", func(t *testing.T) {
 		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(nil, fmt.Errorf("db failure"))
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return(nil, fmt.Errorf("db failure"))
+		mockProducer := new(testutil.MockProducer)
 
-		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		err := svc.Delete(appserverId)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-3) database error")
+	})
+
+	t.Run("Error:on_db_delete_failure", func(t *testing.T) {
+		// ARRANGE
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return([]qx.ListAppserverUserSubsRow{}, nil)
+		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(nil, fmt.Errorf("db failure"))
+		mockProducer := new(testutil.MockProducer)
+
+		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		err := svc.Delete(appserverId)

@@ -1,6 +1,7 @@
 package producer_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/IBM/sarama"
@@ -80,4 +81,22 @@ func TestKafkaProducer_SendMessage(t *testing.T) {
 		assert.Error(t, err)
 		mockProducer.AssertExpectations(t)
 	})
+}
+
+func TestKafkaProducer_NotifyMessageFailure(t *testing.T) {
+	// ARRANGE
+	errMessage := "error notifying message failure to kafka"
+	mockProducer := new(testutil.MockSyncProducer)
+	kp := &producer.KafkaProducer{
+		Producer: mockProducer,
+		Topic:    "test-topic",
+	}
+
+	// ACT
+	err := kp.NotifyMessageFailure(errors.New(errMessage))
+
+	// ASSERT
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), errMessage)
 }

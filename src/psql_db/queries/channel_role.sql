@@ -22,6 +22,20 @@ SELECT *
 FROM channel_role
 WHERE channel_id=$1;
 
+-- name: FilterChannelRole :many
+SELECT 
+  id,
+  channel_id,
+  appserver_role_id,
+  appserver_id
+FROM channel_role
+WHERE channel_id = COALESCE(sqlc.narg('channel_id'), channel_id)
+  AND appserver_role_id = COALESCE(sqlc.narg('appserver_role_id'), appserver_role_id)
+  AND appserver_id = COALESCE(sqlc.narg('appserver_id'), appserver_id);
+
+-- ...existing code...
+
+
 -- name: DeleteChannelRole :execrows
 DELETE FROM channel_role as cr
 WHERE cr.id=$1;

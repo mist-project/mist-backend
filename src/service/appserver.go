@@ -11,7 +11,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/errors/message"
+	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
+	"mist/src/protos/v1/appuser"
+	"mist/src/protos/v1/event"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -20,11 +23,14 @@ type AppserverService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
+	mp     producer.MessageProducer
 }
 
 // Creates a new AppserverService struct.
-func NewAppserverService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverService {
-	return &AppserverService{ctx: ctx, dbConn: dbConn, db: db}
+func NewAppserverService(
+	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer,
+) *AppserverService {
+	return &AppserverService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
 }
 
 // Converts a database appserver object to protobuff appserver object
@@ -65,7 +71,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	}
 
 	// once the appserver is created, add user as a subscriber
-	_, err = NewAppserverSubService(s.ctx, s.dbConn, s.db).CreateWithTx(
+	_, err = NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).CreateWithTx(
 		qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: obj.AppuserID},
 		tx,
 	)
@@ -112,6 +118,14 @@ func (s *AppserverService) List(params qx.ListAppserversParams) ([]qx.Appserver,
 
 // Delete appserver object, for now only owners can delete an appserver.
 func (s *AppserverService) Delete(id uuid.UUID) error {
+
+	// Get all subs for the appserver
+	subs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).ListAppserverUserSubs(id)
+
+	if err != nil {
+		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
 	deleted, err := s.db.DeleteAppserver(s.ctx, id)
 
 	if err != nil {
@@ -119,6 +133,17 @@ func (s *AppserverService) Delete(id uuid.UUID) error {
 	} else if deleted == 0 {
 		return message.NotFoundError(message.NotFound)
 	}
+
+	users := make([]*appuser.Appuser, 0, len(subs))
+
+	for _, sub := range subs {
+		users = append(users, &appuser.Appuser{
+			Id:       sub.ID.String(),
+			Username: sub.Username,
+		})
+	}
+
+	s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, users)
 
 	return err
 }

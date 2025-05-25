@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createChannelRole = `-- name: CreateChannelRole :one
@@ -45,16 +46,69 @@ func (q *Queries) CreateChannelRole(ctx context.Context, arg CreateChannelRolePa
 }
 
 const deleteChannelRole = `-- name: DeleteChannelRole :execrows
+
+
 DELETE FROM channel_role as cr
 WHERE cr.id=$1
 `
 
+// ...existing code...
 func (q *Queries) DeleteChannelRole(ctx context.Context, id uuid.UUID) (int64, error) {
 	result, err := q.db.Exec(ctx, deleteChannelRole, id)
 	if err != nil {
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const filterChannelRole = `-- name: FilterChannelRole :many
+SELECT 
+  id,
+  channel_id,
+  appserver_role_id,
+  appserver_id
+FROM channel_role
+WHERE channel_id = COALESCE($1, channel_id)
+  AND appserver_role_id = COALESCE($2, appserver_role_id)
+  AND appserver_id = COALESCE($3, appserver_id)
+`
+
+type FilterChannelRoleParams struct {
+	ChannelID       pgtype.UUID
+	AppserverRoleID pgtype.UUID
+	AppserverID     pgtype.UUID
+}
+
+type FilterChannelRoleRow struct {
+	ID              uuid.UUID
+	ChannelID       uuid.UUID
+	AppserverRoleID uuid.UUID
+	AppserverID     uuid.UUID
+}
+
+func (q *Queries) FilterChannelRole(ctx context.Context, arg FilterChannelRoleParams) ([]FilterChannelRoleRow, error) {
+	rows, err := q.db.Query(ctx, filterChannelRole, arg.ChannelID, arg.AppserverRoleID, arg.AppserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FilterChannelRoleRow
+	for rows.Next() {
+		var i FilterChannelRoleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ChannelID,
+			&i.AppserverRoleID,
+			&i.AppserverID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getChannelRoleById = `-- name: GetChannelRoleById :one

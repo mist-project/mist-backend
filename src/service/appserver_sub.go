@@ -156,13 +156,11 @@ func (s *AppserverSubService) Delete(id uuid.UUID) error {
 	}
 
 	if subErr == nil {
-		s.mp.SendMessage(
-			id.String(),
-			event.ActionType_ACTION_REMOVE_SERVER,
-			[]*appuser.Appuser{
-				{Id: sub.AppuserID.String()},
-			},
-		)
+		user := []*appuser.Appuser{
+			{Id: sub.AppuserID.String()},
+		}
+
+		s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, user)
 	}
 
 	return nil

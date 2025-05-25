@@ -22,6 +22,11 @@ func (m *MockProducer) SendMessage(value interface{}, action event.ActionType, a
 	return args.Error(0)
 }
 
+func (m *MockProducer) NotifyMessageFailure(err error) error {
+	args := m.Called(err)
+	return args.Error(0)
+}
+
 // ------ MockSyncProducer ------
 
 func (m *MockSyncProducer) SendMessage(msg *sarama.ProducerMessage) (partition int32, offset int64, err error) {

@@ -378,6 +378,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetChannelById", ctx, mock.Anything).Return(qx.Channel{ID: uuid.New()}, nil)
 		mockQuerier.On("DeleteChannel", ctx, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(

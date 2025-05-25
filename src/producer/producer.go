@@ -13,6 +13,7 @@ import (
 
 type MessageProducer interface {
 	SendMessage(interface{}, event.ActionType, []*appuser.Appuser) error
+	NotifyMessageFailure(error) error
 }
 
 type KafkaProducer struct {
@@ -77,7 +78,7 @@ func (kp *KafkaProducer) marshall(data interface{}, action event.ActionType, app
 		d, ok := data.(*channel.Channel)
 
 		if !ok {
-			return nil, fmt.Errorf("invalid data type for action %v", action)
+			return nil, fmt.Errorf("(KafkaProducer|marshall) invalid data type for action %v", action)
 		}
 
 		data = &event.Event{

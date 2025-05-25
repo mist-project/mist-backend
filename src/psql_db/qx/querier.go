@@ -42,6 +42,7 @@ type Querier interface {
 	GetChannelPermissionById(ctx context.Context, id uuid.UUID) (ChannelPermission, error)
 	GetChannelRoleById(ctx context.Context, id uuid.UUID) (ChannelRole, error)
 	GetChannelUsersByRoles(ctx context.Context, dollar_1 []uuid.UUID) ([]Appuser, error)
+	GetChannelsForUser(ctx context.Context, arg GetChannelsForUserParams) ([]Channel, error)
 	ListAppserverPermissions(ctx context.Context, appserverID uuid.UUID) ([]AppserverPermission, error)
 	ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error)
 	ListAppserverUserSubs(ctx context.Context, appserverID uuid.UUID) ([]ListAppserverUserSubsRow, error)

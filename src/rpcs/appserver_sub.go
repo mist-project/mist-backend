@@ -107,6 +107,8 @@ func (s *AppserverSubGRPCService) Delete(
 	}
 
 	id, _ := uuid.Parse((req.Id))
+	// TODO: needs to remove any appserver permissions
+	// TODO: needs to remove any appserver role sub
 	err = service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer).Delete(id)
 
 	// Error handling

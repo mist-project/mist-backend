@@ -108,6 +108,49 @@ func (q *Queries) GetChannelUsersByRoles(ctx context.Context, dollar_1 []uuid.UU
 	return items, nil
 }
 
+const getChannelsForUser = `-- name: GetChannelsForUser :many
+SELECT DISTINCT channel.id, channel.name, channel.appserver_id, channel.created_at, channel.updated_at
+FROM channel
+LEFT JOIN channel_role ON channel_role.channel_id = channel.id
+LEFT JOIN appserver_role_sub ON appserver_role_sub.app_server_role_id = channel_role.appserver_role_id
+WHERE channel.appserver_id = $2
+  AND (
+    channel_role.id IS NULL -- channels with no roles
+    OR appserver_role_sub.appuser_id = $1 -- channels where user has a role
+  )
+`
+
+type GetChannelsForUserParams struct {
+	AppuserID   uuid.UUID
+	AppserverID uuid.UUID
+}
+
+func (q *Queries) GetChannelsForUser(ctx context.Context, arg GetChannelsForUserParams) ([]Channel, error) {
+	rows, err := q.db.Query(ctx, getChannelsForUser, arg.AppuserID, arg.AppserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Channel
+	for rows.Next() {
+		var i Channel
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.AppserverID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listServerChannels = `-- name: ListServerChannels :many
 SELECT id, name, appserver_id, created_at, updated_at
 FROM channel

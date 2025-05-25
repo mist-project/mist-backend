@@ -104,6 +104,7 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		}
 
 	case ActionDelete:
+		// TODO: user with permission cannot delete owner's subscription
 		if permission != nil && permission.DeleteAll.Bool {
 			// user has elevated delete permissions
 			return nil

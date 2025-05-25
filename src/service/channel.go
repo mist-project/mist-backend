@@ -76,6 +76,8 @@ func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
 // Lists all channels for an appserver. Name filter is also added but it may get deprecated.
 func (s *ChannelService) ListServerChannels(obj qx.ListServerChannelsParams) ([]qx.Channel, error) {
 
+	// TODO: This should only return channel that the user has access to. Pull the channels which user has roles to
+	// and pulls all the channels without roles in the server.
 	channels, err := s.db.ListServerChannels(s.ctx, obj)
 
 	if err != nil {
@@ -158,5 +160,8 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 		}
 	}
 
-	s.mp.SendMessage(pbC, action, users)
+	if len(users) > 0 {
+		s.mp.SendMessage(pbC, action, users)
+	}
+
 }

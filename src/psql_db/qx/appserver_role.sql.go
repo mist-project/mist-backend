@@ -14,26 +14,44 @@ import (
 const createAppserverRole = `-- name: CreateAppserverRole :one
 INSERT INTO appserver_role (
   appserver_id,
-  name
+  name,
+  appserver_permission_mask,
+  channel_permission_mask,
+  sub_permission_mask
 ) VALUES (
   $1,
-  $2
+  $2,
+  $3,
+  $4,
+  $5
 )
-RETURNING id, appserver_id, name, created_at, updated_at
+RETURNING id, appserver_id, name, appserver_permission_mask, channel_permission_mask, sub_permission_mask, created_at, updated_at
 `
 
 type CreateAppserverRoleParams struct {
-	AppserverID uuid.UUID
-	Name        string
+	AppserverID             uuid.UUID
+	Name                    string
+	AppserverPermissionMask int64
+	ChannelPermissionMask   int64
+	SubPermissionMask       int64
 }
 
 func (q *Queries) CreateAppserverRole(ctx context.Context, arg CreateAppserverRoleParams) (AppserverRole, error) {
-	row := q.db.QueryRow(ctx, createAppserverRole, arg.AppserverID, arg.Name)
+	row := q.db.QueryRow(ctx, createAppserverRole,
+		arg.AppserverID,
+		arg.Name,
+		arg.AppserverPermissionMask,
+		arg.ChannelPermissionMask,
+		arg.SubPermissionMask,
+	)
 	var i AppserverRole
 	err := row.Scan(
 		&i.ID,
 		&i.AppserverID,
 		&i.Name,
+		&i.AppserverPermissionMask,
+		&i.ChannelPermissionMask,
+		&i.SubPermissionMask,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -54,7 +72,7 @@ func (q *Queries) DeleteAppserverRole(ctx context.Context, id uuid.UUID) (int64,
 }
 
 const getAppserverRoleById = `-- name: GetAppserverRoleById :one
-SELECT id, appserver_id, name, created_at, updated_at
+SELECT id, appserver_id, name, appserver_permission_mask, channel_permission_mask, sub_permission_mask, created_at, updated_at
 FROM appserver_role
 WHERE id=$1
 LIMIT 1
@@ -67,14 +85,69 @@ func (q *Queries) GetAppserverRoleById(ctx context.Context, id uuid.UUID) (Appse
 		&i.ID,
 		&i.AppserverID,
 		&i.Name,
+		&i.AppserverPermissionMask,
+		&i.ChannelPermissionMask,
+		&i.SubPermissionMask,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
+const getAppuserRoles = `-- name: GetAppuserRoles :many
+SELECT
+  ar.id,
+  ar.name,
+  ar.appserver_permission_mask,
+  ar.channel_permission_mask,
+  ar.sub_permission_mask
+FROM appserver_role AS ar
+JOIN appserver_role_sub AS ars ON ars.appserver_role_id = ar.id
+WHERE ars.appuser_id = $1
+  AND ar.appserver_id = $2
+`
+
+type GetAppuserRolesParams struct {
+	AppuserID   uuid.UUID
+	AppserverID uuid.UUID
+}
+
+type GetAppuserRolesRow struct {
+	ID                      uuid.UUID
+	Name                    string
+	AppserverPermissionMask int64
+	ChannelPermissionMask   int64
+	SubPermissionMask       int64
+}
+
+func (q *Queries) GetAppuserRoles(ctx context.Context, arg GetAppuserRolesParams) ([]GetAppuserRolesRow, error) {
+	rows, err := q.db.Query(ctx, getAppuserRoles, arg.AppuserID, arg.AppserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAppuserRolesRow
+	for rows.Next() {
+		var i GetAppuserRolesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.AppserverPermissionMask,
+			&i.ChannelPermissionMask,
+			&i.SubPermissionMask,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAppserverRoles = `-- name: ListAppserverRoles :many
-SELECT id, appserver_id, name, created_at, updated_at
+SELECT id, appserver_id, name, appserver_permission_mask, channel_permission_mask, sub_permission_mask, created_at, updated_at
 FROM appserver_role
 WHERE appserver_id=$1
 `
@@ -92,6 +165,9 @@ func (q *Queries) ListAppserverRoles(ctx context.Context, appserverID uuid.UUID)
 			&i.ID,
 			&i.AppserverID,
 			&i.Name,
+			&i.AppserverPermissionMask,
+			&i.ChannelPermissionMask,
+			&i.SubPermissionMask,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

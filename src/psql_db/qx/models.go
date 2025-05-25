@@ -76,11 +76,14 @@ type AppserverPermission struct {
 }
 
 type AppserverRole struct {
-	ID          uuid.UUID
-	AppserverID uuid.UUID
-	Name        string
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+	ID                      uuid.UUID
+	AppserverID             uuid.UUID
+	Name                    string
+	AppserverPermissionMask int64
+	ChannelPermissionMask   int64
+	SubPermissionMask       int64
+	CreatedAt               pgtype.Timestamp
+	UpdatedAt               pgtype.Timestamp
 }
 
 type AppserverRoleSub struct {

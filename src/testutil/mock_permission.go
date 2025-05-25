@@ -19,3 +19,11 @@ func (m *MockAuthorizer) Authorize(ctx context.Context, objId *string, action pe
 	}
 	return nil // default to nil (no error) if it's not an error
 }
+
+func (m *MockAuthorizer) AuthorizeV2(ctx context.Context, objId *string, action permission.Action) error {
+	args := m.Called(ctx, objId, action)
+	if err, ok := args.Get(0).(error); ok {
+		return err
+	}
+	return nil // default to nil (no error) if it's not an error
+}

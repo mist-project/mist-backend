@@ -11,7 +11,7 @@ import "v1/appuser/appuser.proto";
 service AppserverService {
   rpc Create(CreateRequest) returns (CreateResponse) {}
   rpc GetById(GetByIdRequest) returns (GetByIdResponse) {}
-  rpc List(ListRequest) returns (ListResponse) {}
+  rpc List(ListRequest) returns (ListResponse) {} // TODO: maybe delete this
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
 }
 

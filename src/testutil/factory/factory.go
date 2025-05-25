@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"mist/src/permission"
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
 	"testing"
@@ -74,6 +75,37 @@ func UserAppserverWithPermission(t *testing.T) *testUser {
 		ReadAll:     pgtype.Bool{Valid: true, Bool: true},
 		WriteAll:    pgtype.Bool{Valid: true, Bool: true},
 		DeleteAll:   pgtype.Bool{Valid: true, Bool: true},
+	}, false)
+
+	return &testUser{User: u, Server: s, Sub: sub}
+}
+
+// Returns a testUser with all permissions.
+func UserAppserverWithAllPermissions(t *testing.T) *testUser {
+	var (
+		u   *qx.Appuser
+		s   *qx.Appserver
+		sub *qx.AppserverSub
+	)
+	u = testutil.TestAppuser(t, nil, true)
+	s = testutil.TestAppserver(t, nil, false)
+	sub = testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: s.ID, AppuserID: u.ID}, false)
+
+	role := testutil.TestAppserverRole(
+		t,
+		&qx.AppserverRole{
+			AppserverID:             s.ID,
+			Name:                    "admin",
+			AppserverPermissionMask: permission.ManageAppserver | permission.ManageRoles | permission.ManagedChannels,
+		},
+		false,
+	)
+
+	testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
+		AppserverID:     s.ID,
+		AppuserID:       u.ID,
+		AppserverSubID:  sub.ID,
+		AppserverRoleID: role.ID,
 	}, false)
 
 	return &testUser{User: u, Server: s, Sub: sub}

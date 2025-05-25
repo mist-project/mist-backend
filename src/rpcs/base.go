@@ -18,7 +18,6 @@ import (
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/db"
-	"mist/src/psql_db/qx"
 )
 
 type AppuserGRPCService struct {
@@ -84,93 +83,93 @@ type ChannelRoleGRPCService struct {
 }
 
 func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.MessageProducer) {
-	querier := db.NewQuerier(qx.New(dbConn))
+	// querier := db.NewQuerier(qx.New(dbConn))
 
-	// ----- APPUSER -----
-	appuser.RegisterAppuserServiceServer(
-		s,
-		&AppuserGRPCService{
-			Db:     querier,
-			DbConn: dbConn,
-		},
-	)
+	// // ----- APPUSER -----
+	// appuser.RegisterAppuserServiceServer(
+	// 	s,
+	// 	&AppuserGRPCService{
+	// 		Db:     querier,
+	// 		DbConn: dbConn,
+	// 	},
+	// )
 
-	// ----- APPSERVER -----
-	appserver.RegisterAppserverServiceServer(
-		s,
-		&AppserverGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewAppserverAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
+	// // ----- APPSERVER -----
+	// appserver.RegisterAppserverServiceServer(
+	// 	s,
+	// 	&AppserverGRPCService{
+	// 		Db:       querier,
+	// 		DbConn:   dbConn,
+	// 		Auth:     permission.NewAppserverAuthorizer(dbConn, querier),
+	// 		Producer: mp,
+	// 	},
+	// )
 
-	// ----- APPSERVER PERMISSION-----
-	appserver_permission.RegisterAppserverPermissionServiceServer(
-		s,
-		&AppserverPermissionGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewAppserverPermissionAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
+	// // ----- APPSERVER PERMISSION-----
+	// appserver_permission.RegisterAppserverPermissionServiceServer(
+	// 	s,
+	// 	&AppserverPermissionGRPCService{
+	// 		Db:       querier,
+	// 		DbConn:   dbConn,
+	// 		Auth:     permission.NewAppserverPermissionAuthorizer(dbConn, querier),
+	// 		Producer: mp,
+	// 	},
+	// )
 
-	// ----- APPSERVER ROLE -----
-	appserver_role.RegisterAppserverRoleServiceServer(
-		s,
-		&AppserverRoleGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewAppserverRoleAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
+	// // ----- APPSERVER ROLE -----
+	// appserver_role.RegisterAppserverRoleServiceServer(
+	// 	s,
+	// 	&AppserverRoleGRPCService{
+	// 		Db:       querier,
+	// 		DbConn:   dbConn,
+	// 		Auth:     permission.NewAppserverRoleAuthorizer(dbConn, querier),
+	// 		Producer: mp,
+	// 	},
+	// )
 
-	// ----- APPSERVER ROLE SUB -----
-	appserver_role_sub.RegisterAppserverRoleSubServiceServer(
-		s,
-		&AppserverRoleSubGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewAppserverRoleSubAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
+	// // ----- APPSERVER ROLE SUB -----
+	// appserver_role_sub.RegisterAppserverRoleSubServiceServer(
+	// 	s,
+	// 	&AppserverRoleSubGRPCService{
+	// 		Db:       querier,
+	// 		DbConn:   dbConn,
+	// 		Auth:     permission.NewAppserverRoleSubAuthorizer(dbConn, querier),
+	// 		Producer: mp,
+	// 	},
+	// )
 
-	// ----- APPSERVER SUB -----
-	appserver_sub.RegisterAppserverSubServiceServer(
-		s,
-		&AppserverSubGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewAppserverSubAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
+	// // ----- APPSERVER SUB -----
+	// appserver_sub.RegisterAppserverSubServiceServer(
+	// 	s,
+	// 	&AppserverSubGRPCService{
+	// 		Db:       querier,
+	// 		DbConn:   dbConn,
+	// 		Auth:     permission.NewAppserverSubAuthorizer(dbConn, querier),
+	// 		Producer: mp,
+	// 	},
+	// )
 
-	// ----- CHANNEL -----
-	channel.RegisterChannelServiceServer(
-		s,
-		&ChannelGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewChannelAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
+	// // ----- CHANNEL -----
+	// channel.RegisterChannelServiceServer(
+	// 	s,
+	// 	&ChannelGRPCService{
+	// 		Db:       querier,
+	// 		DbConn:   dbConn,
+	// 		Auth:     permission.NewChannelAuthorizer(dbConn, querier),
+	// 		Producer: mp,
+	// 	},
+	// )
 
-	// ----- CHANNEL ROLE -----
-	channel_role.RegisterChannelRoleServiceServer(
-		s,
-		&ChannelRoleGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewChannelRoleAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
+	// // ----- CHANNEL ROLE -----
+	// channel_role.RegisterChannelRoleServiceServer(
+	// 	s,
+	// 	&ChannelRoleGRPCService{
+	// 		Db:       querier,
+	// 		DbConn:   dbConn,
+	// 		Auth:     permission.NewChannelRoleAuthorizer(dbConn, querier),
+	// 		Producer: mp,
+	// 	},
+	// )
 }
 
 var NewValidator = func() (protovalidate.Validator, error) {

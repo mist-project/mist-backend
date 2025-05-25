@@ -10,6 +10,9 @@ const (
 	ActionRead   Action = "read"
 	ActionWrite  Action = "write"
 	ActionDelete Action = "delete"
+
+	ActionCreateAppserver Action = "create-appserver"
+	ActionDeleteAppserver Action = "delete-appserver"
 )
 
 const (
@@ -34,4 +37,5 @@ const (
 
 type Authorizer interface {
 	Authorize(ctx context.Context, objId *string, action Action, subAction string) error
+	AuthorizeV2(ctx context.Context, objId *string, action Action) error
 }

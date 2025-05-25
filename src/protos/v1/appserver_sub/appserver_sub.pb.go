@@ -12,8 +12,8 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	_ "google.golang.org/protobuf/types/known/wrapperspb"
-	"mist/src/protos/v1/appserver"
-	"mist/src/protos/v1/appuser"
+	appserver "mist/src/protos/v1/appserver"
+	appuser "mist/src/protos/v1/appuser"
 	reflect "reflect"
 	sync "sync"
 )

@@ -31,8 +31,13 @@ func NewAppserverAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverAutho
 }
 
 func (auth *AppserverAuthorizer) Authorize(
-	ctx context.Context, objId *string, action Action, subAction string,
+	ctx context.Context, objId *string, action Action,
 ) error {
+
+	if action == ActionCreateAppserver || action == ActionRead {
+		// any user can create an appserver
+		return nil
+	}
 
 	var (
 		claims *middleware.CustomJWTClaims
@@ -43,45 +48,24 @@ func (auth *AppserverAuthorizer) Authorize(
 
 	// No error expected when getting claims. this method should be hit AFTER authentication ( which sets claims )
 	claims, _ = middleware.GetJWTClaims(ctx)
+
 	if userId, err = uuid.Parse(claims.UserID); err != nil {
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	// get object and get permission role if exists
-	if objId != nil {
-		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById)
-		if err != nil {
-			return err
-		}
+	if objId == nil {
+		// only on create we don't expect an object id
+		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	switch action {
-
-	case ActionRead:
-		switch subAction {
-		case SubActionGetById:
-			return nil
-		case SubActionList:
-			return nil
-		}
-
-	case ActionWrite:
-		switch subAction {
-		case SubActionCreate:
-			return nil
-		}
-
-	case ActionDelete:
-		return auth.canDelete(userId, obj)
+	obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById)
+	if err != nil {
+		// if the object is not found or invalid uuid, we return error
+		return err
 	}
 
-	return message.UnauthorizedError(message.Unauthorized)
-}
-
-// Only server owners can delete a server.
-func (auth *AppserverAuthorizer) canDelete(userId uuid.UUID, obj *qx.Appserver) error {
-	if userId == obj.AppuserID {
-		return nil
+	if obj.AppuserID == userId {
+		return nil // user is the owner of the server, user can do anything
 	}
 
 	return message.UnauthorizedError(message.Unauthorized)

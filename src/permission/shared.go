@@ -74,3 +74,27 @@ func GetObject[T any](
 
 	return obj, nil
 }
+
+func GetUserPermissionMask(
+	ctx context.Context, auth *SharedAuthorizer, userId uuid.UUID, obj *qx.Appserver,
+) (int64, error) {
+
+	var mask int64 = 0
+
+	roles, err := service.NewAppserverRoleSubService(ctx, auth.DbConn, auth.Db).GetAppuserRoles(qx.GetAppuserRolesParams{
+		AppserverID: obj.ID,
+		AppuserID:   userId,
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	for _, role := range roles {
+		mask = role.AppserverPermissionMask | mask
+		mask = role.ChannelPermissionMask | mask
+		mask = role.SubPermissionMask | mask
+	}
+
+	return mask, nil
+}

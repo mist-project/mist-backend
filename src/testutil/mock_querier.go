@@ -198,9 +198,9 @@ func (m *MockQuerier) GetChannelPermissionById(ctx context.Context, id uuid.UUID
 	return returnIfError[qx.ChannelPermission](args, 1)
 }
 
-func (m *MockQuerier) ListAppuserRoleSubs(ctx context.Context, arg qx.ListAppuserRoleSubsParams) ([]qx.ListAppuserRoleSubsRow, error) {
+func (m *MockQuerier) GetAppuserRoles(ctx context.Context, arg qx.GetAppuserRolesParams) ([]qx.GetAppuserRolesRow, error) {
 	args := m.Called(ctx, arg)
-	return returnIfError[[]qx.ListAppuserRoleSubsRow](args, 1)
+	return returnIfError[[]qx.GetAppuserRolesRow](args, 1)
 }
 
 func (m *MockQuerier) ListChannelPermissions(ctx context.Context, id uuid.UUID) ([]qx.ChannelPermission, error) {

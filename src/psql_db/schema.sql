@@ -33,6 +33,9 @@ CREATE TABLE public.appserver_role (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     appserver_id uuid NOT NULL,
     name character varying(64) NOT NULL,
+    appserver_permission_mask bigint DEFAULT 0 NOT NULL,
+    channel_permission_mask bigint DEFAULT 0 NOT NULL,
+    sub_permission_mask bigint DEFAULT 0 NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
 );

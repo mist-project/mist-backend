@@ -342,8 +342,11 @@ func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole, base bool) *qx.App
 
 	if aRole == nil {
 		aRole = &qx.AppserverRole{
-			AppserverID: TestAppserver(t, nil, base).ID,
-			Name:        uuid.NewString(),
+			AppserverID:             TestAppserver(t, nil, base).ID,
+			Name:                    uuid.NewString(),
+			AppserverPermissionMask: (1 << 1) | (1 << 2) | (1 << 3),
+			ChannelPermissionMask:   0,
+			SubPermissionMask:       0,
 		}
 	}
 

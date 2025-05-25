@@ -28,16 +28,6 @@ SELECT
 FROM appserver_role_sub AS role_sub
 WHERE role_sub.appserver_id=$1;
 
--- name: ListAppuserRoleSubs :many
-SELECT
-  role_sub.id,
-  role_sub.appuser_id,
-  role_sub.appserver_role_id,
-  role_sub.appserver_id
-FROM appserver_role_sub AS role_sub
-WHERE role_sub.appuser_id=$1
-  AND role_sub.appserver_id=$2;
-
 -- name: DeleteAppserverRoleSub :execrows
 DELETE FROM appserver_role_sub AS role_sub
 USING appserver AS a, appserver_role AS ar

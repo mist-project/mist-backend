@@ -19,8 +19,11 @@ message AppserverRole {
   string id = 1;
   string name = 2;
   string appserver_id = 3;
-  google.protobuf.Timestamp created_at = 4;
-  google.protobuf.Timestamp updated_at = 5;
+  int64 appserver_permission_mask = 4;
+  int64 channel_permission_mask = 5;
+  int64 sub_permission_mask = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
 }
 
 // ----- REQUEST/RESPONSE -----
@@ -30,6 +33,9 @@ message CreateRequest {
     (buf.validate.field).string.min_len = 1,
     (buf.validate.field).string.max_len = 64
   ];
+  int64 appserver_permission_mask = 3 [ (buf.validate.field).int64.gt = 0 ];
+  int64 channel_permission_mask = 4 [ (buf.validate.field).int64.gt = 0 ];
+  int64 sub_permission_mask = 5 [ (buf.validate.field).int64.gt = 0 ];
 }
 message CreateResponse { AppserverRole appserver_role = 1; }
 
@@ -40,5 +46,6 @@ message ListServerRolesResponse { repeated AppserverRole appserver_roles = 1; }
 
 message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
 message DeleteResponse {}

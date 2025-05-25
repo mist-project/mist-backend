@@ -28,7 +28,10 @@ func (s *AppserverRoleGRPCService) Create(
 	}
 
 	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
-	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{Name: req.Name, AppserverID: serverId})
+	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{
+		Name: req.Name, AppserverID: serverId, AppserverPermissionMask: req.AppserverPermissionMask,
+		ChannelPermissionMask: req.ChannelPermissionMask,
+	})
 
 	// Error handling
 	if err != nil {

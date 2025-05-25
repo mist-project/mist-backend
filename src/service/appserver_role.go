@@ -73,6 +73,17 @@ func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) 
 	return &role, nil
 }
 
+// Lists all the roles for a user in a server.
+func (s *AppserverRoleSubService) GetAppuserRoles(params qx.GetAppuserRolesParams) ([]qx.GetAppuserRolesRow, error) {
+	rows, err := s.db.GetAppuserRoles(s.ctx, params)
+
+	if err != nil {
+		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+	}
+
+	return rows, nil
+}
+
 // Deletes a role from a server, only owner of server and delete role
 func (s *AppserverRoleService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteAppserverRole(s.ctx, id)

@@ -231,14 +231,14 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 			mockQuerier := new(testutil.MockQuerier)
 			tu := factory.UserAppserverSub(t)
 			mockQuerier.On("FilterAppserverSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockroleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
+			mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
 			idStr := uuid.New().String()
 
 			// ACT
-			err = mockroleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+			err = mockRoleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -263,14 +263,14 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 				Name:        "boo",
 			}, nil)
 			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockroleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
+			mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
 			idStr := uuid.New().String()
 
 			// ACT
-			err = mockroleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+			err = mockRoleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -299,14 +299,14 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 				AppuserID: tu.Server.AppuserID,
 			}, nil)
 			mockQuerier.On("GetAppuserRoles", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockroleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
+			mockRoleAuth := permission.NewAppserverRoleAuthorizer(testutil.TestDbConn, mockQuerier)
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
 			idStr := uuid.New().String()
 
 			// ACT
-			err = mockroleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+			err = mockRoleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)

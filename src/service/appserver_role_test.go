@@ -131,6 +131,51 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 	})
 }
 
+func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
+
+	t.Run("Successful:gets_roles", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		expectedRequest := qx.GetAppuserRolesParams{
+			AppserverID: uuid.New(),
+			AppuserID:   uuid.New(),
+		}
+		expected := []qx.GetAppuserRolesRow{{ID: uuid.New(), Name: "admin"}}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppuserRoles", ctx, expectedRequest).Return(expected, nil)
+
+		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		roles, err := svc.GetAppuserRoles(expectedRequest)
+
+		// ASSERT
+		assert.NoError(t, err)
+		assert.Equal(t, expected, roles)
+	})
+
+	t.Run("Error:on_db_failure", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		expectedRequest := qx.GetAppuserRolesParams{
+			AppserverID: uuid.New(),
+			AppuserID:   uuid.New(),
+		}
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppuserRoles", ctx, expectedRequest).Return(nil, fmt.Errorf("db error"))
+
+		svc := service.NewAppserverRoleService(ctx, testutil.TestDbConn, mockQuerier)
+
+		// ACT
+		_, err := svc.GetAppuserRoles(expectedRequest)
+
+		// ASSERT
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "(-3) database error: db error")
+	})
+}
+
 func TestAppserverRoleService_GetById(t *testing.T) {
 
 	t.Run("Successful:returns_appserver_role_object", func(t *testing.T) {

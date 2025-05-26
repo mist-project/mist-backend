@@ -36,6 +36,7 @@ message CreateResponse { Channel channel = 1; }
 
 message GetByIdRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
 message GetByIdResponse { Channel channel = 1; }
 
@@ -47,5 +48,6 @@ message ListServerChannelsResponse { repeated Channel channels = 1; }
 
 message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
 message DeleteResponse {}

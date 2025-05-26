@@ -20,7 +20,7 @@ func (s *AppserverGRPCService) Create(
 
 	var err error
 
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate); err != nil {
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -49,7 +49,7 @@ func (s *AppserverGRPCService) GetById(
 		aserver *qx.Appserver
 	)
 
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead, permission.SubActionGetById); err != nil {
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -72,7 +72,7 @@ func (s *AppserverGRPCService) List(
 	ctx context.Context, req *appserver.ListRequest,
 ) (*appserver.ListResponse, error) {
 
-	if err := s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionList); err != nil {
+	if err := s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -111,7 +111,7 @@ func (s *AppserverGRPCService) Delete(
 		id  uuid.UUID
 	)
 
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

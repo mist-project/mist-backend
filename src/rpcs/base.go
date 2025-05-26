@@ -10,7 +10,6 @@ import (
 	"mist/src/permission"
 	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
-	"mist/src/protos/v1/appserver_permission"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/protos/v1/appserver_sub"
@@ -29,14 +28,6 @@ type AppuserGRPCService struct {
 
 type AppserverGRPCService struct {
 	appserver.UnimplementedAppserverServiceServer
-	DbConn   *pgxpool.Pool
-	Db       db.Querier
-	Auth     permission.Authorizer
-	Producer producer.MessageProducer
-}
-
-type AppserverPermissionGRPCService struct {
-	appserver_permission.UnimplementedAppserverPermissionServiceServer
 	DbConn   *pgxpool.Pool
 	Db       db.Querier
 	Auth     permission.Authorizer
@@ -102,17 +93,6 @@ func RegisterGrpcServices(s *grpc.Server, dbConn *pgxpool.Pool, mp producer.Mess
 			Db:       querier,
 			DbConn:   dbConn,
 			Auth:     permission.NewAppserverAuthorizer(dbConn, querier),
-			Producer: mp,
-		},
-	)
-
-	// ----- APPSERVER PERMISSION-----
-	appserver_permission.RegisterAppserverPermissionServiceServer(
-		s,
-		&AppserverPermissionGRPCService{
-			Db:       querier,
-			DbConn:   dbConn,
-			Auth:     permission.NewAppserverPermissionAuthorizer(dbConn, querier),
 			Producer: mp,
 		},
 	)

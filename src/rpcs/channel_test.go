@@ -18,6 +18,7 @@ import (
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestChannelService_ListServerChannels(t *testing.T) {
@@ -96,7 +97,7 @@ func TestChannelService_ListServerChannels(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead, permission.SubActionListAppserverChannels).Return(
+		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -126,7 +127,7 @@ func TestChannelService_GetById(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestChannelClient.GetById(
-			ctx, &channel.GetByIdRequest{Id: c.ID.String()},
+			ctx, &channel.GetByIdRequest{Id: c.ID.String(), AppserverId: sub.AppserverID.String()},
 		)
 
 		if err != nil {
@@ -140,10 +141,11 @@ func TestChannelService_GetById(t *testing.T) {
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
+		tu := factory.UserAppserverWithAllPermissions(t)
 
 		// ACT
 		response, err := testutil.TestChannelClient.GetById(
-			ctx, &channel.GetByIdRequest{Id: uuid.NewString()},
+			ctx, &channel.GetByIdRequest{Id: uuid.NewString(), AppserverId: tu.Server.AppuserID.String()},
 		)
 		s, ok := status.FromError(err)
 
@@ -161,7 +163,7 @@ func TestChannelService_GetById(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &channelId, permission.ActionRead, permission.SubActionGetById).Return(
+		mockAuth.On("Authorize", mock.Anything, &channelId, permission.ActionRead).Return(
 			nil,
 		)
 
@@ -204,7 +206,7 @@ func TestChannelService_GetById(t *testing.T) {
 		mockId := uuid.NewString()
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionRead, permission.SubActionGetById).Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionRead).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -252,7 +254,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateChannel", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, permission.SubActionCreate).Return(
+		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(
 			nil,
 		)
 
@@ -293,7 +295,7 @@ func TestChannelService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, permission.SubActionCreate).Return(
+		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -322,7 +324,7 @@ func TestChannelService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestChannelClient.Delete(
-			ctx, &channel.DeleteRequest{Id: c.ID.String()},
+			ctx, &channel.DeleteRequest{Id: c.ID.String(), AppserverId: c.AppserverID.String()},
 		)
 
 		// ASSERT
@@ -333,10 +335,11 @@ func TestChannelService_Delete(t *testing.T) {
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
+		c := testutil.TestChannel(t, nil, true)
 
 		// ACT
 		response, err := testutil.TestChannelClient.Delete(
-			ctx, &channel.DeleteRequest{Id: uuid.NewString()},
+			ctx, &channel.DeleteRequest{Id: uuid.NewString(), AppserverId: c.AppserverID.String()},
 		)
 		s, ok := status.FromError(err)
 
@@ -353,7 +356,7 @@ func TestChannelService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -378,10 +381,10 @@ func TestChannelService_Delete(t *testing.T) {
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetChannelById", ctx, mock.Anything).Return(qx.Channel{ID: uuid.New()}, nil)
-		mockQuerier.On("DeleteChannel", ctx, mock.Anything).Return(nil, fmt.Errorf("db error"))
+		mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{ID: uuid.New()}, nil)
+		mockQuerier.On("DeleteChannel", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
 			nil,
 		)
 

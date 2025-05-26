@@ -97,54 +97,6 @@ func (q *Queries) GetAppserverRoleSubById(ctx context.Context, id uuid.UUID) (Ap
 	return i, err
 }
 
-const listAppuserRoleSubs = `-- name: ListAppuserRoleSubs :many
-SELECT
-  role_sub.id,
-  role_sub.appuser_id,
-  role_sub.appserver_role_id,
-  role_sub.appserver_id
-FROM appserver_role_sub AS role_sub
-WHERE role_sub.appuser_id=$1
-  AND role_sub.appserver_id=$2
-`
-
-type ListAppuserRoleSubsParams struct {
-	AppuserID   uuid.UUID
-	AppserverID uuid.UUID
-}
-
-type ListAppuserRoleSubsRow struct {
-	ID              uuid.UUID
-	AppuserID       uuid.UUID
-	AppserverRoleID uuid.UUID
-	AppserverID     uuid.UUID
-}
-
-func (q *Queries) ListAppuserRoleSubs(ctx context.Context, arg ListAppuserRoleSubsParams) ([]ListAppuserRoleSubsRow, error) {
-	rows, err := q.db.Query(ctx, listAppuserRoleSubs, arg.AppuserID, arg.AppserverID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListAppuserRoleSubsRow
-	for rows.Next() {
-		var i ListAppuserRoleSubsRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.AppuserID,
-			&i.AppserverRoleID,
-			&i.AppserverID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listServerRoleSubs = `-- name: ListServerRoleSubs :many
 SELECT
   role_sub.id,

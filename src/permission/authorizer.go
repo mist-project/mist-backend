@@ -8,6 +8,7 @@ type Action string
 
 const (
 	ActionRead   Action = "read"
+	ActionCreate Action = "create"
 	ActionWrite  Action = "write"
 	ActionDelete Action = "delete"
 )
@@ -33,5 +34,5 @@ const (
 )
 
 type Authorizer interface {
-	Authorize(ctx context.Context, objId *string, action Action, subAction string) error
+	Authorize(ctx context.Context, objId *string, action Action) error
 }

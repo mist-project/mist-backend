@@ -17,6 +17,7 @@ import (
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestChannelRoleService_ListChannelRoles(t *testing.T) {
@@ -70,7 +71,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("ListChannelRoles", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead, permission.SubActionListChannelRoles).Return(
+		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead).Return(
 			nil,
 		)
 
@@ -95,7 +96,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionRead, "list-channel-roles").Return(
+		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionRead).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -159,7 +160,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionWrite, permission.SubActionCreate).Return(
+		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionCreate).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -188,7 +189,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateChannelRole", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionWrite, permission.SubActionCreate).Return(nil)
+		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(nil)
 
 		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
@@ -210,14 +211,14 @@ func TestChannelRoleService_Create(t *testing.T) {
 }
 
 func TestChannelRoleService_Delete(t *testing.T) {
-	t.Run("Successful:roles_can_only_be_deleted", func(t *testing.T) {
+	t.Run("Successful:roles_can_be_deleted", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		aRole := testutil.TestChannelRole(t, nil, true)
 
 		// ACT
 		response, err := testutil.TestChannelRoleClient.Delete(
-			ctx, &channel_role.DeleteRequest{Id: aRole.ID.String()},
+			ctx, &channel_role.DeleteRequest{Id: aRole.ID.String(), AppserverId: aRole.AppserverID.String()},
 		)
 
 		// ASSERT
@@ -225,27 +226,15 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("Error:cannot_be_deleted_by_non_owner", func(t *testing.T) {
-		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		aRole := testutil.TestChannelRole(t, nil, false)
-
-		// ACT
-		response, err := testutil.TestChannelRoleClient.Delete(
-			ctx, &channel_role.DeleteRequest{Id: aRole.ID.String()})
-
-		// ASSERT
-		assert.Nil(t, response)
-		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
-	})
-
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
+		tu := factory.UserAppserverWithAllPermissions(t)
 
 		// ACT
-		response, err := testutil.TestChannelRoleClient.Delete(ctx, &channel_role.DeleteRequest{Id: uuid.NewString()})
+		response, err := testutil.TestChannelRoleClient.Delete(
+			ctx, &channel_role.DeleteRequest{Id: uuid.NewString(), AppserverId: tu.Server.ID.String()},
+		)
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -261,7 +250,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -286,9 +275,9 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteChannelRole", ctx, mock.Anything).Return(nil, fmt.Errorf("db error"))
+		mockQuerier.On("DeleteChannelRole", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
 			nil,
 		)
 

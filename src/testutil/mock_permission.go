@@ -12,8 +12,8 @@ type MockAuthorizer struct {
 	mock.Mock
 }
 
-func (m *MockAuthorizer) Authorize(ctx context.Context, objId *string, action permission.Action, subAction string) error {
-	args := m.Called(ctx, objId, action, subAction)
+func (m *MockAuthorizer) Authorize(ctx context.Context, objId *string, action permission.Action) error {
+	args := m.Called(ctx, objId, action)
 	if err, ok := args.Get(0).(error); ok {
 		return err
 	}

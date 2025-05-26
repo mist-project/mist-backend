@@ -61,7 +61,7 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 	serverId, _ := uuid.Parse(req.AppserverId)
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverUserRoleSubs); err != nil {
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -90,7 +90,13 @@ func (s *AppserverRoleSubGRPCService) Delete(
 ) (*appserver_role_sub.DeleteResponse, error) {
 
 	var err error
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
+
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(
+		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+	)
+
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

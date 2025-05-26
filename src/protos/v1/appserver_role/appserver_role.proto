@@ -33,9 +33,9 @@ message CreateRequest {
     (buf.validate.field).string.min_len = 1,
     (buf.validate.field).string.max_len = 64
   ];
-  int64 appserver_permission_mask = 3 [ (buf.validate.field).int64.gt = 0 ];
-  int64 channel_permission_mask = 4 [ (buf.validate.field).int64.gt = 0 ];
-  int64 sub_permission_mask = 5 [ (buf.validate.field).int64.gt = 0 ];
+  int64 appserver_permission_mask = 3 [ (buf.validate.field).int64.gte = 0 ];
+  int64 channel_permission_mask = 4 [ (buf.validate.field).int64.gte = 0 ];
+  int64 sub_permission_mask = 5 [ (buf.validate.field).int64.gte = 0 ];
 }
 message CreateResponse { AppserverRole appserver_role = 1; }
 

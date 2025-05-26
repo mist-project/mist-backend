@@ -5,8 +5,6 @@ import (
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
 	"testing"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type testUser struct {
@@ -69,14 +67,6 @@ func UserAppserverWithPermission(t *testing.T) *testUser {
 	u = testutil.TestAppuser(t, nil, true)
 	s = testutil.TestAppserver(t, nil, false)
 	sub = testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: s.ID, AppuserID: u.ID}, false)
-
-	testutil.TestAppserverPermission(t, &qx.AppserverPermission{
-		AppserverID: sub.AppserverID,
-		AppuserID:   u.ID,
-		ReadAll:     pgtype.Bool{Valid: true, Bool: true},
-		WriteAll:    pgtype.Bool{Valid: true, Bool: true},
-		DeleteAll:   pgtype.Bool{Valid: true, Bool: true},
-	}, false)
 
 	return &testUser{User: u, Server: s, Sub: sub}
 }

@@ -23,7 +23,7 @@ func (s *AppserverRoleGRPCService) Create(
 		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
 	)
 
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate); err != nil {
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -54,7 +54,7 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 	serverId, _ := uuid.Parse(req.AppserverId)
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListServerRoles); err != nil {
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -83,7 +83,13 @@ func (s *AppserverRoleGRPCService) Delete(
 ) (*appserver_role.DeleteResponse, error) {
 
 	var err error
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
+
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(
+		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+	)
+
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

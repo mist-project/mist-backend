@@ -109,7 +109,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionRead, permission.SubActionListAppserverUserRoleSubs).Return(
+		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionRead).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -169,12 +169,12 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 }
 
 func TestAppserveRoleSubService_Delete(t *testing.T) {
-	t.Run("Successful:role_sub_can_be_deleted_by_server_owner_only", func(t *testing.T) {
+	t.Run("Successful:can_successfully_delete_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		appuser := testutil.TestAppuser(t, nil, false)
 		appserver := testutil.TestAppserver(t, nil, true)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: appserver.ID}, false)
+		appuser := testutil.TestAppuser(t, nil, false)
 		sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: appuser.ID}, false)
 		roleSub := testutil.TestAppserverRoleSub(
 			t,
@@ -187,7 +187,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.Delete(
 			ctx,
-			&appserver_role_sub.DeleteRequest{Id: roleSub.ID.String()},
+			&appserver_role_sub.DeleteRequest{Id: roleSub.ID.String(), AppserverId: appserver.ID.String()},
 		)
 
 		// ASSERT
@@ -201,7 +201,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -226,9 +226,9 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("DeleteAppserverRoleSub", ctx, mock.Anything).Return(nil, fmt.Errorf("db error"))
+		mockQuerier.On("DeleteAppserverRoleSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
 			nil,
 		)
 
@@ -237,7 +237,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&appserver_role_sub.DeleteRequest{Id: mockId},
+			&appserver_role_sub.DeleteRequest{Id: mockId, AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -255,7 +255,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ACT
 		response, err := testutil.TestAppserverRoleSubClient.Delete(
 			ctx,
-			&appserver_role_sub.DeleteRequest{Id: uuid.NewString()},
+			&appserver_role_sub.DeleteRequest{Id: uuid.NewString(), AppserverId: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
 

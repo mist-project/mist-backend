@@ -40,7 +40,6 @@ message ListChannelRolesResponse { repeated ChannelRole channel_roles = 1; }
 
 message DeleteRequest {
   string id = 1 [ (buf.validate.field).string.uuid = true ];
-  string channel_id = 2 [ (buf.validate.field).string.uuid = true ];
-  string appserver_id = 3 [ (buf.validate.field).string.uuid = true ];
+  string appserver_id = 2 [ (buf.validate.field).string.uuid = true ];
 }
 message DeleteResponse {}

@@ -16,6 +16,7 @@ import (
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
@@ -57,15 +58,12 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetAppservers()))
 	})
 
-	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+	t.Run("Success:extra_authorization_not_needed_for_this_request", func(t *testing.T) {
 		// ARRANGE
-		var nilString *string
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("ListUserServerSubs", mock.Anything, mock.Anything).Return([]qx.ListUserServerSubsRow{}, nil)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionRead, permission.SubActionListUserServerSubs).Return(
-			message.UnauthorizedError("Unauthorized"),
-		)
 
 		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
@@ -75,12 +73,11 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 			&appserver_sub.ListUserServerSubsRequest{},
 		)
 
-		s, ok := status.FromError(err)
+		_, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		mockAuth.AssertNotCalled(t, "Authorize", mock.Anything, mock.Anything, permission.ActionRead)
 	})
 }
 
@@ -116,7 +113,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On(
-			"Authorize", mock.Anything, nilString, permission.ActionRead, permission.SubActionListAppserverUserSubs,
+			"Authorize", mock.Anything, nilString, permission.ActionRead,
 		).Return(message.UnauthorizedError("Unauthorized"))
 
 		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -196,19 +193,11 @@ func TestAppserverSubService_Delete(t *testing.T) {
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
-		appserver := testutil.TestAppserver(t, &qx.Appserver{AppuserID: appuser.ID}, false)
-		appserverSub := testutil.TestAppserverSub(t, &qx.AppserverSub{
-			AppserverID: appserver.ID,
-			AppuserID:   appuser.ID,
-		},
-			false,
-		)
+		tu := factory.UserAppserverSub(t)
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Delete(
-			ctx, &appserver_sub.DeleteRequest{Id: appserverSub.ID.String()})
+			ctx, &appserver_sub.DeleteRequest{Id: tu.Sub.ID.String(), AppserverId: tu.Server.ID.String()})
 
 		// ASSERT
 		assert.NotNil(t, response)
@@ -221,7 +210,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ACT
 		response, err := testutil.TestAppserverSubClient.Delete(
-			ctx, &appserver_sub.DeleteRequest{Id: uuid.NewString()},
+			ctx, &appserver_sub.DeleteRequest{Id: uuid.NewString(), AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -229,8 +218,8 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "resource not found")
+		assert.Equal(t, codes.PermissionDenied, s.Code())
+		assert.Contains(t, err.Error(), "(-5) Unauthorized")
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -238,10 +227,10 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverSubById", ctx, mock.Anything).Return(qx.AppserverSub{}, nil)
-		mockQuerier.On("DeleteAppserverSub", ctx, mock.Anything).Return(nil, fmt.Errorf("db error"))
+		mockQuerier.On("GetAppserverSubById", mock.Anything, mock.Anything).Return(qx.AppserverSub{}, nil)
+		mockQuerier.On("DeleteAppserverSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, &mockId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
 			nil,
 		)
 
@@ -250,7 +239,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&appserver_sub.DeleteRequest{Id: mockId},
+			&appserver_sub.DeleteRequest{Id: mockId, AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)
@@ -267,7 +256,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete, permission.SubActionDelete).Return(
+		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
 			message.UnauthorizedError("Unauthorized"),
 		)
 
@@ -276,7 +265,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		// ACT
 		_, err := svc.Delete(
 			ctx,
-			&appserver_sub.DeleteRequest{Id: roleId},
+			&appserver_sub.DeleteRequest{Id: roleId, AppserverId: uuid.NewString()},
 		)
 
 		s, ok := status.FromError(err)

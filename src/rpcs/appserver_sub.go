@@ -39,11 +39,6 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 	ctx context.Context, req *appserver_sub.ListUserServerSubsRequest,
 ) (*appserver_sub.ListUserServerSubsResponse, error) {
 
-	var err error
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListUserServerSubs); err != nil {
-		return nil, message.RpcErrorHandler(err)
-	}
-
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer)
 
@@ -76,7 +71,7 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 	serverId, _ := uuid.Parse(req.AppserverId)
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverUserSubs); err != nil {
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -102,7 +97,13 @@ func (s *AppserverSubGRPCService) Delete(
 ) (*appserver_sub.DeleteResponse, error) {
 
 	var err error
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
+
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(
+		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+	)
+
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

@@ -13,7 +13,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
@@ -24,7 +23,6 @@ import (
 
 	"mist/src/middleware"
 	"mist/src/protos/v1/appserver"
-	"mist/src/protos/v1/appserver_permission"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/protos/v1/appserver_sub"
@@ -36,16 +34,15 @@ import (
 )
 
 var (
-	testServer                    *grpc.Server
-	TestAppserverClient           appserver.AppserverServiceClient
-	TestAppserverPermissionClient appserver_permission.AppserverPermissionServiceClient
-	TestAppserverRoleClient       appserver_role.AppserverRoleServiceClient
-	TestAppserverRoleSubClient    appserver_role_sub.AppserverRoleSubServiceClient
-	TestAppserverSubClient        appserver_sub.AppserverSubServiceClient
-	TestAppuserClient             appuser.AppuserServiceClient
-	TestChannelClient             channel.ChannelServiceClient
-	TestChannelRoleClient         channel_role.ChannelRoleServiceClient
-	testClientConn                *grpc.ClientConn
+	testServer                 *grpc.Server
+	TestAppserverClient        appserver.AppserverServiceClient
+	TestAppserverRoleClient    appserver_role.AppserverRoleServiceClient
+	TestAppserverRoleSubClient appserver_role_sub.AppserverRoleSubServiceClient
+	TestAppserverSubClient     appserver_sub.AppserverSubServiceClient
+	TestAppuserClient          appuser.AppuserServiceClient
+	TestChannelClient          channel.ChannelServiceClient
+	TestChannelRoleClient      channel_role.ChannelRoleServiceClient
+	testClientConn             *grpc.ClientConn
 
 	TestDbConn    *pgxpool.Pool
 	TestKProducer = new(MockProducer)
@@ -132,7 +129,6 @@ func SetupTestGRPCServicesAndClient() {
 
 	TestAppuserClient = appuser.NewAppuserServiceClient(testClientConn)
 	TestAppserverClient = appserver.NewAppserverServiceClient(testClientConn)
-	TestAppserverPermissionClient = appserver_permission.NewAppserverPermissionServiceClient(testClientConn)
 	TestAppserverRoleClient = appserver_role.NewAppserverRoleServiceClient(testClientConn)
 	TestAppserverRoleSubClient = appserver_role_sub.NewAppserverRoleSubServiceClient(testClientConn)
 	TestAppserverSubClient = appserver_sub.NewAppserverSubServiceClient(testClientConn)
@@ -193,9 +189,7 @@ func teardown(ctx context.Context) {
 		"appserver_sub",
 		"appserver_role",
 		"appserver_role_sub",
-		"appserver_permission",
 		"channel",
-		"channel_permission",
 		"channel_role",
 	}
 
@@ -304,37 +298,6 @@ func TestAppserver(t *testing.T, appserver *qx.Appserver, base bool) *qx.Appserv
 	}
 
 	return &as
-}
-
-func TestAppserverPermission(t *testing.T, p *qx.AppserverPermission, base bool) *qx.AppserverPermission {
-	// Define attributes
-
-	if p == nil {
-		p = &qx.AppserverPermission{
-			AppserverID: TestAppserver(t, nil, base).ID,
-			AppuserID:   TestAppuser(t, nil, base).ID,
-			ReadAll:     pgtype.Bool{Valid: true, Bool: true},
-			WriteAll:    pgtype.Bool{Valid: true, Bool: true},
-			DeleteAll:   pgtype.Bool{Valid: true, Bool: true},
-		}
-	}
-
-	permission, err := qx.New(TestDbConn).CreateAppserverPermission(
-		context.Background(),
-		qx.CreateAppserverPermissionParams{
-			AppserverID: p.AppserverID,
-			AppuserID:   p.AppuserID,
-			ReadAll:     p.ReadAll,
-			WriteAll:    p.WriteAll,
-			DeleteAll:   p.DeleteAll,
-		},
-	)
-
-	if err != nil {
-		t.Fatalf("Unable to create appserverRole. Error: %v", err)
-	}
-
-	return &permission
 }
 
 func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole, base bool) *qx.AppserverRole {

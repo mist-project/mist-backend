@@ -137,7 +137,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 				assert.Equal(t, "(-5) Unauthorized", err.Error())
 			})
 
-			t.Run("Error:object_owner_cannot_delete_its_own_subscription", func(t *testing.T) {
+			t.Run("Error:object_owner_can_delete_its_own_subscription", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				tu := factory.UserAppserverSub(t)
@@ -152,7 +152,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 				err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 				// ASSERT
-				assert.Equal(t, "(-5) Unauthorized", err.Error())
+				assert.Nil(t, err)
 			})
 
 			t.Run("Successful:user_with_delete_permission_can_delete_sub", func(t *testing.T) {
@@ -281,7 +281,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			mockQuerier.On("GetAppserverSubById", mock.Anything, mock.Anything).Return(qx.AppserverSub{
 				ID:          tu.Sub.ID,
 				AppserverID: tu.Server.ID,
-				AppuserID:   tu.User.ID,
+				AppuserID:   uuid.New(),
 			}, nil)
 			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(qx.Appserver{
 				ID:        tu.Server.ID,
@@ -300,6 +300,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			// ASSERT
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-5) Unauthorized", err.Error())
+
 		})
 
 		t.Run("Error:invalid_object_id_format", func(t *testing.T) {

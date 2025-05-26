@@ -46,6 +46,7 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 	)
 
 	// No error expected when getting claims. this method should be hit AFTER authentication ( which sets claims )
+
 	claims, _ = middleware.GetJWTClaims(ctx)
 
 	if userId, err = uuid.Parse(claims.UserID); err != nil {

@@ -34,6 +34,5 @@ const (
 )
 
 type Authorizer interface {
-	Authorize(ctx context.Context, objId *string, action Action, subAction string) error
-	AuthorizeV2(ctx context.Context, objId *string, action Action) error
+	Authorize(ctx context.Context, objId *string, action Action) error
 }

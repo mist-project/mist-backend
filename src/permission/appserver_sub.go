@@ -88,10 +88,15 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		// if the object is not found or invalid uuid, we return error
 		return message.UnauthorizedError(message.Unauthorized)
 	}
+	if action == ActionDelete {
 
-	if server.AppuserID == sub.AppuserID && action == ActionDelete {
-		// nobody can delete the owner's sub
-		return message.UnauthorizedError(message.Unauthorized)
+		if server.AppuserID == sub.AppuserID {
+			// nobody can delete the owner's sub
+			return message.UnauthorizedError(message.Unauthorized)
+		} else if sub.AppuserID == userId {
+			// user can delete their own sub
+			return nil
+		}
 	}
 
 	if server.AppuserID == userId {

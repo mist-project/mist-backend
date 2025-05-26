@@ -23,7 +23,7 @@ func (s *ChannelGRPCService) Create(
 		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
 	)
 
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionWrite, permission.SubActionCreate); err != nil {
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
@@ -44,7 +44,12 @@ func (s *ChannelGRPCService) GetById(
 ) (*channel.GetByIdResponse, error) {
 	var err error
 
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead, permission.SubActionGetById); err != nil {
+	serverId, _ := uuid.Parse(req.AppserverId)
+	ctx = context.WithValue(
+		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+	)
+
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -70,7 +75,7 @@ func (s *ChannelGRPCService) ListServerChannels(
 	serverId, _ := uuid.Parse(req.AppserverId)
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
-	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead, permission.SubActionListAppserverChannels); err != nil {
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 
@@ -96,11 +101,10 @@ func (s *ChannelGRPCService) Delete(
 ) (*channel.DeleteResponse, error) {
 
 	var err error
-	serverId, _ := uuid.Parse(req.Id)
-
+	serverId, _ := uuid.Parse(req.AppserverId)
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
-	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete, permission.SubActionDelete); err != nil {
+	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, message.RpcErrorHandler(err)
 	}
 

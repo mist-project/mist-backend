@@ -218,8 +218,8 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.PermissionDenied, s.Code())
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Equal(t, codes.NotFound, s.Code())
+		assert.Contains(t, err.Error(), "(-2) resource not found")
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {

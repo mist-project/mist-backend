@@ -108,7 +108,7 @@ func GetUserPermissionMask(
 	ctx context.Context, auth *SharedAuthorizer, userId uuid.UUID, obj *qx.Appserver,
 ) (*PermissionMasks, error) {
 
-	roles, err := service.NewAppserverRoleSubService(ctx, auth.DbConn, auth.Db).GetAppuserRoles(qx.GetAppuserRolesParams{
+	roles, err := service.NewAppserverRoleService(ctx, auth.DbConn, auth.Db).GetAppuserRoles(qx.GetAppuserRolesParams{
 		AppserverID: obj.ID,
 		AppuserID:   userId,
 	})

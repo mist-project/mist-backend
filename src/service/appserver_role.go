@@ -74,7 +74,7 @@ func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) 
 }
 
 // Lists all the roles for a user in a server.
-func (s *AppserverRoleSubService) GetAppuserRoles(params qx.GetAppuserRolesParams) ([]qx.GetAppuserRolesRow, error) {
+func (s *AppserverRoleService) GetAppuserRoles(params qx.GetAppuserRolesParams) ([]qx.GetAppuserRolesRow, error) {
 	rows, err := s.db.GetAppuserRoles(s.ctx, params)
 
 	if err != nil {

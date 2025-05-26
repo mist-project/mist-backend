@@ -68,7 +68,7 @@ func (auth *AppserverSubAuthorizer) Authorize(
 	allowed, err = auth.shared.BasePermissionCheck(ctx, serverIdCtx.AppserverId, userId, action)
 
 	if err != nil {
-		return message.UnauthorizedError(message.Unauthorized)
+		return err
 	}
 
 	if allowed {
@@ -79,7 +79,7 @@ func (auth *AppserverSubAuthorizer) Authorize(
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return err
-		return message.UnauthorizedError(message.Unauthorized)
+		return err
 	}
 
 	server, err = service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById(serverIdCtx.AppserverId)

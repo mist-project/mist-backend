@@ -318,7 +318,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, "(-1) invalid uuid", err.Error())
 		})
 
 		t.Run("Error:invalid_server_id_format", func(t *testing.T) {
@@ -350,7 +350,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, "(-2) resource not found", err.Error())
 		})
 
 		t.Run("Error:nil_object_errors", func(t *testing.T) {
@@ -367,8 +367,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-
+			assert.Equal(t, "(-1) invalid uuid", err.Error())
 		})
 	})
 }

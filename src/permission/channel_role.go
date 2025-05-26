@@ -51,7 +51,7 @@ func (auth *ChannelRoleAuthorizer) Authorize(
 	}
 
 	if objId != nil {
-		obj, err = GetObject(ctx, auth.shared, *objId, service.NewChannelRoleService(ctx, auth.DbConn, auth.Db).GetById)
+		obj, err = GetObject(ctx, auth.shared, objId, service.NewChannelRoleService(ctx, auth.DbConn, auth.Db).GetById)
 		if err != nil {
 			return err
 		}

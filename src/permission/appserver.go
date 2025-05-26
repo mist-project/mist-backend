@@ -58,10 +58,11 @@ func (auth *AppserverAuthorizer) Authorize(
 		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById)
+	obj, err = GetObject(ctx, auth.shared, objId, service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById)
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error
-		return err
+		return message.UnauthorizedError(message.Unauthorized)
+
 	}
 
 	if obj.AppuserID == userId {

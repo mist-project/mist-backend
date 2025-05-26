@@ -50,7 +50,7 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 	}
 
 	if objId != nil {
-		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverRoleSubService(ctx, auth.DbConn, auth.Db).GetById)
+		obj, err = GetObject(ctx, auth.shared, objId, service.NewAppserverRoleSubService(ctx, auth.DbConn, auth.Db).GetById)
 		if err != nil {
 			return err
 		}

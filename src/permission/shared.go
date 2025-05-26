@@ -53,7 +53,6 @@ func (auth *SharedAuthorizer) UserHasServerSub(ctx context.Context, userId uuid.
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userId},
 		},
 	)
-
 	if err != nil {
 		return false, err
 	} else if len(sub) > 0 {
@@ -63,11 +62,35 @@ func (auth *SharedAuthorizer) UserHasServerSub(ctx context.Context, userId uuid.
 	return false, nil
 }
 
+func (auth *SharedAuthorizer) BasePermissionCheck(
+	ctx context.Context, appserverId uuid.UUID, userId uuid.UUID, action Action,
+) (bool, error) {
+	var (
+		err    error
+		hasSub bool
+	)
+
+	if hasSub, err = auth.UserHasServerSub(ctx, userId, appserverId); err != nil {
+		return false, message.UnauthorizedError(message.Unauthorized)
+	}
+
+	if hasSub && action == ActionRead {
+		// if the user has a sub for this server, he can read it
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func GetObject[T any](
-	ctx context.Context, auth *SharedAuthorizer, objId string, fetchFunc func(uuid.UUID) (*T, error),
+	ctx context.Context, auth *SharedAuthorizer, objId *string, fetchFunc func(uuid.UUID) (*T, error),
 ) (*T, error) {
 
-	id, err := uuid.Parse(objId)
+	if objId == nil {
+		return nil, message.ValidateError(message.InvalidUUID)
+	}
+
+	id, err := uuid.Parse(*objId)
 	if err != nil {
 		return nil, message.ValidateError(message.InvalidUUID)
 	}

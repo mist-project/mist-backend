@@ -25,6 +25,7 @@ func UserAppserverOwner(t *testing.T) *testUser {
 	u = testutil.TestAppuser(t, nil, true)
 	s = testutil.TestAppserver(t, nil, true)
 	sub = testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: s.ID, AppuserID: u.ID}, false)
+
 	return &testUser{User: u, Server: s, Sub: sub}
 }
 

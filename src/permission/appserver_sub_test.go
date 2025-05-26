@@ -107,9 +107,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 				tu := factory.UserAppserverOwner(t)
 				user := testutil.TestAppuser(t, nil, false)
 				sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: tu.Server.ID, AppuserID: user.ID}, false)
-
 				idStr := sub.ID.String()
-
 				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 					AppserverId: tu.Server.ID,
 				})
@@ -181,7 +179,9 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				sub := testutil.TestAppserverSub(t, nil, false)
-
+				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+					AppserverId: sub.AppserverID,
+				})
 				idStr := sub.ID.String()
 
 				// ACT
@@ -317,7 +317,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-1) invalid uuid", err.Error())
+			assert.Equal(t, "(-5) Unauthorized", err.Error())
 		})
 
 		t.Run("Error:invalid_server_id_format", func(t *testing.T) {
@@ -349,16 +349,16 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-2) resource not found", err.Error())
+			assert.Equal(t, "(-5) Unauthorized", err.Error())
 		})
 
 		t.Run("Error:nil_object_errors", func(t *testing.T) {
+			// ARRANGE
 			ctx := testutil.Setup(t, func() {})
 			tu := factory.UserAppserverSub(t)
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
-			// ARRANGE
 			var nilObj *string
 
 			// ACT
@@ -367,6 +367,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			// ASSERT
 			assert.NotNil(t, err)
 			assert.Equal(t, "(-5) Unauthorized", err.Error())
+
 		})
 	})
 }

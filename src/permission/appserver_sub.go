@@ -42,7 +42,7 @@ func (auth *AppserverSubAuthorizer) Authorize(
 	var (
 		authOk      bool
 		claims      *middleware.CustomJWTClaims
-		hasSub      bool
+		allowed     bool
 		err         error
 		server      *qx.Appserver
 		serverIdCtx *AppserverIdAuthCtx
@@ -65,24 +65,21 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, serverIdCtx.AppserverId); err != nil {
+	allowed, err = auth.shared.BasePermissionCheck(ctx, serverIdCtx.AppserverId, userId, action)
+
+	if err != nil {
 		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	if hasSub && action == ActionRead {
-		// if the user has a sub for this server, he can read it
-		return nil
+	if allowed {
+		return nil // user has base permission, no need to check further
 	}
 
-	if objId == nil {
-		return message.UnauthorizedError(message.Unauthorized)
-	}
-
-	sub, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverSubService(ctx, auth.DbConn, auth.Db, nil).GetById)
+	sub, err = GetObject(ctx, auth.shared, objId, service.NewAppserverSubService(ctx, auth.DbConn, auth.Db, nil).GetById)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return err
-		return err
+		return message.UnauthorizedError(message.Unauthorized)
 	}
 
 	server, err = service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById(serverIdCtx.AppserverId)

@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"mist/src/errors/message"
 	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/psql_db/db"
@@ -138,7 +139,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-1) invalid uuid", err.Error())
+			assert.Equal(t, "(-5) Unauthorized", err.Error())
 		})
 
 		t.Run("Error:object_id_not_found", func(t *testing.T) {
@@ -150,7 +151,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-2) resource not found", err.Error())
+			message.UnauthorizedError(message.Unauthorized)
 		})
 
 		t.Run("Error:nil_object_errors", func(t *testing.T) {

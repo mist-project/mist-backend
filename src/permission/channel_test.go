@@ -20,8 +20,8 @@ import (
 
 func TestChannelAuthorizer_Authorize(t *testing.T) {
 	var (
-		err      error
-		roleAuth = permission.NewChannelAuthorizer(testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
+		err         error
+		channelAuth = permission.NewChannelAuthorizer(testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
 	)
 
 	t.Run("ActionRead", func(t *testing.T) {
@@ -35,7 +35,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			})
 
 			// ACT
-			err = roleAuth.Authorize(ctx, nil, permission.ActionRead)
+			err = channelAuth.Authorize(ctx, nil, permission.ActionRead)
 
 			// ASSERT
 			assert.Nil(t, err)
@@ -51,7 +51,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			})
 
 			// ACT
-			err = roleAuth.Authorize(ctx, nil, permission.ActionRead)
+			err = channelAuth.Authorize(ctx, nil, permission.ActionRead)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -72,7 +72,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				})
 
 				// ACT
-				err = roleAuth.Authorize(ctx, nil, permission.ActionCreate)
+				err = channelAuth.Authorize(ctx, nil, permission.ActionCreate)
 
 				// ASSERT
 				assert.Nil(t, err)
@@ -88,7 +88,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				})
 
 				// ACT
-				err = roleAuth.Authorize(ctx, nil, permission.ActionWrite)
+				err = channelAuth.Authorize(ctx, nil, permission.ActionWrite)
 
 				// ASSERT
 				assert.Nil(t, err)
@@ -104,7 +104,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				})
 
 				// ACT
-				err = roleAuth.Authorize(ctx, nil, permission.ActionWrite)
+				err = channelAuth.Authorize(ctx, nil, permission.ActionWrite)
 
 				// ASSERT
 				assert.NotNil(t, err)
@@ -121,7 +121,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				})
 
 				// ACT
-				err = roleAuth.Authorize(ctx, nil, permission.ActionWrite)
+				err = channelAuth.Authorize(ctx, nil, permission.ActionWrite)
 
 				// ASSERT
 				assert.NotNil(t, err)
@@ -144,7 +144,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				idStr := channel.ID.String()
 
 				// ACT
-				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 				// ASSERT
 				assert.Nil(t, err)
@@ -161,7 +161,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				idStr := channel.ID.String()
 
 				// ACT
-				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 				// ASSERT
 				assert.Nil(t, err)
@@ -178,7 +178,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				idStr := channel.ID.String()
 
 				// ACT
-				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 				// ASSERT
 				assert.NotNil(t, err)
@@ -196,7 +196,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				idStr := channel.ID.String()
 
 				// ACT
-				err = roleAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+				err = channelAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 				// ASSERT
 				assert.NotNil(t, err)
@@ -218,7 +218,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			badCtx := context.WithValue(ctx, middleware.JwtClaimsK, claims)
 
 			// ACT
-			err = roleAuth.Authorize(badCtx, nil, permission.ActionRead)
+			err = channelAuth.Authorize(badCtx, nil, permission.ActionRead)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -324,7 +324,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			badId := "invalid"
 
 			// ACT
-			err = roleAuth.Authorize(ctx, &badId, permission.ActionDelete)
+			err = channelAuth.Authorize(ctx, &badId, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -338,7 +338,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, "invalid")
 
 			// ACT
-			err = roleAuth.Authorize(ctx, nil, permission.ActionDelete)
+			err = channelAuth.Authorize(ctx, nil, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -356,7 +356,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			})
 
 			// ACT
-			err = roleAuth.Authorize(ctx, &nonExistentId, permission.ActionDelete)
+			err = channelAuth.Authorize(ctx, &nonExistentId, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -373,7 +373,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 			var nilObj *string
 
 			// ACT
-			err = roleAuth.Authorize(ctx, nilObj, permission.ActionDelete)
+			err = channelAuth.Authorize(ctx, nilObj, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)

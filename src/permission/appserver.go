@@ -34,7 +34,7 @@ func (auth *AppserverAuthorizer) Authorize(
 	ctx context.Context, objId *string, action Action,
 ) error {
 
-	if action == ActionCreateAppserver || action == ActionRead {
+	if action == ActionCreate || action == ActionRead {
 		// any user can create an appserver
 		return nil
 	}

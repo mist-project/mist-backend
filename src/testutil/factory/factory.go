@@ -97,6 +97,8 @@ func UserAppserverWithAllPermissions(t *testing.T) *testUser {
 			AppserverID:             s.ID,
 			Name:                    "admin",
 			AppserverPermissionMask: permission.ManageAppserver | permission.ManageRoles | permission.ManagedChannels,
+			ChannelPermissionMask:   0,
+			SubPermissionMask:       permission.ManageSubs,
 		},
 		false,
 	)

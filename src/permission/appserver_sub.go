@@ -31,130 +31,83 @@ func NewAppserverSubAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverSu
 }
 
 func (auth *AppserverSubAuthorizer) Authorize(
-	ctx context.Context, objId *string, action Action, subAction string,
+	ctx context.Context, objId *string, action Action,
 ) error {
 
+	if action == ActionCreate {
+		// any user can create an appserver sub
+		return nil
+	}
+
 	var (
-		authctx    *AppserverIdAuthCtx
-		authOk     bool
-		claims     *middleware.CustomJWTClaims
-		err        error
-		obj        *qx.AppserverSub
-		permission *qx.AppserverPermission
-		userId     uuid.UUID
+		authOk      bool
+		claims      *middleware.CustomJWTClaims
+		hasSub      bool
+		err         error
+		server      *qx.Appserver
+		serverIdCtx *AppserverIdAuthCtx
+		sub         *qx.AppserverSub
+		permissions *PermissionMasks
+		userId      uuid.UUID
 	)
 
 	// No error expected when getting claims. this method should be hit AFTER authentication ( which sets claims )
 	claims, _ = middleware.GetJWTClaims(ctx)
+
 	if userId, err = uuid.Parse(claims.UserID); err != nil {
 		return message.ValidateError(message.InvalidUUID)
 	}
 
-	// get object and get permission role if exists
-	if objId != nil {
-		obj, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverSubService(ctx, auth.DbConn, auth.Db, nil).GetById)
-		if err != nil {
-			return err
-		}
+	serverIdCtx, authOk = ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
 
-		permission, _ = service.NewAppserverPermissionService(
-			ctx, auth.DbConn, auth.shared.Db,
-		).GetAppserverPermissionForUser(
-			qx.GetAppserverPermissionForUserParams{AppserverID: obj.AppserverID, AppuserID: userId},
-		)
+	if !authOk {
+		// if the object is not found or invalid uuid, we return error
+		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	authctx, authOk = ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
-
-	// if permission role undefined, and auth context provided, attempt to get permission
-	if authOk && permission == nil {
-		permission, _ = service.NewAppserverPermissionService(
-			ctx, auth.DbConn, auth.shared.Db,
-		).GetAppserverPermissionForUser(
-			qx.GetAppserverPermissionForUserParams{AppserverID: authctx.AppserverId, AppuserID: userId},
-		)
+	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, serverIdCtx.AppserverId); err != nil {
+		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	switch action {
-	case ActionRead:
-
-		if permission != nil && permission.ReadAll.Bool {
-			// user has elevated read permissions
-			return nil
-		}
-
-		switch subAction {
-		case SubActionListUserServerSubs:
-			return nil
-		case SubActionListAppserverUserSubs:
-			return auth.canListAppserverSubs(ctx, userId, authctx)
-		}
-
-	case ActionWrite:
-
-		if permission != nil && permission.WriteAll.Bool {
-			// user has elevated write permissions
-			return nil
-		}
-
-		switch subAction {
-		case SubActionCreate:
-			// Anyone can become a sub for a server.
-			return nil
-		}
-
-	case ActionDelete:
-		// TODO: user with permission cannot delete owner's subscription
-		if permission != nil && permission.DeleteAll.Bool {
-			// user has elevated delete permissions
-			return nil
-		}
-
-		return auth.canDelete(ctx, userId, obj)
-	}
-
-	return message.UnauthorizedError(message.Unauthorized)
-}
-
-// A user can only request list users subscribed to a server if they are subscribed to it.
-func (auth *AppserverSubAuthorizer) canListAppserverSubs(ctx context.Context, userId uuid.UUID, authCtx *AppserverIdAuthCtx) error {
-	var (
-		owner  bool
-		hasSub bool
-		err    error
-	)
-
-	if owner, err = auth.shared.UserIsServerOwner(ctx, userId, authCtx.AppserverId); owner {
+	if hasSub && action == ActionRead {
+		// if the user has a sub for this server, he can read it
 		return nil
 	}
 
-	if hasSub, err = auth.shared.UserHasServerSub(ctx, userId, authCtx.AppserverId); err != nil {
+	if objId == nil {
+		return message.UnauthorizedError(message.Unauthorized)
+	}
+
+	sub, err = GetObject(ctx, auth.shared, *objId, service.NewAppserverSubService(ctx, auth.DbConn, auth.Db, nil).GetById)
+
+	if err != nil {
+		// if the object is not found or invalid uuid, we return err
 		return err
 	}
 
-	if hasSub {
-		return nil
+	server, err = service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById(serverIdCtx.AppserverId)
+
+	if err != nil {
+		// if the object is not found or invalid uuid, we return error
+		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	return message.UnauthorizedError(message.Unauthorized)
-}
-
-// Server owner and and object owner can delete a subscription.
-func (auth *AppserverSubAuthorizer) canDelete(ctx context.Context, userId uuid.UUID, obj *qx.AppserverSub) error {
-	var (
-		owner bool
-		err   error
-	)
-
-	if userId == obj.AppuserID {
-		return nil
+	if server.AppuserID == sub.AppuserID && action == ActionDelete {
+		// nobody can delete the owner's sub
+		return message.UnauthorizedError(message.Unauthorized)
 	}
 
-	if owner, err = auth.shared.UserIsServerOwner(ctx, userId, obj.AppserverID); err != nil {
-		return err
+	if server.AppuserID == userId {
+		return nil // user is the owner of the server, user can do anything
 	}
 
-	if owner {
+	permissions, err = GetUserPermissionMask(ctx, auth.shared, userId, server)
+
+	if err != nil {
+		return message.UnauthorizedError(message.Unauthorized)
+	}
+
+	if permissions.SubPermissionMask&ManageSubs != 0 {
 		return nil
 	}
 

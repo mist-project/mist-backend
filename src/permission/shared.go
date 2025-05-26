@@ -21,6 +21,12 @@ type AppserverIdAuthCtx struct {
 	AppserverId uuid.UUID
 }
 
+type PermissionMasks struct {
+	AppserverPermissionMask int64
+	ChannelPermissionMask   int64
+	SubPermissionMask       int64
+}
+
 func NewSharedAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *SharedAuthorizer {
 	return &SharedAuthorizer{
 		DbConn: DbConn,
@@ -77,9 +83,7 @@ func GetObject[T any](
 
 func GetUserPermissionMask(
 	ctx context.Context, auth *SharedAuthorizer, userId uuid.UUID, obj *qx.Appserver,
-) (int64, error) {
-
-	var mask int64 = 0
+) (*PermissionMasks, error) {
 
 	roles, err := service.NewAppserverRoleSubService(ctx, auth.DbConn, auth.Db).GetAppuserRoles(qx.GetAppuserRolesParams{
 		AppserverID: obj.ID,
@@ -87,14 +91,20 @@ func GetUserPermissionMask(
 	})
 
 	if err != nil {
-		return 0, err
+		return nil, err
+	}
+
+	masks := PermissionMasks{
+		AppserverPermissionMask: 0,
+		ChannelPermissionMask:   0,
+		SubPermissionMask:       0,
 	}
 
 	for _, role := range roles {
-		mask = role.AppserverPermissionMask | mask
-		mask = role.ChannelPermissionMask | mask
-		mask = role.SubPermissionMask | mask
+		masks.AppserverPermissionMask = role.AppserverPermissionMask | masks.AppserverPermissionMask
+		masks.ChannelPermissionMask = role.ChannelPermissionMask | masks.ChannelPermissionMask
+		masks.SubPermissionMask = role.SubPermissionMask | masks.SubPermissionMask
 	}
 
-	return mask, nil
+	return &masks, nil
 }

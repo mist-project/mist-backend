@@ -8,11 +8,9 @@ type Action string
 
 const (
 	ActionRead   Action = "read"
+	ActionCreate Action = "create"
 	ActionWrite  Action = "write"
 	ActionDelete Action = "delete"
-
-	ActionCreateAppserver Action = "create-appserver"
-	ActionDeleteAppserver Action = "delete-appserver"
 )
 
 const (

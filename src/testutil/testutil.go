@@ -344,7 +344,7 @@ func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole, base bool) *qx.App
 		aRole = &qx.AppserverRole{
 			AppserverID:             TestAppserver(t, nil, base).ID,
 			Name:                    uuid.NewString(),
-			AppserverPermissionMask: (1 << 1) | (1 << 2) | (1 << 3),
+			AppserverPermissionMask: 0,
 			ChannelPermissionMask:   0,
 			SubPermissionMask:       0,
 		}
@@ -352,7 +352,13 @@ func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole, base bool) *qx.App
 
 	asRole, err := qx.New(TestDbConn).CreateAppserverRole(
 		context.Background(),
-		qx.CreateAppserverRoleParams{AppserverID: aRole.AppserverID, Name: aRole.Name},
+		qx.CreateAppserverRoleParams{
+			AppserverID:             aRole.AppserverID,
+			Name:                    aRole.Name,
+			AppserverPermissionMask: aRole.AppserverPermissionMask,
+			ChannelPermissionMask:   aRole.ChannelPermissionMask,
+			SubPermissionMask:       aRole.SubPermissionMask,
+		},
 	)
 
 	if err != nil {

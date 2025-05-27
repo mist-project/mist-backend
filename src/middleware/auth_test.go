@@ -20,6 +20,8 @@ type DummyRequest struct{}
 var mockHandler = func(ctx context.Context, req interface{}) (interface{}, error) { return req, nil }
 
 func TestAuthJwtInterceptor(t *testing.T) {
+	interceptor := middleware.AuthJwtInterceptor()
+
 	t.Run("valid_token", func(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
@@ -33,7 +35,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.Nil(t, err)
@@ -53,7 +55,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -73,7 +75,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -94,7 +96,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -108,7 +110,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -122,7 +124,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -136,7 +138,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -161,7 +163,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err = middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err = interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -173,7 +175,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx := context.Background()
 
 		// ACT
-		_, err := middleware.AuthJwtInterceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)

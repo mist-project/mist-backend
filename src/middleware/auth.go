@@ -14,19 +14,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// func logRequestBody(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-// 	// Log the metadata (headers) and the request body (payload)
-// 	md, ok := metadata.FromIncomingContext(ctx)
-// 	if ok {
-// 		log.Printf("Metadata: %v", md)
-// 	}
-
-// 	// Log the request body. This assumes req implements proto.Message
-// 	log.Printf("Request Body: %v", req)
-
-//		// Proceed with the handler
-//		return handler(ctx, req)
-//	}
 const JwtClaimsK string = "jwt-token"
 
 type CustomJWTClaims struct {
@@ -35,31 +22,34 @@ type CustomJWTClaims struct {
 	UserID string `json:"user_id"`
 }
 
-func AuthJwtInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	headers, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		auth := headers["authorization"]
-		if len(auth) == 0 {
-			return nil, status.Errorf(codes.Unauthenticated, "missing authorization header")
-		}
-
-		for _, t := range auth {
-			params := strings.Split(t, " ")
-			if len(params) != 2 || params[0] != "Bearer" {
-				return nil, status.Errorf(codes.Unauthenticated, "invalid token")
+func AuthJwtInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		headers, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			auth := headers["authorization"]
+			if len(auth) == 0 {
+				return nil, status.Errorf(codes.Unauthenticated, "missing authorization header")
 			}
 
-			claims, err := verifyJWT(params[1])
-			ctx = context.WithValue(ctx, JwtClaimsK, claims)
-			if err == nil {
-				// Proceed with next handler
-				return handler(ctx, req)
-			}
+			for _, t := range auth {
+				params := strings.Split(t, " ")
+				if len(params) != 2 || params[0] != "Bearer" {
+					return nil, status.Errorf(codes.Unauthenticated, "invalid token")
+				}
 
-			return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
+				claims, err := verifyJWT(params[1])
+				ctx = context.WithValue(ctx, JwtClaimsK, claims)
+				if err == nil {
+					// Proceed with next handler
+					return handler(ctx, req)
+				}
+
+				return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
+			}
 		}
+		return nil, status.Error(codes.Unauthenticated, "unauthenticated")
 	}
-	return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+
 }
 
 func GetJWTClaims(ctx context.Context) (*CustomJWTClaims, error) {

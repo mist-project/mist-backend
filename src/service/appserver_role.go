@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -64,7 +65,7 @@ func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, message.NotFoundError(message.NotFound)
+			return nil, errors.New()
 		}
 
 		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))

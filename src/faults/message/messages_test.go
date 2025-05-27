@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"

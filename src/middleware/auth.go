@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"os"
 	"strings"
 

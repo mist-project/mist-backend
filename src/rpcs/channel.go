@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"

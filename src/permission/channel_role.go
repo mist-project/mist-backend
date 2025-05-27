@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/middleware"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"

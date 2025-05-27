@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"

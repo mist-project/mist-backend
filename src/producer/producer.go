@@ -2,7 +2,7 @@ package producer
 
 import (
 	"fmt"
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"

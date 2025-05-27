@@ -115,7 +115,7 @@ test-errors: setup-test
 
 test-message: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/errors/message -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/faults/message -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-producer: setup-test

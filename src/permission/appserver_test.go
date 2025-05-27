@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/psql_db/db"

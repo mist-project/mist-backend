@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"

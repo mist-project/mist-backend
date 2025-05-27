@@ -2,7 +2,7 @@ package permission
 
 import (
 	"context"
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/service"

@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"

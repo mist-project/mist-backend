@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver"
 	"mist/src/psql_db/db"

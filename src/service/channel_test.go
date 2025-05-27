@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
 	"mist/src/psql_db/qx"

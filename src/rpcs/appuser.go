@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"mist/src/errors/message"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/service"

@@ -120,7 +120,7 @@ func (s *AppserverGRPCService) Delete(
 	err = service.NewAppserverService(ctx, s.DbConn, s.Db, s.Producer).Delete(id)
 
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(middleware.GetRequestId(ctx), err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	return &appserver.DeleteResponse{}, nil

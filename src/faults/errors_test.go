@@ -1,9 +1,11 @@
 package faults_test
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"mist/src/faults"
+	"mist/src/middleware"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,37 +22,37 @@ func TestErrorHelpers(t *testing.T) {
 	}{
 		{
 			name:        "TestNotFoundError",
-			got:         faults.NotFoundError(slog.LevelDebug),
+			got:         faults.NotFoundError("error root cause", slog.LevelDebug),
 			wantMessage: faults.NotFoundMessage,
 			wantCode:    codes.NotFound,
 		},
 		{
 			name:        "TestValidationError",
-			got:         faults.ValidationError(slog.LevelDebug),
+			got:         faults.ValidationError("error root cause", slog.LevelDebug),
 			wantMessage: faults.ValidationErrorMessage,
 			wantCode:    codes.InvalidArgument,
 		},
 		{
 			name:        "TestDatabaseError",
-			got:         faults.DatabaseError(slog.LevelDebug),
+			got:         faults.DatabaseError("error root cause", slog.LevelDebug),
 			wantMessage: faults.DatabaseErrorMessage,
 			wantCode:    codes.Internal,
 		},
 		{
 			name:        "TestAuthenticationError",
-			got:         faults.AuthenticationError(slog.LevelDebug),
+			got:         faults.AuthenticationError("error root cause", slog.LevelDebug),
 			wantMessage: faults.AuthenticationErrorMessage,
 			wantCode:    codes.Unauthenticated,
 		},
 		{
 			name:        "TestAuthorizationError",
-			got:         faults.AuthorizationError(slog.LevelDebug),
+			got:         faults.AuthorizationError("error root cause", slog.LevelDebug),
 			wantMessage: faults.AuthorizationErrorMessage,
 			wantCode:    codes.PermissionDenied,
 		},
 		{
 			name:        "TestUnknownError",
-			got:         faults.UnknownError(slog.LevelDebug),
+			got:         faults.UnknownError("error root cause", slog.LevelDebug),
 			wantMessage: faults.UnknownErrorMessage,
 			wantCode:    codes.Unknown,
 		},
@@ -67,13 +69,17 @@ func TestErrorHelpers(t *testing.T) {
 }
 
 func TestRpcCustomErrorHandler(t *testing.T) {
+	var (
+		requestId = "req-123"
+		ctx       = context.WithValue(context.Background(), middleware.RequestIdKey, requestId)
+	)
+
 	t.Run("can_handle_custom_error_response", func(t *testing.T) {
 		// ARRANGE
-		ce := faults.NewError("test error", codes.InvalidArgument, slog.LevelDebug)
-		requestId := "req-123"
+		ce := faults.NewError("test error", "root cause", codes.InvalidArgument, slog.LevelDebug)
 
 		// ACT
-		err := faults.RpcCustomErrorHandler(requestId, ce)
+		err := faults.RpcCustomErrorHandler(ctx, ce)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -83,11 +89,10 @@ func TestRpcCustomErrorHandler(t *testing.T) {
 	t.Run("handles_non_custom_error", func(t *testing.T) {
 		// ARRANGE
 		err := fmt.Errorf("test error")
-		requestId := "req-456"
 		expected := status.Errorf(codes.Unknown, "test error")
 
 		// ACT
-		result := faults.RpcCustomErrorHandler(requestId, err)
+		result := faults.RpcCustomErrorHandler(ctx, err)
 
 		// ASSERT
 		assert.NotNil(t, result)

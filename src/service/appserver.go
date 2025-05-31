@@ -133,7 +133,7 @@ func (s *AppserverService) Delete(id uuid.UUID) error {
 	if err != nil {
 		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return faults.NotFoundError(slog.LevelDebug)
+		return faults.NotFoundError(fmt.Sprintf("unable to find appserver with id: %v", id), slog.LevelDebug)
 	}
 
 	users := make([]*appuser.Appuser, 0, len(subs))

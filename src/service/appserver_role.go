@@ -66,7 +66,7 @@ func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, faults.NotFoundError(slog.LevelDebug)
+			return nil, faults.NotFoundError(err.Error(), slog.LevelDebug)
 		}
 
 		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
@@ -93,7 +93,7 @@ func (s *AppserverRoleService) Delete(id uuid.UUID) error {
 	if err != nil {
 		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return faults.NotFoundError(slog.LevelDebug)
+		return faults.NotFoundError(fmt.Sprintf("unable to to find role with id: %v", id), slog.LevelDebug)
 	}
 
 	return nil

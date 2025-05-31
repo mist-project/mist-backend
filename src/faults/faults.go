@@ -1,9 +1,11 @@
 package faults
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"mist/src/logging/logger"
+	"mist/src/middleware"
 	"runtime"
 
 	"google.golang.org/grpc/codes"
@@ -24,7 +26,7 @@ type CustomError struct {
 	debugLevel slog.Level
 }
 
-func NewError(message string, code codes.Code, debugLevel slog.Level) *CustomError {
+func NewError(err string, root string, code codes.Code, debugLevel slog.Level) *CustomError {
 	// Get information about the caller where 2 is the number of skips
 	// 0 is this function
 	// 1 is the caller of this function that should be an error function like ErrGenericError
@@ -32,10 +34,10 @@ func NewError(message string, code codes.Code, debugLevel slog.Level) *CustomErr
 	pc, file, line, _ := runtime.Caller(2)
 	funcName := runtime.FuncForPC(pc).Name()
 
-	stackTrace := fmt.Sprintf("[%s:%v] %s", file, line, funcName)
+	stackTrace := fmt.Sprintf("[%s:%v] %s\n\t%s", file, line, funcName, root)
 
 	return &CustomError{
-		message:    fmt.Errorf("%s", message),
+		message:    fmt.Errorf("%s", err),
 		stackTrace: stackTrace,
 		code:       code,
 		debugLevel: debugLevel,
@@ -50,15 +52,18 @@ func (ce *CustomError) Unwrap() error {
 	return ce.message
 }
 
-func (ce *CustomError) LogError(level slog.Level, request string) {
+func (ce *CustomError) LogError(ctx context.Context) {
+
+	request_id := middleware.GetRequestId(ctx)
+
 	args := []any{
-		"request_id", request,
+		"request_id", request_id,
 		"message", ce.message.Error(),
 		"code", ce.code,
 		"stack_trace", ce.stackTrace,
 	}
 
-	switch level {
+	switch ce.debugLevel {
 	case slog.LevelDebug:
 		logger.Debug(logger.MessageTypeError, args...)
 	case slog.LevelInfo:
@@ -68,6 +73,22 @@ func (ce *CustomError) LogError(level slog.Level, request string) {
 	case slog.LevelError:
 		logger.Error(logger.MessageTypeError, args...)
 	}
+}
+
+func LogError(ctx context.Context, err error) {
+	if err == nil {
+		return
+	}
+
+	ce, ok := err.(*CustomError)
+
+	if !ok {
+		// If the error is not a CustomError, log it as an error
+		logger.Error(logger.MessageTypeError, "message", err.Error())
+		return
+	}
+
+	ce.LogError(ctx)
 }
 
 func (ce *CustomError) StackTrace() string {

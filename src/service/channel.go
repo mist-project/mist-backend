@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/producer"
 	"mist/src/protos/v1/appuser"
@@ -49,7 +51,7 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 	channel, err := s.db.CreateChannel(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("create channel error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("create channel error: %v", err), slog.LevelError)
 	}
 
 	// Send notification to all users in the channel
@@ -64,10 +66,10 @@ func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
 
 	if err != nil {
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, message.NotFoundError(message.NotFound)
+			return nil, faults.NotFoundError("channel not found", slog.LevelDebug)
 		}
 
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &channel, nil
@@ -81,7 +83,7 @@ func (s *ChannelService) ListServerChannels(obj qx.ListServerChannelsParams) ([]
 	channels, err := s.db.ListServerChannels(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return channels, nil
@@ -95,12 +97,19 @@ func (s *ChannelService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteChannel(s.ctx, id)
 
 	if err != nil {
-		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return faults.DatabaseError(fmt.Sprintf("error deleting channel: %v", err), slog.LevelError)
 	} else if deleted == 0 {
-		return message.NotFoundError(message.NotFound)
+		return faults.NotFoundError(fmt.Sprintf("unable to find channel with id: (%v)", id), slog.LevelDebug)
 	}
 
-	if subErr == nil {
+	if subErr != nil {
+		faults.LogError(
+			s.ctx,
+			faults.DatabaseError(
+				fmt.Sprintf("unable to send delete notification to users on channel delete: %v", subErr), slog.LevelWarn,
+			),
+		)
+	} else {
 		s.sendNotificationToChannelUsers(&channel, s.PgTypeToPb(&channel), event.ActionType_ACTION_REMOVE_CHANNEL)
 	}
 
@@ -118,7 +127,7 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 	})
 
 	if err != nil {
-		s.mp.NotifyMessageFailure(fmt.Errorf("(ChannelService|%v) error getting channel roles: %v", action, err))
+		faults.LogError(s.ctx, faults.DatabaseError(fmt.Sprintf("error fetching channel roles: %v", err), slog.LevelError))
 		return
 	}
 
@@ -133,7 +142,7 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 		// Get appusers by roles in the channel
 		appusers, err := s.db.GetChannelUsersByRoles(s.ctx, userIDs)
 		if err != nil {
-			s.mp.NotifyMessageFailure(fmt.Errorf("(ChannelService|%v) error getting channel user by roles: %v", action, err))
+			faults.LogError(s.ctx, faults.ExtendError(err))
 			return
 		}
 		users = make([]*appuser.Appuser, 0, len(appusers))
@@ -150,9 +159,10 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 		userSubs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).ListAppserverUserSubs(channel.AppserverID)
 
 		if err != nil {
-			s.mp.NotifyMessageFailure(fmt.Errorf("(ChannelService|%v) error getting appserver subs: %v", action, err))
+			faults.LogError(s.ctx, faults.ExtendError(err))
 			return
 		}
+
 		users = make([]*appuser.Appuser, 0, len(userSubs))
 
 		for _, sub := range userSubs {
@@ -163,5 +173,4 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 	if len(users) > 0 {
 		s.mp.SendMessage(pbC, action, users)
 	}
-
 }

@@ -2,10 +2,12 @@ package faults_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"log/slog"
 	"mist/src/faults"
 	"mist/src/logging/logger"
+	"mist/src/middleware"
 	"strings"
 	"testing"
 
@@ -16,7 +18,7 @@ import (
 func TestNewError(t *testing.T) {
 	t.Run("it_creates_custom_error_with_correct_message_and_code", func(t *testing.T) {
 		// ARRANGE
-		err := faults.NewError("test error", codes.InvalidArgument, slog.LevelDebug)
+		err := faults.NewError("test error", "root cause", codes.InvalidArgument, slog.LevelDebug)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -29,7 +31,7 @@ func TestNewError(t *testing.T) {
 func TestExtendError(t *testing.T) {
 	t.Run("it_extends_stack_trace_when_error_is_custom_error", func(t *testing.T) {
 		// ARRANGE
-		originalErr := faults.NewError("original error", codes.NotFound, slog.LevelDebug)
+		originalErr := faults.NewError("original error", "root cause", codes.NotFound, slog.LevelDebug)
 
 		// ACT
 		extendedErr := faults.ExtendError(originalErr)
@@ -56,9 +58,13 @@ func TestExtendError(t *testing.T) {
 }
 
 func TestCustomErrorMethods(t *testing.T) {
+	var (
+		requestId = "req-123"
+		ctx       = context.WithValue(context.Background(), middleware.RequestIdKey, requestId)
+	)
 	t.Run("unwrap_returns_original_message_error", func(t *testing.T) {
 		// ARRANGE
-		err := faults.NewError("unwrap test", codes.PermissionDenied, slog.LevelDebug)
+		err := faults.NewError("unwrap test", "root cause", codes.PermissionDenied, slog.LevelDebug)
 
 		// ACT/ASSERT
 		assert.Equal(t, err.Error(), err.Unwrap().Error())
@@ -69,24 +75,28 @@ func TestCustomErrorMethods(t *testing.T) {
 		logger.SetLogOutput(&buf)
 
 		// Create custom error and log it
-		err := faults.NewError("detailed error", codes.Internal, slog.LevelDebug)
-		err.LogError(slog.LevelError, "req-123")
+		err := faults.NewError("detailed error", "root cause", codes.Internal, slog.LevelDebug)
+		err.LogError(ctx)
 
 		logOutput := buf.String()
 		assert.Contains(t, logOutput, "detailed error")
-		assert.Contains(t, logOutput, "req-123")
+		assert.Contains(t, logOutput, requestId)
 		assert.Contains(t, logOutput, "stack_trace")
 		assert.Contains(t, logOutput, `"code":13`) // 13 == codes.Internal
 	})
 }
 
 func TestLogErrorLevels(t *testing.T) {
+	var (
+		requestId = "req-123"
+		ctx       = context.WithValue(context.Background(), middleware.RequestIdKey, requestId)
+	)
+
 	t.Run("it_logs_at_all_levels", func(t *testing.T) {
 		// ARRANGE
 		var buf bytes.Buffer
 		logger.SetLogOutput(&buf)
 
-		err := faults.NewError("level test", codes.Internal, slog.LevelDebug)
 		levels := []slog.Level{
 			slog.LevelDebug,
 			slog.LevelInfo,
@@ -95,24 +105,26 @@ func TestLogErrorLevels(t *testing.T) {
 		}
 
 		for _, level := range levels {
+			err := faults.NewError("level test", "root cause", codes.Internal, level)
 			buf.Reset()
 
 			// ACT
-			err.LogError(level, "req-xyz")
+			err.LogError(ctx)
 
 			// ASSERT
 			output := buf.String()
 			assert.Contains(t, output, `"level":`) // Should log at the correct level
-			assert.Contains(t, output, "req-xyz")
+			assert.Contains(t, output, "root cause")
 			assert.Contains(t, output, "level test")
 		}
 	})
 }
 
 func TestStackTraceContainsCaller(t *testing.T) {
+
 	t.Run("it_includes_caller_function_name", func(t *testing.T) {
 		// ARRANGE
-		err := faults.NewError("check stack trace", codes.Internal, slog.LevelDebug)
+		err := faults.NewError("check stack trace", "root cause", codes.Internal, slog.LevelDebug)
 
 		// ACT
 		stack := err.StackTrace()

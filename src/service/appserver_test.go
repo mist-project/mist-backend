@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/protos/v1/appserver"
 	"mist/src/protos/v1/appuser"
@@ -392,7 +393,7 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Contains(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:on_db_list_subs_failure", func(t *testing.T) {

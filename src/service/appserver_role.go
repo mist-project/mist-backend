@@ -2,14 +2,15 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/db"
@@ -65,7 +66,7 @@ func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, errors.New()
+			return nil, faults.NotFoundError(slog.LevelDebug)
 		}
 
 		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
@@ -92,7 +93,8 @@ func (s *AppserverRoleService) Delete(id uuid.UUID) error {
 	if err != nil {
 		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return message.NotFoundError(message.NotFound)
+		return faults.NotFoundError(slog.LevelDebug)
 	}
+
 	return nil
 }

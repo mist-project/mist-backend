@@ -21,7 +21,7 @@ import (
 	"mist/src/testutil/factory"
 )
 
-func TestChannelService_ListServerChannels(t *testing.T) {
+func TestChannelRPCService_ListServerChannels(t *testing.T) {
 	t.Run("Successful:returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -118,7 +118,7 @@ func TestChannelService_ListServerChannels(t *testing.T) {
 	})
 }
 
-func TestChannelService_GetById(t *testing.T) {
+func TestChannelRPCService_GetById(t *testing.T) {
 	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -227,7 +227,7 @@ func TestChannelService_GetById(t *testing.T) {
 	})
 }
 
-func TestChannelService_Create(t *testing.T) {
+func TestChannelRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -316,7 +316,7 @@ func TestChannelService_Create(t *testing.T) {
 	})
 }
 
-func TestChannelService_Delete(t *testing.T) {
+func TestChannelRPCService_Delete(t *testing.T) {
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})

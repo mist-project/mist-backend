@@ -90,37 +90,43 @@ tbreak:
 	go test ./... -run "$(t)"
 
 test-rpcs: setup-test
-	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/rpcs/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-middleware: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/middleware -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/middleware/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-service: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/service -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/service/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-permission: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/permission -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/permission/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
-test-errors: setup-test
+test-logging: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/errors -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/logging/... -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
+
+test-faults: setup-test
+	@echo -----------------------------------------
+	@go test mist/src/faults/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-message: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/faults/message -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/faults/message/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-producer: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/producer -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/producer/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 # ----- FORMAT -----

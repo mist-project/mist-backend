@@ -20,7 +20,7 @@ import (
 	"mist/src/testutil/factory"
 )
 
-func TestChannelRoleService_ListChannelRoles(t *testing.T) {
+func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -118,7 +118,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 
 }
 
-func TestChannelRoleService_Create(t *testing.T) {
+func TestChannelRoleRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -210,7 +210,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 	})
 }
 
-func TestChannelRoleService_Delete(t *testing.T) {
+func TestChannelRoleRPCService_Delete(t *testing.T) {
 	t.Run("Successful:roles_can_be_deleted", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})

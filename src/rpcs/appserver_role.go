@@ -5,7 +5,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
+	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
@@ -90,7 +92,7 @@ func (s *AppserverRoleGRPCService) Delete(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(middleware.GetRequestId(ctx), faults.ExtendError(err))
 	}
 
 	// Initialize the service for AppserveRole
@@ -101,7 +103,7 @@ func (s *AppserverRoleGRPCService) Delete(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(middleware.GetRequestId(ctx), faults.ExtendError(err))
 	}
 
 	// Return success response

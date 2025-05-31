@@ -18,7 +18,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestAppserveRoleSubService_Create(t *testing.T) {
+func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -84,7 +84,7 @@ func TestAppserveRoleSubService_Create(t *testing.T) {
 	})
 }
 
-func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
+func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -168,7 +168,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 	})
 }
 
-func TestAppserveRoleSubService_Delete(t *testing.T) {
+func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 	t.Run("Successful:can_successfully_delete_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})

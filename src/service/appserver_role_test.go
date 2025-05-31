@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
@@ -212,7 +213,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Contains(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -267,7 +268,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "resource not found")
+		assert.Contains(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:db_failure_on_delete", func(t *testing.T) {

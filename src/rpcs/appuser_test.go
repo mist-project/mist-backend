@@ -15,7 +15,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestAppuserService_Create(t *testing.T) {
+func TestAppuserRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int

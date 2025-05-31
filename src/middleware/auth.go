@@ -49,7 +49,6 @@ func AuthJwtInterceptor() grpc.UnaryServerInterceptor {
 		}
 		return nil, status.Error(codes.Unauthenticated, "unauthenticated")
 	}
-
 }
 
 func GetJWTClaims(ctx context.Context) (*CustomJWTClaims, error) {
@@ -59,6 +58,19 @@ func GetJWTClaims(ctx context.Context) (*CustomJWTClaims, error) {
 	}
 
 	return claims, nil
+}
+
+func GetUserId(ctx context.Context) string {
+	claims, err := GetJWTClaims(ctx)
+	if err != nil {
+		return "N/A"
+	}
+
+	if claims.UserID == "" {
+		return "N/A"
+	}
+
+	return claims.UserID
 }
 
 func verifyJWT(token string) (*CustomJWTClaims, error) {

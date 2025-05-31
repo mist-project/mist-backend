@@ -15,10 +15,6 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type DummyRequest struct{}
-
-var mockHandler = func(ctx context.Context, req interface{}) (interface{}, error) { return req, nil }
-
 func TestAuthJwtInterceptor(t *testing.T) {
 	interceptor := middleware.AuthJwtInterceptor()
 
@@ -35,7 +31,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.Nil(t, err)
@@ -55,7 +51,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -75,7 +71,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -96,7 +92,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -110,7 +106,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -124,7 +120,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -138,7 +134,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -163,7 +159,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err = interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err = interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -175,7 +171,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		ctx := context.Background()
 
 		// ACT
-		_, err := interceptor(ctx, DummyRequest{}, nil, mockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)
@@ -219,5 +215,48 @@ func TestGetJWTClaims(t *testing.T) {
 		assert.Nil(t, ctxClaims)
 		assert.NotNil(t, err)
 	})
+}
 
+func TestGetUserId(t *testing.T) {
+
+	t.Run("it_returns_the_user_id_from_context", func(t *testing.T) {
+		// ARRANGE
+		c := &middleware.CustomJWTClaims{
+			UserID: uuid.NewString(),
+		}
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, middleware.JwtClaimsK, c)
+
+		// ACT
+		userId := middleware.GetUserId(ctx)
+
+		// ASSERT
+		assert.NotEmpty(t, userId, "Expected a non-empty user ID")
+	})
+
+	t.Run("it_returns_NA_when_claims_are_not_present", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+
+		// ACT
+		userId := middleware.GetUserId(ctx)
+
+		// ASSERT
+		assert.Equal(t, "N/A", userId, "Expected 'N/A' when claims are not present")
+	})
+
+	t.Run("it_returns_NA_when_user_id_is_empty", func(t *testing.T) {
+		// ARRANGE
+		c := &middleware.CustomJWTClaims{
+			UserID: "",
+		}
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, middleware.JwtClaimsK, c)
+
+		// ACT
+		userId := middleware.GetUserId(ctx)
+
+		// ASSERT
+		assert.Equal(t, "N/A", userId, "Expected 'N/A' when user ID is empty")
+	})
 }

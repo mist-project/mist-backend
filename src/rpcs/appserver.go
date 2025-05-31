@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/middleware"
 	"mist/src/permission"
@@ -119,7 +120,7 @@ func (s *AppserverGRPCService) Delete(
 	err = service.NewAppserverService(ctx, s.DbConn, s.Db, s.Producer).Delete(id)
 
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(middleware.GetRequestId(ctx), err)
 	}
 
 	return &appserver.DeleteResponse{}, nil

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver"
@@ -21,7 +22,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestAppserverService_List(t *testing.T) {
+func TestAppserverRPCService_List(t *testing.T) {
 	t.Run("Successful:can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -101,7 +102,7 @@ func TestAppserverService_List(t *testing.T) {
 	})
 }
 
-func TestAppserverService_GetById(t *testing.T) {
+func TestAppserverRPCService_GetById(t *testing.T) {
 	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -192,7 +193,7 @@ func TestAppserverService_GetById(t *testing.T) {
 	})
 }
 
-func TestAppserverService_Create(t *testing.T) {
+func TestAppserverRPCService_Create(t *testing.T) {
 
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -288,7 +289,7 @@ func TestAppserverService_Create(t *testing.T) {
 	})
 }
 
-func TestAppserverService_Delete(t *testing.T) {
+func TestAppserverRPCService_Delete(t *testing.T) {
 
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -348,8 +349,8 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// // ASSERT
 		assert.True(t, ok)
-		assert.Equal(t, codes.NotFound, s.Code())             // Check that the error code is NotFound
-		assert.Contains(t, s.Message(), "resource not found") // Check the error message
+		assert.Equal(t, codes.NotFound, s.Code())               // Check that the error code is NotFound
+		assert.Contains(t, s.Message(), faults.NotFoundMessage) // Check the error message
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {

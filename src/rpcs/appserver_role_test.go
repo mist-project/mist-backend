@@ -19,7 +19,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestAppserveRoleService_ListServerRoles(t *testing.T) {
+func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -116,7 +116,7 @@ func TestAppserveRoleService_ListServerRoles(t *testing.T) {
 
 }
 
-func TestAppserveRoleService_Create(t *testing.T) {
+func TestAppserverRoleRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -207,7 +207,7 @@ func TestAppserveRoleService_Create(t *testing.T) {
 	})
 }
 
-func TestAppserveRoleService_Delete(t *testing.T) {
+func TestAppserverRoleRPCService_Delete(t *testing.T) {
 	t.Run("Successful:roles_can_only_be_deleted_by_server_owner", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -251,8 +251,8 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "resource not found")
+		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Contains(t, s.Message(), "(-2) resource not found")
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -276,7 +276,7 @@ func TestAppserveRoleService_Delete(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.PermissionDenied, s.Code())
+		assert.Equal(t, codes.Unknown, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), "(-5) Unauthorized")
 	})

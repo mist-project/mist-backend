@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"mist/src/logging/logger"
 	"mist/src/testutil"
 	"os"
 	"testing"
@@ -8,6 +9,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// ---- SETUP -----
+	logger.InitializeLogger()
 	testutil.SetupDbConnection()
 
 	// ----- EXECUTION -----

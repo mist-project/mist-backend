@@ -1,72 +1,52 @@
-package errors
+package faults
 
 import (
 	"fmt"
-	"runtime"
+	"log/slog"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
-
-type ErrorWithTrace interface {
-	Error() string
-	StackTrace() string
-}
-
-type CustomError struct {
-	message    string
-	stackTrace string
-}
 
 const (
-	NotFoundMessage = "Not Found"
+	NotFoundMessage            = "Not Found"
+	ValidationErrorMessage     = "Validation Error"
+	DatabaseErrorMessage       = "Internal Server Error"
+	AuthenticationErrorMessage = "Unauthenticated"
+	AuthorizationErrorMessage  = "Unauthorized"
+	UnknownErrorMessage        = "Internal Server Error"
 )
 
-func (e *CustomError) Error() string {
-	return e.message
+func NotFoundError(debugLevel slog.Level) *CustomError {
+	return NewError(NotFoundMessage, codes.NotFound, debugLevel)
 }
 
-func (e *CustomError) StackTrace() string {
-	return e.stackTrace
+func ValidationError(debugLevel slog.Level) *CustomError {
+	return NewError(ValidationErrorMessage, codes.InvalidArgument, debugLevel)
 }
 
-func New(message string) *CustomError {
-	// Get information about the caller where 2 is the number of skips
-	// 0 is this function
-	// 1 is the caller of this function that should be an error function like ErrGenericError
-	// 2 is the function that called the error function
-	pc, file, line, _ := runtime.Caller(2)
-	funcName := runtime.FuncForPC(pc).Name()
-
-	stackTrace := fmt.Sprintf("\t[%s:%v] %s", file, line, funcName)
-
-	return &CustomError{
-		message:    message,
-		stackTrace: stackTrace,
-	}
+func DatabaseError(debugLevel slog.Level) *CustomError {
+	return NewError(DatabaseErrorMessage, codes.Internal, debugLevel)
 }
 
-func ExtendError(err error) error {
+func AuthenticationError(debugLevel slog.Level) *CustomError {
+	return NewError(AuthenticationErrorMessage, codes.Unauthenticated, debugLevel)
+}
+
+func AuthorizationError(debugLevel slog.Level) *CustomError {
+	return NewError(AuthorizationErrorMessage, codes.PermissionDenied, debugLevel)
+}
+
+func UnknownError(debugLevel slog.Level) *CustomError {
+	return NewError(UnknownErrorMessage, codes.Unknown, debugLevel)
+}
+
+func RpcCustomErrorHandler(requestId string, err error) error {
 	ce, ok := err.(*CustomError)
 	if !ok {
-		return err
+		return status.Errorf(codes.Unknown, "%s", err.Error())
 	}
 
-	pc, file, line, _ := runtime.Caller(1)
-	funcName := runtime.FuncForPC(pc).Name()
-
-	// Append new item to the current stack trace
-	ce.stackTrace += fmt.Sprintf("\n\t[%s:%v] %s", file, line, funcName)
-
-	return ce
+	ce.LogError(ce.debugLevel, fmt.Sprintf(requestId))
+	return status.Errorf(ce.Code(), "%s", err.Error())
 }
-
-func NotFoundError() *CustomError {
-	return New(NotFoundMessage)
-}
-
-// const (
-// 	ValidationErrorCode     int = -1
-// 	NotFoundErrorCode       int = -2
-// 	DatabaseErrorCode       int = -3
-// 	AuthenticationErrorCode int = -4
-// 	AuthorizationErrorCode  int = -5
-// 	UnknownErrorCode        int = -6
-// )

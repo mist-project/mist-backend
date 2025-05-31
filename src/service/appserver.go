@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
@@ -131,7 +133,7 @@ func (s *AppserverService) Delete(id uuid.UUID) error {
 	if err != nil {
 		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
 	} else if deleted == 0 {
-		return message.NotFoundError(message.NotFound)
+		return faults.NotFoundError(slog.LevelDebug)
 	}
 
 	users := make([]*appuser.Appuser, 0, len(subs))

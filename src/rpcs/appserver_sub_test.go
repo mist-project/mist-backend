@@ -19,7 +19,7 @@ import (
 	"mist/src/testutil/factory"
 )
 
-func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
+func TestAppserverSubRPCService_ListUserServerSubs(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -81,7 +81,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 	})
 }
 
-func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
+func TestAppserverSubRPCService_ListAppserverUserSubs(t *testing.T) {
 
 	t.Run("Successful:can_return_all_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -133,7 +133,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 	})
 }
 
-func TestAppserverSubService_Create(t *testing.T) {
+func TestAppserverSubRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -189,7 +189,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 	})
 }
 
-func TestAppserverSubService_Delete(t *testing.T) {
+func TestAppserverSubRPCService_Delete(t *testing.T) {
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})

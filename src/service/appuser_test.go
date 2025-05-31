@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"mist/src/faults"
 	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -74,6 +75,7 @@ func TestAppuserService_Create(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, result)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) create appuser: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "create appuser: db error")
 	})
 }

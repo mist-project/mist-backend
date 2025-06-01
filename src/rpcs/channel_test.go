@@ -179,7 +179,7 @@ func TestChannelRPCService_GetById(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
@@ -270,9 +270,9 @@ func TestChannelRPCService_Create(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) create channel error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
@@ -400,7 +400,7 @@ func TestChannelRPCService_Delete(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})

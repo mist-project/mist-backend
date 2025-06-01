@@ -48,10 +48,19 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 
 	t.Run("Error:on_database_failure_returns_error", func(t *testing.T) {
 		// ARRANGE
+		var mockId *string
 		ctx := testutil.Setup(t, func() {})
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("CreateAppserverRoleSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", mock.Anything, mockId, permission.ActionCreate).Return(
+			nil,
+		)
+
+		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverRoleSubClient.Create(
+		response, err := svc.Create(
 			ctx, &appserver_role_sub.CreateRequest{
 				AppserverRoleId: uuid.NewString(),
 				AppserverSubId:  uuid.NewString(),
@@ -64,7 +73,36 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.NotFound, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
+	})
+
+	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+		// ARRANGE
+		var mockId *string
+		ctx := testutil.Setup(t, func() {})
+		mockQuerier := new(testutil.MockQuerier)
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", mock.Anything, mockId, permission.ActionCreate).Return(
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
+		)
+
+		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+
+		// ACT
+		response, err := svc.Create(
+			ctx, &appserver_role_sub.CreateRequest{
+				AppserverRoleId: uuid.NewString(),
+				AppserverSubId:  uuid.NewString(),
+				AppserverId:     uuid.NewString(),
+				AppuserId:       uuid.NewString(),
+			},
+		)
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.PermissionDenied, s.Code())
 	})
 
 	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {

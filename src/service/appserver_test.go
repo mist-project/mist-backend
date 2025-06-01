@@ -109,7 +109,8 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// // ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) tx initialization error: closed pool")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "tx initialization error: closed pool")
 	})
 
 	t.Run("Error:is_returned_when_creating_server_fails", func(t *testing.T) {
@@ -130,7 +131,8 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// // ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) create appserver error: a db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "create appserver error: a db error")
 	})
 
 	t.Run("Error:is_returned_when_creating_appserver_sub_fails", func(t *testing.T) {
@@ -154,7 +156,8 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// // ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) create appserver sub error:")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "create appserver sub error: a db error")
 	})
 
 	t.Run("Error:commit_fails_with_error", func(t *testing.T) {
@@ -188,7 +191,8 @@ func TestAppserverService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: commit failed")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error commit: commit failed")
 		mockTx.AssertExpectations(t)
 	})
 }
@@ -230,7 +234,8 @@ func TestAppserverService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, "unable to find appserver with id")
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -248,7 +253,8 @@ func TestAppserverService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: connection reset by peer")
 	})
 }
 
@@ -319,7 +325,8 @@ func TestAppserverService_List(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: some db error")
 	})
 }
 
@@ -409,7 +416,8 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db failure")
 	})
 
 	t.Run("Error:on_db_delete_failure", func(t *testing.T) {
@@ -426,6 +434,7 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db failure")
 	})
 }

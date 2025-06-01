@@ -51,7 +51,7 @@ func (s *AppserverService) Create(obj qx.CreateAppserverParams) (*qx.Appserver, 
 	tx, err := s.dbConn.BeginTx(s.ctx, pgx.TxOptions{})
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("tx initialization error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("tx initialization error: %v", err), slog.LevelError)
 
 	}
 	defer tx.Rollback(s.ctx)
@@ -68,7 +68,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	appserver, err := txQ.CreateAppserver(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("create appserver error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("create appserver error: %v", err), slog.LevelError)
 
 	}
 
@@ -79,12 +79,12 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("create appserver sub error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("create appserver sub error: %v", err), slog.LevelError)
 
 	}
 
 	if err := tx.Commit(s.ctx); err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error commit: %v", err), slog.LevelError)
 
 	}
 
@@ -98,10 +98,10 @@ func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, message.NotFoundError(message.NotFound)
+			return nil, faults.NotFoundError(fmt.Sprintf("unable to find appserver with id: %v", id), slog.LevelDebug)
 		}
 
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &appserver, nil
@@ -112,7 +112,7 @@ func (s *AppserverService) List(params qx.ListAppserversParams) ([]qx.Appserver,
 	appservers, err := s.db.ListAppservers(s.ctx, params)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return appservers, nil
@@ -125,13 +125,13 @@ func (s *AppserverService) Delete(id uuid.UUID) error {
 	subs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).ListAppserverUserSubs(id)
 
 	if err != nil {
-		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelWarn)
 	}
 
 	deleted, err := s.db.DeleteAppserver(s.ctx, id)
 
 	if err != nil {
-		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	} else if deleted == 0 {
 		return faults.NotFoundError(fmt.Sprintf("unable to find appserver with id: %v", id), slog.LevelDebug)
 	}

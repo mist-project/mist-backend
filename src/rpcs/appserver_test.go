@@ -260,8 +260,11 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		})
 
 		// ASSERT
+		s, ok := status.FromError(err)
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "a db error")
+		assert.True(t, ok)
+		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -319,7 +322,7 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 		assert.Equal(t, 0, len(serverSubs))
 	})
 
-	t.Run("Error:invalid_id_returns_unauthorized_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -330,8 +333,7 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.PermissionDenied, s.Code())
-		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		assert.Equal(t, codes.NotFound, s.Code())
 
 	})
 

@@ -112,7 +112,7 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 }
@@ -178,7 +178,7 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -204,7 +204,7 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.Unknown, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 }
 
@@ -236,7 +236,7 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
@@ -254,7 +254,7 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.Unknown, s.Code())
 		assert.Contains(t, err.Error(), faults.NotFoundMessage)
-		testutil.AssertCustomErrorContains(t, err, "resource not found")
+		testutil.AssertCustomErrorContains(t, err, faults.NotFoundMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -280,7 +280,7 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.Unknown, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -307,6 +307,6 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.Unknown, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 }

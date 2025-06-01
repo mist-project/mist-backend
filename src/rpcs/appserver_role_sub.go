@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"mist/src/faults/message"
+	"mist/src/faults"
 	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_role_sub"
@@ -23,6 +23,10 @@ func (s *AppserverRoleSubGRPCService) Create(
 	ctx = context.WithValue(
 		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
 	)
+
+	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
+	}
 
 	roleSubS := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db)
 
@@ -42,7 +46,7 @@ func (s *AppserverRoleSubGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Return response
@@ -62,7 +66,7 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db).ListServerRoleSubs(serverId)
@@ -97,7 +101,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Initialize the service for AppserveRole
@@ -114,7 +118,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Return success response

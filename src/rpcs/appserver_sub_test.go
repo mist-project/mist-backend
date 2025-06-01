@@ -130,7 +130,7 @@ func TestAppserverSubRPCService_ListAppserverUserSubs(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }
 
@@ -221,7 +221,7 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
 		assert.Contains(t, err.Error(), faults.NotFoundMessage)
-		testutil.AssertCustomErrorContains(t, err, "resource not found")
+		testutil.AssertCustomErrorContains(t, err, faults.NotFoundMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -249,7 +249,7 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.Unknown, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -275,6 +275,6 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 
 	"mist/src/faults"
-	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
@@ -25,7 +24,7 @@ func (s *AppserverRoleGRPCService) Create(
 	)
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
@@ -36,7 +35,7 @@ func (s *AppserverRoleGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Return response
@@ -56,7 +55,7 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
@@ -64,7 +63,7 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Construct the response

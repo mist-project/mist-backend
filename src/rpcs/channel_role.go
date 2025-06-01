@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"mist/src/faults/message"
+	"mist/src/faults"
 	"mist/src/permission"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
@@ -24,7 +24,7 @@ func (s *ChannelRoleGRPCService) Create(
 	)
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	roleId, _ := uuid.Parse(req.AppserverRoleId)
@@ -37,7 +37,7 @@ func (s *ChannelRoleGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Return response
@@ -58,7 +58,7 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	roleService := service.NewChannelRoleService(ctx, s.DbConn, s.Db)
@@ -66,7 +66,7 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Construct the response
@@ -93,7 +93,7 @@ func (s *ChannelRoleGRPCService) Delete(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Initialize the service for AppserveRole
@@ -104,7 +104,7 @@ func (s *ChannelRoleGRPCService) Delete(
 
 	// Error handling
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Return success response

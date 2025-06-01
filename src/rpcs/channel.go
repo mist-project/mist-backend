@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"mist/src/faults/message"
+	"mist/src/faults"
 	"mist/src/permission"
 	"mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
@@ -24,13 +24,13 @@ func (s *ChannelGRPCService) Create(
 	)
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
 	c, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId})
 
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	return &channel.CreateResponse{
@@ -50,7 +50,7 @@ func (s *ChannelGRPCService) GetById(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
@@ -58,7 +58,7 @@ func (s *ChannelGRPCService) GetById(
 	c, err := cs.GetById(id)
 
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	return &channel.GetByIdResponse{Channel: cs.PgTypeToPb(c)}, nil
@@ -76,7 +76,7 @@ func (s *ChannelGRPCService) ListServerChannels(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
@@ -105,12 +105,12 @@ func (s *ChannelGRPCService) Delete(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	id, _ := uuid.Parse(req.Id)
 	if err := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer).Delete(id); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	return &channel.DeleteResponse{}, nil

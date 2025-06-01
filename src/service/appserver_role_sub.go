@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/db"
@@ -38,7 +40,7 @@ func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*
 	appserverRole, err := s.db.CreateAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &appserverRole, err
@@ -52,7 +54,7 @@ func (s *AppserverRoleSubService) ListServerRoleSubs(
 	rows, err := s.db.ListServerRoleSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return rows, nil
@@ -65,10 +67,10 @@ func (s *AppserverRoleSubService) GetById(id uuid.UUID) (*qx.AppserverRoleSub, e
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, message.NotFoundError(message.NotFound)
+			return nil, faults.NotFoundError(fmt.Sprintf("no appserver role sub found for id: %s", id), slog.LevelDebug)
 		}
 
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &role, nil
@@ -79,9 +81,9 @@ func (s *AppserverRoleSubService) Delete(obj qx.DeleteAppserverRoleSubParams) er
 	deleted, err := s.db.DeleteAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
-		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	} else if deleted == 0 {
-		return message.NotFoundError("resource not found")
+		return faults.NotFoundError(fmt.Sprintf("no appserver role sub found for id: %s", obj.ID), slog.LevelDebug)
 	}
 
 	return nil

@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -38,7 +39,7 @@ func (s *AppuserService) Create(obj qx.CreateAppuserParams) (*qx.Appuser, error)
 	as, err := s.db.CreateAppuser(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("create appuser: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("create appuser: %v", err), slog.LevelError)
 
 	}
 	return &as, err

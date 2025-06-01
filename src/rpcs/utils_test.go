@@ -4,11 +4,13 @@ import (
 	"os"
 	"testing"
 
+	"mist/src/logging/logger"
 	"mist/src/testutil"
 )
 
 func TestMain(m *testing.M) {
 	// ---- SETUP -----
+	logger.InitializeLogger()
 	testutil.SetupDbConnection()
 	testutil.SetupTestGRPCServicesAndClient()
 

@@ -3,13 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -40,7 +42,7 @@ func (s *AppserverRoleService) Create(obj qx.CreateAppserverRoleParams) (*qx.App
 	appserverRole, err := s.db.CreateAppserverRole(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &appserverRole, err
@@ -51,7 +53,7 @@ func (s *AppserverRoleService) ListAppserverRoles(appserverId uuid.UUID) ([]qx.A
 	aRoles, err := s.db.ListAppserverRoles(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return aRoles, nil
@@ -64,10 +66,10 @@ func (s *AppserverRoleService) GetById(id uuid.UUID) (*qx.AppserverRole, error) 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, message.NotFoundError(message.NotFound)
+			return nil, faults.NotFoundError(err.Error(), slog.LevelDebug)
 		}
 
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &role, nil
@@ -78,7 +80,7 @@ func (s *AppserverRoleService) GetAppuserRoles(params qx.GetAppuserRolesParams) 
 	rows, err := s.db.GetAppuserRoles(s.ctx, params)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return rows, nil
@@ -89,9 +91,10 @@ func (s *AppserverRoleService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteAppserverRole(s.ctx, id)
 
 	if err != nil {
-		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	} else if deleted == 0 {
-		return message.NotFoundError(message.NotFound)
+		return faults.NotFoundError(fmt.Sprintf("unable to to find role with id: %v", id), slog.LevelDebug)
 	}
+
 	return nil
 }

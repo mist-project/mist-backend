@@ -8,7 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -84,7 +85,8 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: insert failed")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: insert failed")
 	})
 }
 
@@ -128,7 +130,8 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db fail")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db fail")
 	})
 }
 
@@ -174,7 +177,8 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("no appserver role sub found for id: %s", appserverId))
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -191,7 +195,8 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: boom")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
 
@@ -229,7 +234,10 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(
+			t, err, fmt.Sprintf("no appserver role sub found for id: %s", obj.ID),
+		)
 	})
 
 	t.Run("Error:db_failure", func(t *testing.T) {
@@ -247,6 +255,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db crash")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 	})
 }

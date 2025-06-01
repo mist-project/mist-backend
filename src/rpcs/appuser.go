@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -24,7 +24,7 @@ func (s *AppuserGRPCService) Create(
 	)
 
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	return &appuser.CreateResponse{}, nil

@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 
+	"mist/src/logging/logger"
 	"mist/src/producer"
 	"mist/src/rpcs"
 )
@@ -68,6 +69,7 @@ func main() {
 		log.Fatalf("failed to create Kafka producer: %v", err)
 	}
 
+	logger.InitializeLogger()
 	InitializeServer(kp)
 }
 

@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -87,7 +88,8 @@ func TestAppserverRoleService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: creation failed")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: creation failed")
 	})
 }
 
@@ -127,7 +129,8 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }
 
@@ -172,7 +175,8 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }
 
@@ -212,7 +216,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -229,7 +233,8 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: boom")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
 
@@ -267,7 +272,8 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to to find role with id: %v", params))
 	})
 
 	t.Run("Error:db_failure_on_delete", func(t *testing.T) {
@@ -285,6 +291,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db crash")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 	})
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"mist/src/faults"
 	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/psql_db/db"
@@ -74,7 +75,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "user does not have permission to manage subscriptions")
 		})
 	})
 
@@ -134,7 +136,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 				err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete)
 
 				// ASSERT
-				assert.Equal(t, "(-5) Unauthorized", err.Error())
+				assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+				testutil.AssertCustomErrorContains(t, err, "cannot delete the owner's sub")
 			})
 
 			t.Run("Error:object_owner_can_delete_its_own_subscription", func(t *testing.T) {
@@ -189,7 +192,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 				// ASSERT
 				assert.NotNil(t, err)
-				assert.Equal(t, "(-5) Unauthorized", err.Error())
+				assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+				testutil.AssertCustomErrorContains(t, err, "user does not have permission to manage subscriptions")
 			})
 		})
 	})
@@ -211,7 +215,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-1) invalid uuid", err.Error())
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "invalid user id: invalid")
 		})
 
 		t.Run("Error:db_error_on_sub_check", func(t *testing.T) {
@@ -231,7 +236,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "failed to check user subscription")
 		})
 
 		t.Run("Error:db_error_on_server_search", func(t *testing.T) {
@@ -263,7 +269,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "failed to get appserver")
 		})
 
 		t.Run("Error:db_error_on_user_permission_mask", func(t *testing.T) {
@@ -299,8 +306,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
-
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "failed to get user permissions")
 		})
 
 		t.Run("Error:invalid_object_id_format", func(t *testing.T) {
@@ -318,7 +325,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-1) invalid uuid", err.Error())
+			assert.Equal(t, err.Error(), faults.ValidationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "invalid uuid")
 		})
 
 		t.Run("Error:invalid_server_id_format", func(t *testing.T) {
@@ -332,7 +340,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "invalid permission-context in context")
 		})
 
 		t.Run("Error:object_id_not_found", func(t *testing.T) {
@@ -350,7 +359,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-2) resource not found", err.Error())
+			assert.Equal(t, err.Error(), faults.NotFoundMessage)
+			testutil.AssertCustomErrorContains(t, err, "resource not found")
 		})
 
 		t.Run("Error:nil_object_errors", func(t *testing.T) {
@@ -367,7 +377,8 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-1) invalid uuid", err.Error())
+			assert.Equal(t, err.Error(), faults.ValidationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "object id is nil")
 		})
 	})
 }

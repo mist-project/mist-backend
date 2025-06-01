@@ -3,30 +3,16 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"mist/src/errors/message"
+	"log/slog"
+	"mist/src/faults"
 	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
-// func logRequestBody(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-// 	// Log the metadata (headers) and the request body (payload)
-// 	md, ok := metadata.FromIncomingContext(ctx)
-// 	if ok {
-// 		log.Printf("Metadata: %v", md)
-// 	}
-
-// 	// Log the request body. This assumes req implements proto.Message
-// 	log.Printf("Request Body: %v", req)
-
-//		// Proceed with the handler
-//		return handler(ctx, req)
-//	}
 const JwtClaimsK string = "jwt-token"
 
 type CustomJWTClaims struct {
@@ -35,40 +21,55 @@ type CustomJWTClaims struct {
 	UserID string `json:"user_id"`
 }
 
-func AuthJwtInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	headers, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		auth := headers["authorization"]
-		if len(auth) == 0 {
-			return nil, status.Errorf(codes.Unauthenticated, "missing authorization header")
-		}
-
-		for _, t := range auth {
-			params := strings.Split(t, " ")
-			if len(params) != 2 || params[0] != "Bearer" {
-				return nil, status.Errorf(codes.Unauthenticated, "invalid token")
+func AuthJwtInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		headers, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			auth := headers["authorization"]
+			if len(auth) == 0 {
+				return nil, faults.AuthenticationError("unable to get auth claims", slog.LevelDebug)
 			}
 
-			claims, err := verifyJWT(params[1])
-			ctx = context.WithValue(ctx, JwtClaimsK, claims)
-			if err == nil {
-				// Proceed with next handler
-				return handler(ctx, req)
-			}
+			for _, t := range auth {
+				params := strings.Split(t, " ")
+				if len(params) != 2 || params[0] != "Bearer" {
+					return nil, faults.AuthenticationError("invalid token", slog.LevelDebug)
+				}
 
-			return nil, status.Errorf(codes.Unauthenticated, "%s", err.Error())
+				claims, err := verifyJWT(params[1])
+				ctx = context.WithValue(ctx, JwtClaimsK, claims)
+				if err == nil {
+					// Proceed with next handler
+					return handler(ctx, req)
+				}
+
+				return nil, faults.ExtendError(err)
+			}
 		}
+		return nil, faults.AuthenticationError("missing or invalid authorization header", slog.LevelDebug)
 	}
-	return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
 }
 
 func GetJWTClaims(ctx context.Context) (*CustomJWTClaims, error) {
 	claims, ok := ctx.Value(JwtClaimsK).(*CustomJWTClaims)
 	if !ok {
-		return nil, message.UnauthenticatedError("unable to get auth claims")
+		return nil, faults.AuthenticationError("unable to get auth claims", slog.LevelInfo)
 	}
 
 	return claims, nil
+}
+
+func GetUserId(ctx context.Context) string {
+	claims, err := GetJWTClaims(ctx)
+	if err != nil {
+		return "N/A"
+	}
+
+	if claims.UserID == "" {
+		return "N/A"
+	}
+
+	return claims.UserID
 }
 
 func verifyJWT(token string) (*CustomJWTClaims, error) {
@@ -76,20 +77,20 @@ func verifyJWT(token string) (*CustomJWTClaims, error) {
 	t, err := jwt.ParseWithClaims(token, &CustomJWTClaims{}, func(t *jwt.Token) (interface{}, error) {
 		// TODO: we will need this in the future, for now skip
 		// if token.Method != jwt.SigningMethodHS256 {
-		// 	return nil, message.UnauthenticatedError("unexpected signing method: %v", token.Header["alg"])
+		// 	return nil, faults.AuthenticationError("unexpected signing method: %v", token.Header["alg"])
 		// }
 		// Return the secret key to validate the token's signature
 		return []byte(os.Getenv("MIST_API_JWT_SECRET_KEY")), nil
 	})
 
 	if err != nil {
-		return nil, message.UnauthenticatedError(fmt.Sprintf("error parsing token: %v", err))
+		return nil, faults.AuthenticationError(fmt.Sprintf("error parsing token: %v", err), slog.LevelInfo)
 	}
 
 	// Now validate the token's claims
 	claims, err := verifyJWTTokenClaims(t)
 	if err != nil {
-		return nil, err
+		return nil, faults.ExtendError(err)
 	}
 
 	return claims, nil
@@ -112,12 +113,12 @@ func verifyJWTTokenClaims(t *jwt.Token) (*CustomJWTClaims, error) {
 	}
 
 	if !vAud {
-		return nil, fmt.Errorf("invalid audience claim")
+		return nil, faults.AuthenticationError("invalid audience claim", slog.LevelInfo)
 	}
 
 	// Validate the issuer (iss) claim
 	if claims.Issuer != os.Getenv("MIST_API_JWT_ISSUER") {
-		return nil, message.UnauthenticatedError("invalid issuer claim")
+		return nil, faults.AuthenticationError("invalid issuer claim", slog.LevelInfo)
 	}
 
 	// AuthJWTClaims

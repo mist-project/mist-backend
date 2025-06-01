@@ -3,6 +3,7 @@ package rpcs_test
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/google/uuid"
@@ -12,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/permission"
 	"mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
@@ -21,7 +22,7 @@ import (
 	"mist/src/testutil/factory"
 )
 
-func TestChannelService_ListServerChannels(t *testing.T) {
+func TestChannelRPCService_ListServerChannels(t *testing.T) {
 	t.Run("Successful:returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -98,7 +99,7 @@ func TestChannelService_ListServerChannels(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -114,11 +115,11 @@ func TestChannelService_ListServerChannels(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }
 
-func TestChannelService_GetById(t *testing.T) {
+func TestChannelRPCService_GetById(t *testing.T) {
 	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -153,7 +154,7 @@ func TestChannelService_GetById(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "resource not found")
+		assert.Contains(t, s.Message(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:when_get_by_id_search_fails_it_errors", func(t *testing.T) {
@@ -178,9 +179,9 @@ func TestChannelService_GetById(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
@@ -207,7 +208,7 @@ func TestChannelService_GetById(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionRead).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -223,11 +224,11 @@ func TestChannelService_GetById(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }
 
-func TestChannelService_Create(t *testing.T) {
+func TestChannelRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -269,9 +270,9 @@ func TestChannelService_Create(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) create channel error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
@@ -296,7 +297,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -312,11 +313,11 @@ func TestChannelService_Create(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }
 
-func TestChannelService_Delete(t *testing.T) {
+func TestChannelRPCService_Delete(t *testing.T) {
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -347,7 +348,7 @@ func TestChannelService_Delete(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "resource not found")
+		assert.Contains(t, s.Message(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -357,7 +358,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -373,7 +374,7 @@ func TestChannelService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -399,8 +400,8 @@ func TestChannelService_Delete(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 }

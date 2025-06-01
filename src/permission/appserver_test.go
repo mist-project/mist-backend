@@ -5,7 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/psql_db/db"
@@ -77,7 +78,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 				// ASSERT
 				assert.NotNil(t, err)
-				assert.Equal(t, "(-5) Unauthorized", err.Error())
+				assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+				testutil.AssertCustomErrorContains(t, err, "user is not allowed to manage server")
 			})
 
 			t.Run("Error:user_without_manage_appserver_permission_cannot_delete_server", func(t *testing.T) {
@@ -90,7 +92,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 				// ASSERT
 				assert.NotNil(t, err)
-				assert.Equal(t, "(-5) Unauthorized", err.Error())
+				assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+				testutil.AssertCustomErrorContains(t, err, "user is not allowed to manage server")
 			})
 
 			t.Run("Error:non_owner_cannot_delete_server", func(t *testing.T) {
@@ -103,7 +106,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 				// ASSERT
 				assert.NotNil(t, err)
-				assert.Equal(t, "(-5) Unauthorized", err.Error())
+				assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+				testutil.AssertCustomErrorContains(t, err, "user is not allowed to manage server")
 			})
 		})
 	})
@@ -127,7 +131,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-1) invalid uuid", err.Error())
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "invalid user id: invalid")
 		})
 
 		t.Run("Error:invalid_object_id_format", func(t *testing.T) {
@@ -139,7 +144,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, err.Error(), faults.ValidationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "invalid uuid pars")
 		})
 
 		t.Run("Error:object_id_not_found", func(t *testing.T) {
@@ -163,7 +169,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			assert.Equal(t, "(-5) Unauthorized", err.Error())
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "object id is required for action: delete")
 		})
 	})
 }

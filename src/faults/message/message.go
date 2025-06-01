@@ -35,6 +35,10 @@ var (
 	UnknownErrorString        string = fmt.Sprintf("(%d)", UnknownErrorCode)
 )
 
+const (
+	NotFoundMessage = "Not Found"
+)
+
 func ValidateError(s string) error {
 	return fmt.Errorf("%s %s", ValidationErrorString, s)
 }

@@ -2,6 +2,7 @@ package rpcs_test
 
 import (
 	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver"
 	"mist/src/psql_db/db"
@@ -21,7 +22,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestAppserverService_List(t *testing.T) {
+func TestAppserverRPCService_List(t *testing.T) {
 	t.Run("Successful:can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -85,7 +86,7 @@ func TestAppserverService_List(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -97,11 +98,11 @@ func TestAppserverService_List(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }
 
-func TestAppserverService_GetById(t *testing.T) {
+func TestAppserverRPCService_GetById(t *testing.T) {
 	t.Run("Successful:returns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -149,7 +150,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "resource not found")
+		assert.Contains(t, s.Message(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
@@ -176,7 +177,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -188,11 +189,11 @@ func TestAppserverService_GetById(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }
 
-func TestAppserverService_Create(t *testing.T) {
+func TestAppserverRPCService_Create(t *testing.T) {
 
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -259,8 +260,11 @@ func TestAppserverService_Create(t *testing.T) {
 		})
 
 		// ASSERT
+		s, ok := status.FromError(err)
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "a db error")
+		assert.True(t, ok)
+		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -270,7 +274,7 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionCreate).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -284,11 +288,11 @@ func TestAppserverService_Create(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }
 
-func TestAppserverService_Delete(t *testing.T) {
+func TestAppserverRPCService_Delete(t *testing.T) {
 
 	t.Run("Successful:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
@@ -318,7 +322,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.Equal(t, 0, len(serverSubs))
 	})
 
-	t.Run("Error:invalid_id_returns_unauthorized_error", func(t *testing.T) {
+	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -329,8 +333,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.PermissionDenied, s.Code())
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Equal(t, codes.NotFound, s.Code())
 
 	})
 
@@ -348,8 +351,8 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// // ASSERT
 		assert.True(t, ok)
-		assert.Equal(t, codes.NotFound, s.Code())             // Check that the error code is NotFound
-		assert.Contains(t, s.Message(), "resource not found") // Check the error message
+		assert.Equal(t, codes.NotFound, s.Code())               // Check that the error code is NotFound
+		assert.Contains(t, s.Message(), faults.NotFoundMessage) // Check the error message
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -359,7 +362,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -375,6 +378,6 @@ func TestAppserverService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 }

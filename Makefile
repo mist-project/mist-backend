@@ -78,11 +78,12 @@ dump-schema:
 setup-test:
 	go run test-setup/main.go
 
-run-tests t: generate-queries setup-test test-rpcs test-middleware test-service test-permission test-errors test-message test-producer
+run-tests t: generate-queries setup-test test-rpcs test-middleware test-service test-permission test-errors test-message test-producer test-helpers test-faults test-logging
 
 
 all-tests: setup-test
 	# Note: this is not well set up tests have errors. Issue lies on how db connection is used. needs to be fixed
+	# most likely need to add a lock to the db connection( somehow )
 	# For now use run-tests command
 	go test -cover ./... | grep -v 'testutil'
 
@@ -90,37 +91,48 @@ tbreak:
 	go test ./... -run "$(t)"
 
 test-rpcs: setup-test
-	@go test mist/src/rpcs -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/rpcs/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-middleware: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/middleware -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/middleware/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-service: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/service -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/service/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-permission: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/permission -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/permission/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
-test-errors: setup-test
+test-logging: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/errors -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/logging/... -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
+
+test-faults: setup-test
+	@echo -----------------------------------------
+	@go test mist/src/faults/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-message: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/errors/message -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/faults/message/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 test-producer: setup-test
 	@echo -----------------------------------------
-	@go test mist/src/producer -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go test mist/src/producer/... -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
+test-helpers: setup-test
+	@echo -----------------------------------------
+	@go test mist/src/helpers/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
 
 # ----- FORMAT -----

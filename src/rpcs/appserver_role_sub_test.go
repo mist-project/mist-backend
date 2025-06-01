@@ -2,6 +2,7 @@ package rpcs_test
 
 import (
 	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/google/uuid"
@@ -10,7 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
@@ -18,7 +19,7 @@ import (
 	"mist/src/testutil"
 )
 
-func TestAppserveRoleSubService_Create(t *testing.T) {
+func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -47,10 +48,19 @@ func TestAppserveRoleSubService_Create(t *testing.T) {
 
 	t.Run("Error:on_database_failure_returns_error", func(t *testing.T) {
 		// ARRANGE
+		var mockId *string
 		ctx := testutil.Setup(t, func() {})
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("CreateAppserverRoleSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", mock.Anything, mockId, permission.ActionCreate).Return(
+			nil,
+		)
+
+		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverRoleSubClient.Create(
+		response, err := svc.Create(
 			ctx, &appserver_role_sub.CreateRequest{
 				AppserverRoleId: uuid.NewString(),
 				AppserverSubId:  uuid.NewString(),
@@ -63,7 +73,36 @@ func TestAppserveRoleSubService_Create(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
+	})
+
+	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
+		// ARRANGE
+		var mockId *string
+		ctx := testutil.Setup(t, func() {})
+		mockQuerier := new(testutil.MockQuerier)
+		mockAuth := new(testutil.MockAuthorizer)
+		mockAuth.On("Authorize", mock.Anything, mockId, permission.ActionCreate).Return(
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
+		)
+
+		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+
+		// ACT
+		response, err := svc.Create(
+			ctx, &appserver_role_sub.CreateRequest{
+				AppserverRoleId: uuid.NewString(),
+				AppserverSubId:  uuid.NewString(),
+				AppserverId:     uuid.NewString(),
+				AppuserId:       uuid.NewString(),
+			},
+		)
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Nil(t, response)
+		assert.True(t, ok)
+		assert.Equal(t, codes.PermissionDenied, s.Code())
 	})
 
 	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
@@ -84,7 +123,7 @@ func TestAppserveRoleSubService_Create(t *testing.T) {
 	})
 }
 
-func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
+func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -110,7 +149,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionRead).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -126,7 +165,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Successful:can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
@@ -168,7 +207,7 @@ func TestAppserveRoleSubService_ListServerRoleSubs(t *testing.T) {
 	})
 }
 
-func TestAppserveRoleSubService_Delete(t *testing.T) {
+func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 	t.Run("Successful:can_successfully_delete_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -197,12 +236,12 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
-		roleId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
+		roleId := uuid.NewString()
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -218,7 +257,7 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -243,9 +282,9 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
@@ -263,6 +302,6 @@ func TestAppserveRoleSubService_Delete(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "resource not found")
+		assert.Contains(t, s.Message(), faults.NotFoundMessage)
 	})
 }

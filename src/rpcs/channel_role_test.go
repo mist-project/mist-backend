@@ -3,6 +3,7 @@ package rpcs_test
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/permission"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
@@ -20,7 +21,7 @@ import (
 	"mist/src/testutil/factory"
 )
 
-func TestChannelRoleService_ListChannelRoles(t *testing.T) {
+func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -86,8 +87,8 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.Unknown, s.Code())
-		assert.Contains(t, s.Message(), "db error")
+		assert.Equal(t, codes.Internal, s.Code())
+		assert.Contains(t, s.Message(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -97,7 +98,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionRead).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -113,12 +114,12 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 }
 
-func TestChannelRoleService_Create(t *testing.T) {
+func TestChannelRoleRPCService_Create(t *testing.T) {
 	t.Run("Successful:creates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -161,7 +162,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionCreate).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -179,7 +180,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -204,13 +205,13 @@ func TestChannelRoleService_Create(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 }
 
-func TestChannelRoleService_Delete(t *testing.T) {
+func TestChannelRoleRPCService_Delete(t *testing.T) {
 	t.Run("Successful:roles_can_be_deleted", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
@@ -241,7 +242,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, s.Message(), "resource not found")
+		assert.Contains(t, s.Message(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -251,7 +252,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -267,7 +268,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -292,8 +293,8 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 }

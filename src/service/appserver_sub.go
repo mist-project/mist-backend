@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
@@ -10,7 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
 	"mist/src/protos/v1/appserver_sub"
@@ -75,7 +77,7 @@ func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.Appse
 	appserverSub, err := s.db.CreateAppserverSub(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &appserverSub, err
@@ -96,7 +98,7 @@ func (s *AppserverSubService) ListUserServerSubs(userId uuid.UUID) ([]qx.ListUse
 	subs, err := s.db.ListUserServerSubs(s.ctx, userId)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return subs, nil
@@ -108,7 +110,7 @@ func (s *AppserverSubService) ListAppserverUserSubs(appserverId uuid.UUID) ([]qx
 	subs, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return subs, nil
@@ -121,10 +123,10 @@ func (s *AppserverSubService) GetById(id uuid.UUID) (*qx.AppserverSub, error) {
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, message.NotFoundError(message.NotFound)
+			return nil, faults.NotFoundError(fmt.Sprintf("unable to find appserver sub with id: %v", id), slog.LevelDebug)
 		}
 
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &role, nil
@@ -136,7 +138,7 @@ func (s *AppserverSubService) Filter(args qx.FilterAppserverSubParams) ([]qx.Fil
 	subs, err := s.db.FilterAppserverSub(s.ctx, args)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return subs, nil
@@ -150,9 +152,9 @@ func (s *AppserverSubService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {
-		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	} else if deleted == 0 {
-		return message.NotFoundError(message.NotFound)
+		return faults.NotFoundError(fmt.Sprintf("unable to find appserver sub with id: %v", id), slog.LevelDebug)
 	}
 
 	if subErr == nil {

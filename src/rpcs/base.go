@@ -165,7 +165,9 @@ func BaseInterceptors() (grpc.ServerOption, error) {
 	}
 
 	return grpc.ChainUnaryInterceptor(
-		middleware.AuthJwtInterceptor,
+		middleware.RequestIdInterceptor(),
+		middleware.RequestLoggerInterceptor(),
+		middleware.AuthJwtInterceptor(),
 		protovalidate_middleware.UnaryServerInterceptor(validator),
 	), nil
 }

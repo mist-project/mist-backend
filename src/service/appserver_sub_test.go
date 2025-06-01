@@ -12,7 +12,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/appserver_sub"
 	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/event"
@@ -136,7 +137,9 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: create error")
+
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: create error")
 	})
 }
 
@@ -185,7 +188,8 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db boom error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db boom error")
 	})
 }
 
@@ -232,7 +236,8 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: query error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: query error")
 	})
 }
 
@@ -272,7 +277,8 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find appserver sub with id: %v", appserverId))
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -289,7 +295,8 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: boom")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
 
@@ -344,7 +351,8 @@ func TestAppserverSubService_Filter(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, res)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: some db failure")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: some db failure")
 	})
 }
 
@@ -395,7 +403,8 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find appserver sub with id: %v", mockSub.ID))
 	})
 
 	t.Run("Error:returns_error_on_db_fail", func(t *testing.T) {
@@ -417,6 +426,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }

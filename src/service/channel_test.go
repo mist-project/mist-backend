@@ -12,7 +12,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
 	"mist/src/psql_db/qx"
@@ -151,7 +152,8 @@ func TestChannelService_Create(t *testing.T) {
 		_, err := svc.Create(createObj)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "create channel error: error on create")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "create channel error: error on create")
 	})
 
 	t.Run("Error:on_producer_message_error_it_does_nothing", func(t *testing.T) {
@@ -216,7 +218,7 @@ func TestChannelService_GetById(t *testing.T) {
 		_, err := svc.GetById(channel.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:on_database_error_it_returns_error", func(t *testing.T) {
@@ -226,14 +228,15 @@ func TestChannelService_GetById(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
-		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(*channel, fmt.Errorf("error on create"))
+		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(*channel, fmt.Errorf("error get by id"))
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
 		_, err := svc.GetById(channel.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "(-3) database error: error on create")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: error get by id")
 	})
 }
 
@@ -279,8 +282,8 @@ func TestChannelService_List(t *testing.T) {
 		_, err := svc.ListServerChannels(queryParams)
 
 		// ASSERT
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: database error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: database error")
 	})
 }
 
@@ -313,6 +316,32 @@ func TestChannelService_Delete(t *testing.T) {
 	})
 
 	t.Run(
+		"Successful:error_getting_channel_by_id_for_notifications_does_not_impact_result",
+		func(t *testing.T,
+		) {
+			ctx := testutil.Setup(t, func() {})
+			c := qx.Channel{ID: uuid.New()}
+			channelRows := []qx.FilterChannelRoleRow{
+				{ChannelID: uuid.New(), AppserverID: uuid.New()},
+			}
+			mockQuerier := new(testutil.MockQuerier)
+			mockProducer := new(testutil.MockProducer)
+
+			mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, fmt.Errorf("boom"))
+			mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
+			mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
+			mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
+
+			svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+			// ACT
+			err := svc.Delete(c.ID)
+
+			// ASSERT
+			assert.Equal(t, err, nil)
+		})
+
+	t.Run(
 		"Successful:error_getting_channel_users_based_on_roles_for_notifications_to_users_does_not_impact_result",
 		func(t *testing.T,
 		) {
@@ -329,7 +358,6 @@ func TestChannelService_Delete(t *testing.T) {
 			mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
 			mockQuerier.On("GetChannelUsersByRoles", ctx, mock.Anything).Return(nil, fmt.Errorf("boom"))
 			mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
-			mockProducer.On("NotifyMessageFailure", mock.Anything).Return(nil)
 
 			svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
@@ -354,7 +382,7 @@ func TestChannelService_Delete(t *testing.T) {
 		err := svc.Delete(c.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:when_delete_fails_it_errors", func(t *testing.T) {
@@ -371,6 +399,7 @@ func TestChannelService_Delete(t *testing.T) {
 		err := svc.Delete(c.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), "(-3) database error: mock error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "mock error")
 	})
 }

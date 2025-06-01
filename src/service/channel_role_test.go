@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -77,7 +78,8 @@ func TestChannelRoleService_Create(t *testing.T) {
 		_, err := svc.Create(obj)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: creation failed")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: creation failed")
 	})
 }
 
@@ -108,7 +110,8 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		_, err := svc.ListChannelRoles(channelId)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }
 
@@ -139,7 +142,8 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		_, err := svc.GetById(roleId)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find channel role with id: %v", roleId))
 	})
 
 	t.Run("Error:returns_db_error", func(t *testing.T) {
@@ -153,7 +157,8 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		_, err := svc.GetById(roleId)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: boom")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
 
@@ -182,7 +187,8 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		err := svc.Delete(id)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "resource not found")
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find channel role with id: %v", id))
 	})
 
 	t.Run("Error:db_failure_on_delete", func(t *testing.T) {
@@ -196,6 +202,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		err := svc.Delete(id)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "(-3) database error: db crash")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 	})
 }

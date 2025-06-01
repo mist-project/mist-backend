@@ -2,11 +2,13 @@ package permission
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/middleware"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -50,20 +52,20 @@ func (auth *ChannelRoleAuthorizer) Authorize(
 	claims, _ = middleware.GetJWTClaims(ctx)
 
 	if userId, err = uuid.Parse(claims.UserID); err != nil {
-		return message.UnauthorizedError(message.Unauthorized)
+		return faults.AuthorizationError(fmt.Sprintf("invalid user id: %s", claims.UserID), slog.LevelDebug)
 	}
 
 	serverIdCtx, authOk = ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
 
 	if !authOk {
 		// if the object is not found or invalid uuid, we return error
-		return message.UnauthorizedError(message.Unauthorized)
+		return faults.AuthorizationError(fmt.Sprintf("invalid %s in context", PermissionCtxKey), slog.LevelDebug)
 	}
 
 	allowed, err = auth.shared.BasePermissionCheck(ctx, serverIdCtx.AppserverId, userId, action)
 
 	if err != nil {
-		return message.UnauthorizedError(message.Unauthorized)
+		return faults.ExtendError(err)
 	}
 
 	if allowed {
@@ -74,8 +76,8 @@ func (auth *ChannelRoleAuthorizer) Authorize(
 		_, err = GetObject(ctx, auth.shared, objId, service.NewChannelRoleService(ctx, auth.DbConn, auth.Db).GetById)
 
 		if err != nil {
-			// if the object is not found or invalid uuid, we return err
-			return err
+			// if the object is not found or invalid uuid, we return error
+			return faults.ExtendError(err)
 		}
 	}
 
@@ -83,7 +85,7 @@ func (auth *ChannelRoleAuthorizer) Authorize(
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error
-		return message.UnauthorizedError(message.Unauthorized)
+		return faults.AuthorizationError(fmt.Sprintf("failed to get appserver: %v", err), slog.LevelDebug)
 	}
 
 	if server.AppuserID == userId {
@@ -93,12 +95,15 @@ func (auth *ChannelRoleAuthorizer) Authorize(
 	permissions, err = GetUserPermissionMask(ctx, auth.shared, userId, server)
 
 	if err != nil {
-		return message.UnauthorizedError(message.Unauthorized)
+		err, ok := faults.ExtendError(err).(*faults.CustomError)
+		if ok {
+			return faults.AuthorizationError(fmt.Sprintf("failed to get user permissions: %v", err.StackTrace()), slog.LevelDebug)
+		}
 	}
 
 	if permissions.AppserverPermissionMask&ManageChannels != 0 {
 		return nil
 	}
 
-	return message.UnauthorizedError(message.Unauthorized)
+	return faults.AuthorizationError("user does not have permission to manage channel roles", slog.LevelDebug)
 }

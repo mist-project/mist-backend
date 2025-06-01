@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
 	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_sub"
@@ -26,7 +26,7 @@ func (s *AppserverSubGRPCService) Create(
 	appserverSub, err := subService.Create(qx.CreateAppserverSubParams{AppserverID: serverId, AppuserID: userId})
 
 	if err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Return response
@@ -72,7 +72,7 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Initialize the service for AppserverSub
@@ -104,7 +104,7 @@ func (s *AppserverSubGRPCService) Delete(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	id, _ := uuid.Parse((req.Id))
@@ -115,7 +115,7 @@ func (s *AppserverSubGRPCService) Delete(
 	// Error handling
 	if err != nil {
 
-		return nil, message.RpcErrorHandler(err)
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
 	// Return success response

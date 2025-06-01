@@ -2,7 +2,9 @@ package producer
 
 import (
 	"fmt"
-	"mist/src/errors/message"
+	"log/slog"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
@@ -29,8 +31,7 @@ func (kp *KafkaProducer) SendMessage(data interface{}, action event.ActionType, 
 	e, err := kp.marshall(data, action, appusers)
 
 	if err != nil {
-		kp.NotifyMessageFailure(fmt.Errorf("error marshalling data for kafka: %v", err))
-		return err
+		return faults.ExtendError(err)
 	}
 
 	msg := &sarama.ProducerMessage{
@@ -40,7 +41,7 @@ func (kp *KafkaProducer) SendMessage(data interface{}, action event.ActionType, 
 	_, _, err = kp.Producer.SendMessage(msg)
 
 	if err != nil {
-		kp.NotifyMessageFailure(fmt.Errorf("error sending data to kafka: %v", err))
+		return faults.MessageProducerError(fmt.Sprintf("error sending data to kafka: %v", err), slog.LevelError)
 	}
 
 	return err
@@ -78,7 +79,7 @@ func (kp *KafkaProducer) marshall(data interface{}, action event.ActionType, app
 		d, ok := data.(*channel.Channel)
 
 		if !ok {
-			return nil, fmt.Errorf("(KafkaProducer|marshall) invalid data type for action %v", action)
+			return nil, faults.MarshallError(fmt.Sprintf("invalid data type for action %v", action), slog.LevelWarn)
 		}
 
 		data = &event.Event{

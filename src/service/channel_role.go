@@ -3,13 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"mist/src/errors/message"
+	"mist/src/faults"
+	"mist/src/faults/message"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -40,7 +42,7 @@ func (s *ChannelRoleService) Create(obj qx.CreateChannelRoleParams) (*qx.Channel
 	appserverRole, err := s.db.CreateChannelRole(s.ctx, obj)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &appserverRole, err
@@ -51,7 +53,7 @@ func (s *ChannelRoleService) ListChannelRoles(channelId uuid.UUID) ([]qx.Channel
 	cRoles, err := s.db.ListChannelRoles(s.ctx, channelId)
 
 	if err != nil {
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return cRoles, nil
@@ -64,10 +66,10 @@ func (s *ChannelRoleService) GetById(id uuid.UUID) (*qx.ChannelRole, error) {
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
 		if strings.Contains(err.Error(), message.DbNotFound) {
-			return nil, message.NotFoundError(message.NotFound)
+			return nil, faults.NotFoundError(fmt.Sprintf("unable to find channel role with id: %v", id), slog.LevelDebug)
 		}
 
-		return nil, message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
 	return &role, nil
@@ -78,9 +80,9 @@ func (s *ChannelRoleService) Delete(id uuid.UUID) error {
 	deleted, err := s.db.DeleteChannelRole(s.ctx, id)
 
 	if err != nil {
-		return message.DatabaseError(fmt.Sprintf("database error: %v", err))
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	} else if deleted == 0 {
-		return message.NotFoundError(message.NotFound)
+		return faults.NotFoundError(fmt.Sprintf("unable to find channel role with id: %v", id), slog.LevelDebug)
 	}
 	return nil
 }

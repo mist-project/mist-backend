@@ -6,8 +6,8 @@ import (
 	"errors"
 	"log/slog"
 	"mist/src/faults"
+	"mist/src/helpers"
 	"mist/src/logging/logger"
-	"mist/src/middleware"
 	"strings"
 	"testing"
 
@@ -60,7 +60,7 @@ func TestExtendError(t *testing.T) {
 func TestCustomErrorMethods(t *testing.T) {
 	var (
 		requestId = "req-123"
-		ctx       = context.WithValue(context.Background(), middleware.RequestIdKey, requestId)
+		ctx       = context.WithValue(context.Background(), helpers.RequestIdKey, requestId)
 	)
 	t.Run("unwrap_returns_original_message_error", func(t *testing.T) {
 		// ARRANGE
@@ -89,7 +89,7 @@ func TestCustomErrorMethods(t *testing.T) {
 func TestLogErrorLevels(t *testing.T) {
 	var (
 		requestId = "req-123"
-		ctx       = context.WithValue(context.Background(), middleware.RequestIdKey, requestId)
+		ctx       = context.WithValue(context.Background(), helpers.RequestIdKey, requestId)
 	)
 
 	t.Run("it_logs_at_all_levels", func(t *testing.T) {

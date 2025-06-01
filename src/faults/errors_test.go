@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"mist/src/faults"
-	"mist/src/middleware"
+	"mist/src/helpers"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -71,7 +71,7 @@ func TestErrorHelpers(t *testing.T) {
 func TestRpcCustomErrorHandler(t *testing.T) {
 	var (
 		requestId = "req-123"
-		ctx       = context.WithValue(context.Background(), middleware.RequestIdKey, requestId)
+		ctx       = context.WithValue(context.Background(), helpers.RequestIdKey, requestId)
 	)
 
 	t.Run("can_handle_custom_error_response", func(t *testing.T) {

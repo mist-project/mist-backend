@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"mist/src/helpers"
 	"mist/src/logging/logger"
-	"mist/src/middleware"
 	"runtime"
 
 	"google.golang.org/grpc/codes"
@@ -54,7 +54,7 @@ func (ce *CustomError) Unwrap() error {
 
 func (ce *CustomError) LogError(ctx context.Context) {
 
-	request_id := middleware.GetRequestId(ctx)
+	request_id := helpers.GetRequestId(ctx)
 
 	args := []any{
 		"request_id", request_id,

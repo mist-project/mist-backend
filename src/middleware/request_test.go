@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"mist/src/helpers"
 	"mist/src/logging/logger"
 	"mist/src/middleware"
 	"testing"
@@ -29,7 +30,7 @@ func TestRequestLoggerInterceptor(t *testing.T) {
 		var buf bytes.Buffer
 		logger.SetLogOutput(&buf)
 		// Context with a request ID
-		ctx := context.WithValue(context.Background(), middleware.RequestIdKey, "req-123")
+		ctx := context.WithValue(context.Background(), helpers.RequestIdKey, "req-123")
 
 		// ACT
 		interceptor := middleware.RequestLoggerInterceptor()
@@ -51,7 +52,7 @@ func TestRequestLoggerInterceptor(t *testing.T) {
 		var buf bytes.Buffer
 		logger.SetLogOutput(&buf)
 		// Context with a request ID
-		ctx := context.WithValue(context.Background(), middleware.RequestIdKey, "req-456")
+		ctx := context.WithValue(context.Background(), helpers.RequestIdKey, "req-456")
 
 		// ACT
 		interceptor := middleware.RequestLoggerInterceptor()
@@ -78,7 +79,7 @@ func TestRequestLoggerInterceptor(t *testing.T) {
 		var buf bytes.Buffer
 		logger.SetLogOutput(&buf)
 		// Context with a request ID
-		ctx := context.WithValue(context.Background(), middleware.RequestIdKey, "req-789")
+		ctx := context.WithValue(context.Background(), helpers.RequestIdKey, "req-789")
 
 		// ACT
 		interceptor := middleware.RequestLoggerInterceptor()
@@ -113,7 +114,7 @@ func TestRequestIdInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NoError(t, err)
-		requestId := newCtx.(context.Context).Value(middleware.RequestIdKey)
+		requestId := newCtx.(context.Context).Value(helpers.RequestIdKey)
 		assert.NotNil(t, requestId, "Expected a new request ID to be generated")
 	})
 
@@ -121,7 +122,7 @@ func TestRequestIdInterceptor(t *testing.T) {
 		// ARRANGE
 		ctx := context.Background()
 		expectedRequestId := "test-request-id"
-		headers := metadata.Pairs(middleware.RequestIdKey, expectedRequestId)
+		headers := metadata.Pairs(helpers.RequestIdKey, expectedRequestId)
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
@@ -129,7 +130,7 @@ func TestRequestIdInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NoError(t, err)
-		requestId := newCtx.(context.Context).Value(middleware.RequestIdKey)
+		requestId := newCtx.(context.Context).Value(helpers.RequestIdKey)
 		assert.Equal(t, expectedRequestId, requestId, "Expected the existing request ID to be used")
 	})
 
@@ -143,33 +144,7 @@ func TestRequestIdInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NoError(t, err)
-		requestId := newCtx.(context.Context).Value(middleware.RequestIdKey)
+		requestId := newCtx.(context.Context).Value(helpers.RequestIdKey)
 		assert.NotNil(t, requestId, "Expected a new request ID to be generated when no request ID is present in the header")
-	})
-}
-
-func TestGetRequestId(t *testing.T) {
-	t.Run("it_returns_the_request_id_from_context", func(t *testing.T) {
-		// ARRANGE
-		ctx := context.Background()
-		expectedRequestId := "test-request-id"
-		ctx = context.WithValue(ctx, middleware.RequestIdKey, expectedRequestId)
-
-		// ACT
-		requestId := middleware.GetRequestId(ctx)
-
-		// ASSERT
-		assert.Equal(t, expectedRequestId, requestId, "Expected to retrieve the request ID from context")
-	})
-
-	t.Run("it_returns_a_temporary_request_id_when_not_in_context", func(t *testing.T) {
-		// ARRANGE
-		ctx := context.Background()
-
-		// ACT
-		requestId := middleware.GetRequestId(ctx)
-
-		// ASSERT
-		assert.NotNil(t, requestId, "Expected a temporary request ID to be generated when not in context")
 	})
 }

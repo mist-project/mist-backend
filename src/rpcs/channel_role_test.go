@@ -87,8 +87,8 @@ func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.Unknown, s.Code())
-		assert.Contains(t, s.Message(), "db error")
+		assert.Equal(t, codes.Internal, s.Code())
+		assert.Contains(t, s.Message(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -205,7 +205,7 @@ func TestChannelRoleRPCService_Create(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
@@ -293,7 +293,7 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})

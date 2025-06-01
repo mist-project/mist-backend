@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"mist/src/faults"
 	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
@@ -69,7 +70,10 @@ func TestAppuserRPCService_Create(t *testing.T) {
 		})
 
 		// ASSERT
+		s, ok := status.FromError(err)
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "a db error")
+		assert.True(t, ok)
+		assert.Equal(t, codes.Internal, s.Code())
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})
 }

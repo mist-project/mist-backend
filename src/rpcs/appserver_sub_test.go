@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"mist/src/faults"
-	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_sub"
 	"mist/src/psql_db/qx"
@@ -116,7 +115,7 @@ func TestAppserverSubRPCService_ListAppserverUserSubs(t *testing.T) {
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On(
 			"Authorize", mock.Anything, nilString, permission.ActionRead,
-		).Return(message.UnauthorizedError("Unauthorized"))
+		).Return(faults.AuthorizationError("Unauthorized", slog.LevelDebug))
 
 		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
 
@@ -169,8 +168,8 @@ func TestAppserverSubRPCService_Create(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.Unknown, s.Code())
-		assert.Contains(t, s.Message(), "database error")
+		assert.Equal(t, codes.Internal, s.Code())
+		assert.Contains(t, s.Message(), faults.DatabaseErrorMessage)
 	})
 
 	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
@@ -222,7 +221,6 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
 		assert.Contains(t, err.Error(), faults.NotFoundMessage)
-		testutil.AssertCustomErrorContains(t, err, faults.NotFoundMessage)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -248,7 +246,7 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		s, ok := status.FromError(err)
 
 		// ASSERT
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 	})

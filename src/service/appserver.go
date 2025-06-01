@@ -125,7 +125,10 @@ func (s *AppserverService) Delete(id uuid.UUID) error {
 	subs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).ListAppserverUserSubs(id)
 
 	if err != nil {
-		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelWarn)
+		err, ok := err.(*faults.CustomError)
+		if ok {
+			return faults.DatabaseError(fmt.Sprintf("database error: %v", err.StackTrace()), slog.LevelWarn)
+		}
 	}
 
 	deleted, err := s.db.DeleteAppserver(s.ctx, id)

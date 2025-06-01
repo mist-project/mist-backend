@@ -2,6 +2,7 @@ package rpcs_test
 
 import (
 	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/google/uuid"
@@ -259,7 +260,7 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}

@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"mist/src/faults"
-	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/qx"
@@ -65,7 +64,7 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, response)
 		assert.True(t, ok)
-		assert.Equal(t, codes.Unknown, s.Code())
+		assert.Equal(t, codes.NotFound, s.Code())
 	})
 
 	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
@@ -112,7 +111,7 @@ func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionRead).Return(
-			message.UnauthorizedError("Unauthorized"),
+			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
 		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
@@ -128,7 +127,7 @@ func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
 	})
 
 	t.Run("Successful:can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {

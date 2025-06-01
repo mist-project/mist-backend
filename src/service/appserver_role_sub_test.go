@@ -85,7 +85,7 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: insert failed")
 	})
 }
@@ -130,7 +130,7 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db fail")
 	})
 }
@@ -177,7 +177,7 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("no appserver role sub found for id: %s", appserverId))
 	})
 
@@ -195,7 +195,7 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
@@ -234,7 +234,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(
 			t, err, fmt.Sprintf("no appserver role sub found for id: %s", obj.ID),
 		)
@@ -255,7 +255,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 	})
 }

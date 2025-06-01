@@ -2,7 +2,9 @@ package permission
 
 import (
 	"context"
-	"mist/src/faults/message"
+	"fmt"
+	"log/slog"
+	"mist/src/faults"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -39,7 +41,7 @@ func (auth *SharedAuthorizer) UserIsServerOwner(ctx context.Context, userId uuid
 	server, err := service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById(serverId)
 
 	if err != nil {
-		return false, err
+		return false, faults.ExtendError(err)
 	}
 
 	return server.AppuserID == userId, nil
@@ -54,7 +56,7 @@ func (auth *SharedAuthorizer) UserHasServerSub(ctx context.Context, userId uuid.
 		},
 	)
 	if err != nil {
-		return false, err
+		return false, faults.ExtendError(err)
 	} else if len(sub) > 0 {
 		return true, nil
 	}
@@ -71,7 +73,7 @@ func (auth *SharedAuthorizer) BasePermissionCheck(
 	)
 
 	if hasSub, err = auth.UserHasServerSub(ctx, userId, appserverId); err != nil {
-		return false, message.UnauthorizedError(message.Unauthorized)
+		return false, faults.AuthorizationError(fmt.Sprintf("failed to check user subscription: %v", err), slog.LevelDebug)
 	}
 
 	if hasSub && action == ActionRead {
@@ -87,18 +89,18 @@ func GetObject[T any](
 ) (*T, error) {
 
 	if objId == nil {
-		return nil, message.ValidateError(message.InvalidUUID)
+		return nil, faults.ValidationError("object id is nil", slog.LevelDebug)
 	}
 
 	id, err := uuid.Parse(*objId)
 	if err != nil {
-		return nil, message.ValidateError(message.InvalidUUID)
+		return nil, faults.ValidationError(fmt.Sprintf("invalid uuid parse: %v", err), slog.LevelDebug)
 	}
 
 	obj, err := fetchFunc(id)
 
 	if err != nil {
-		return nil, message.NotFoundError(message.NotFound)
+		return nil, faults.NotFoundError("resource not found", slog.LevelDebug)
 	}
 
 	return obj, nil
@@ -114,7 +116,7 @@ func GetUserPermissionMask(
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, faults.DatabaseError(fmt.Sprintf("failed to get user permissions: %v", err), slog.LevelError)
 	}
 
 	masks := PermissionMasks{

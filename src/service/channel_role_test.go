@@ -78,7 +78,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		_, err := svc.Create(obj)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: creation failed")
 	})
 }
@@ -110,7 +110,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		_, err := svc.ListChannelRoles(channelId)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }
@@ -142,7 +142,7 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		_, err := svc.GetById(roleId)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find channel role with id: %v", roleId))
 	})
 
@@ -157,7 +157,7 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		_, err := svc.GetById(roleId)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
@@ -187,7 +187,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		err := svc.Delete(id)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find channel role with id: %v", id))
 	})
 
@@ -202,7 +202,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		err := svc.Delete(id)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 	})
 }

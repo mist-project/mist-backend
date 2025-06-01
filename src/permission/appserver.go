@@ -2,11 +2,13 @@ package permission
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"mist/src/faults/message"
+	"mist/src/faults"
 	"mist/src/middleware"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -50,24 +52,23 @@ func (auth *AppserverAuthorizer) Authorize(
 	claims, _ = middleware.GetJWTClaims(ctx)
 
 	if userId, err = uuid.Parse(claims.UserID); err != nil {
-		return message.ValidateError(message.InvalidUUID)
+		return faults.AuthorizationError(fmt.Sprintf("invalid user id: %s", claims.UserID), slog.LevelDebug)
 	}
 
 	if objId == nil {
 		// only on create we don't expect an object id
-		return message.UnauthorizedError(message.Unauthorized)
+		return faults.AuthorizationError(fmt.Sprintf("object id is required for action: %s", action), slog.LevelDebug)
 	}
 
 	obj, err = GetObject(ctx, auth.shared, objId, service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById)
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error
-		return message.UnauthorizedError(message.Unauthorized)
-
+		return faults.ExtendError(err)
 	}
 
 	if obj.AppuserID == userId {
 		return nil // user is the owner of the server, user can do anything
 	}
 
-	return message.UnauthorizedError(message.Unauthorized)
+	return faults.AuthorizationError("user is not allowed to manage server", slog.LevelDebug)
 }

@@ -88,7 +88,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: creation failed")
 	})
 }
@@ -129,7 +129,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }
@@ -175,7 +175,7 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }
@@ -216,7 +216,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -233,7 +233,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
@@ -272,7 +272,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to to find role with id: %v", params))
 	})
 
@@ -291,7 +291,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"mist/src/faults"
 	"mist/src/permission"
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
@@ -88,7 +89,8 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		// ASSERT
 		assert.Error(t, err)
 		assert.False(t, isOwner)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db fail")
 	})
 }
 
@@ -180,6 +182,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		// ASSERT
 		assert.Error(t, err)
 		assert.False(t, hasSub)
-		assert.Contains(t, err.Error(), "database error")
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }

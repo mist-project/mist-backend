@@ -55,7 +55,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "invalid audience claim")
+		assert.Equal(t, err.Error(), "invalid audience claim")
 	})
 
 	t.Run("invalid_issuer", func(t *testing.T) {
@@ -75,7 +75,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "invalid issuer claim")
+		assert.Equal(t, err.Error(), "invalid issuer claim")
 	})
 
 	t.Run("invalid_secret_key", func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "error parsing token")
+		assert.Equal(t, err.Error(), "error parsing token")
 	})
 
 	t.Run("invalid_token_format", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "token is malformed")
+		assert.Equal(t, err.Error(), "token is malformed")
 	})
 
 	t.Run("missing_authorization_header", func(t *testing.T) {
@@ -124,7 +124,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "missing authorization header")
+		assert.Equal(t, err.Error(), "missing authorization header")
 	})
 
 	t.Run("invalid_authorization_bearer_header", func(t *testing.T) {
@@ -138,7 +138,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "invalid token")
+		assert.Equal(t, err.Error(), "invalid token")
 	})
 
 	t.Run("invalid_claims_format_for_audience", func(t *testing.T) {
@@ -163,7 +163,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "invalid audience claim")
+		assert.Equal(t, err.Error(), "invalid audience claim")
 	})
 
 	t.Run("missing_header_errors", func(t *testing.T) {
@@ -175,7 +175,7 @@ func TestAuthJwtInterceptor(t *testing.T) {
 
 		// ASSERT
 		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), "unauthenticated")
+		assert.Equal(t, err.Error(), "unauthenticated")
 	})
 }
 

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_role"
@@ -252,7 +253,8 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.Unknown, s.Code())
-		assert.Contains(t, s.Message(), "(-2) resource not found")
+		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, "resource not found")
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {

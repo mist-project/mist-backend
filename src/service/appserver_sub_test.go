@@ -138,7 +138,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 		// ASSERT
 		assert.Error(t, err)
 
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: create error")
 	})
 }
@@ -188,7 +188,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db boom error")
 	})
 }
@@ -236,7 +236,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: query error")
 	})
 }
@@ -277,7 +277,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find appserver sub with id: %v", appserverId))
 	})
 
@@ -295,7 +295,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 	})
 }
@@ -351,7 +351,7 @@ func TestAppserverSubService_Filter(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, res)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: some db failure")
 	})
 }
@@ -403,7 +403,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find appserver sub with id: %v", mockSub.ID))
 	})
 
@@ -426,7 +426,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 	})
 }

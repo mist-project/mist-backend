@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver_sub"
@@ -219,7 +220,8 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.NotFound, s.Code())
-		assert.Contains(t, err.Error(), "(-2) resource not found")
+		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		testutil.AssertCustomErrorContains(t, err, "resource not found")
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {

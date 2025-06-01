@@ -126,7 +126,7 @@ func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Equal(t, err.Error(), "(-5) Unauthorized")
 	})
 
 	t.Run("Successful:can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-5) Unauthorized")
+		assert.Equal(t, err.Error(), "(-5) Unauthorized")
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -245,7 +245,7 @@ func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, codes.Unknown, s.Code())
 		assert.True(t, ok)
-		assert.Contains(t, err.Error(), "(-3) database error: db error")
+		assert.Equal(t, err.Error(), "(-3) database error: db error")
 	})
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {

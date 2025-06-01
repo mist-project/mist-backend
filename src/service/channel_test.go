@@ -152,7 +152,7 @@ func TestChannelService_Create(t *testing.T) {
 		_, err := svc.Create(createObj)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "create channel error: error on create")
 	})
 
@@ -218,7 +218,7 @@ func TestChannelService_GetById(t *testing.T) {
 		_, err := svc.GetById(channel.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:on_database_error_it_returns_error", func(t *testing.T) {
@@ -235,7 +235,7 @@ func TestChannelService_GetById(t *testing.T) {
 		_, err := svc.GetById(channel.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: error get by id")
 	})
 }
@@ -282,7 +282,7 @@ func TestChannelService_List(t *testing.T) {
 		_, err := svc.ListServerChannels(queryParams)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: database error")
 	})
 }
@@ -382,7 +382,7 @@ func TestChannelService_Delete(t *testing.T) {
 		err := svc.Delete(c.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), faults.NotFoundMessage)
+		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 	})
 
 	t.Run("Error:when_delete_fails_it_errors", func(t *testing.T) {
@@ -399,7 +399,7 @@ func TestChannelService_Delete(t *testing.T) {
 		err := svc.Delete(c.ID)
 
 		// ASSERT
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "mock error")
 	})
 }

@@ -75,7 +75,7 @@ func TestAppuserService_Create(t *testing.T) {
 		// ASSERT
 		assert.Nil(t, result)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "create appuser: db error")
 	})
 }

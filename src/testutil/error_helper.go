@@ -11,7 +11,7 @@ func AssertCustomErrorContains(t *testing.T, err error, expected string) {
 	customErr, ok := err.(*faults.CustomError)
 
 	if !ok {
-		assert.Contains(t, err.Error(), expected)
+		assert.Equal(t, err.Error(), expected)
 	} else {
 		assert.Contains(t, customErr.StackTrace(), expected)
 	}

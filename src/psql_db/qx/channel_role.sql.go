@@ -46,13 +46,10 @@ func (q *Queries) CreateChannelRole(ctx context.Context, arg CreateChannelRolePa
 }
 
 const deleteChannelRole = `-- name: DeleteChannelRole :execrows
-
-
 DELETE FROM channel_role as cr
 WHERE cr.id=$1
 `
 
-// ...existing code...
 func (q *Queries) DeleteChannelRole(ctx context.Context, id uuid.UUID) (int64, error) {
 	result, err := q.db.Exec(ctx, deleteChannelRole, id)
 	if err != nil {

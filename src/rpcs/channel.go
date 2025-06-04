@@ -27,7 +27,7 @@ func (s *ChannelGRPCService) Create(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
-	c, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId})
+	c, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId, IsPrivate: req.IsPrivate})
 
 	if err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, err)

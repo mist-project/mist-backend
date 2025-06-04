@@ -105,6 +105,7 @@ type Channel struct {
 	ID          uuid.UUID
 	Name        string
 	AppserverID uuid.UUID
+	IsPrivate   bool
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 }

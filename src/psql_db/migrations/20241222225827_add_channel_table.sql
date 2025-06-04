@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS channel (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(64) NOT NULL,
     appserver_id UUID NOT NULL,
+    is_private BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
 

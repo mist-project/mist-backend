@@ -397,11 +397,12 @@ func TestChannel(t *testing.T, c *qx.Channel, base bool) *qx.Channel {
 		c = &qx.Channel{
 			Name:        uuid.NewString(),
 			AppserverID: TestAppserver(t, nil, base).ID,
+			IsPrivate:   false,
 		}
 	}
 
 	channel, err := qx.New(TestDbConn).CreateChannel(
-		context.Background(), qx.CreateChannelParams{Name: c.Name, AppserverID: c.AppserverID})
+		context.Background(), qx.CreateChannelParams{Name: c.Name, AppserverID: c.AppserverID, IsPrivate: c.IsPrivate})
 
 	if err != nil {
 		t.Fatalf("Unable to create appserver. Error: %v", err)

@@ -59,6 +59,7 @@ CREATE TABLE public.channel (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     name character varying(64) NOT NULL,
     appserver_id uuid NOT NULL,
+    is_private boolean DEFAULT false NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
 );

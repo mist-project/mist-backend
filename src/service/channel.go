@@ -40,6 +40,7 @@ func (s *ChannelService) PgTypeToPb(c *qx.Channel) *channel.Channel {
 	return &channel.Channel{
 		Id:          c.ID.String(),
 		Name:        c.Name,
+		IsPrivate:   c.IsPrivate,
 		AppserverId: c.AppserverID.String(),
 		CreatedAt:   timestamppb.New(c.CreatedAt.Time),
 	}
@@ -81,6 +82,20 @@ func (s *ChannelService) ListServerChannels(obj qx.ListServerChannelsParams) ([]
 	// TODO: This should only return channel that the user has access to. Pull the channels which user has roles to
 	// and pulls all the channels without roles in the server.
 	channels, err := s.db.ListServerChannels(s.ctx, obj)
+
+	if err != nil {
+		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
+	}
+
+	return channels, nil
+}
+
+// Lists all channels for an appserver. Name filter is also added but it may get deprecated.
+func (s *ChannelService) Filter(obj qx.FilterChannelParams) ([]qx.Channel, error) {
+
+	// TODO: This should only return channel that the user has access to. Pull the channels which user has roles to
+	// and pulls all the channels without roles in the server.
+	channels, err := s.db.FilterChannel(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)

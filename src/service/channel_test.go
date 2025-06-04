@@ -287,6 +287,51 @@ func TestChannelService_List(t *testing.T) {
 	})
 }
 
+func TestChannelService_Filter(t *testing.T) {
+
+	t.Run("Successful:with_appserver_filter", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverId := pgtype.UUID{Bytes: uuid.New(), Valid: true}
+		expected := []qx.Channel{
+			{ID: uuid.New(), Name: "foo", AppserverID: uuid.New()},
+			{ID: uuid.New(), Name: "bar", AppserverID: uuid.New()},
+		}
+		queryParams := qx.FilterChannelParams{AppserverID: appserverId}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+		mockQuerier.On("FilterChannel", ctx, queryParams).Return(expected, nil)
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		result, err := svc.Filter(queryParams)
+
+		// ASSERT
+		assert.NoError(t, err)
+		assert.Equal(t, result, expected)
+	})
+
+	t.Run("Error:failure_on_db_error", func(t *testing.T) {
+		ctx := testutil.Setup(t, func() {})
+		appserverId := pgtype.UUID{Bytes: uuid.New(), Valid: true}
+		queryParams := qx.FilterChannelParams{AppserverID: appserverId}
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+		mockQuerier.On("FilterChannel", ctx, queryParams).Return(nil, fmt.Errorf("database error"))
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		_, err := svc.Filter(queryParams)
+
+		// ASSERT
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "database error: database error")
+	})
+}
+
 func TestChannelService_Delete(t *testing.T) {
 
 	t.Run("Successful:can_delete_channel", func(t *testing.T) {

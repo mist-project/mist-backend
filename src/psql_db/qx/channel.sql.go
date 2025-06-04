@@ -15,26 +15,30 @@ import (
 const createChannel = `-- name: CreateChannel :one
 INSERT INTO channel (
   name,
-  appserver_id
+  appserver_id,
+  is_private
 ) VALUES (
   $1,
-  $2
+  $2,
+  $3
 )
-RETURNING id, name, appserver_id, created_at, updated_at
+RETURNING id, name, appserver_id, is_private, created_at, updated_at
 `
 
 type CreateChannelParams struct {
 	Name        string
 	AppserverID uuid.UUID
+	IsPrivate   bool
 }
 
 func (q *Queries) CreateChannel(ctx context.Context, arg CreateChannelParams) (Channel, error) {
-	row := q.db.QueryRow(ctx, createChannel, arg.Name, arg.AppserverID)
+	row := q.db.QueryRow(ctx, createChannel, arg.Name, arg.AppserverID, arg.IsPrivate)
 	var i Channel
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.AppserverID,
+		&i.IsPrivate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -54,8 +58,47 @@ func (q *Queries) DeleteChannel(ctx context.Context, id uuid.UUID) (int64, error
 	return result.RowsAffected(), nil
 }
 
+const filterChannel = `-- name: FilterChannel :many
+SELECT id, name, appserver_id, is_private, created_at, updated_at
+FROM channel
+WHERE appserver_id = COALESCE($1, appserver_id)
+  AND is_private = COALESCE($2, is_private)
+`
+
+type FilterChannelParams struct {
+	AppserverID pgtype.UUID
+	IsPrivate   pgtype.Bool
+}
+
+func (q *Queries) FilterChannel(ctx context.Context, arg FilterChannelParams) ([]Channel, error) {
+	rows, err := q.db.Query(ctx, filterChannel, arg.AppserverID, arg.IsPrivate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Channel
+	for rows.Next() {
+		var i Channel
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.AppserverID,
+			&i.IsPrivate,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getChannelById = `-- name: GetChannelById :one
-SELECT id, name, appserver_id, created_at, updated_at
+SELECT id, name, appserver_id, is_private, created_at, updated_at
 FROM channel
 WHERE id=$1
 LIMIT 1
@@ -68,6 +111,7 @@ func (q *Queries) GetChannelById(ctx context.Context, id uuid.UUID) (Channel, er
 		&i.ID,
 		&i.Name,
 		&i.AppserverID,
+		&i.IsPrivate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -109,7 +153,7 @@ func (q *Queries) GetChannelUsersByRoles(ctx context.Context, dollar_1 []uuid.UU
 }
 
 const getChannelsForUser = `-- name: GetChannelsForUser :many
-SELECT DISTINCT channel.id, channel.name, channel.appserver_id, channel.created_at, channel.updated_at
+SELECT DISTINCT channel.id, channel.name, channel.appserver_id, channel.is_private, channel.created_at, channel.updated_at
 FROM channel
 LEFT JOIN channel_role ON channel_role.channel_id = channel.id
 LEFT JOIN appserver_role_sub ON appserver_role_sub.app_server_role_id = channel_role.appserver_role_id
@@ -138,6 +182,7 @@ func (q *Queries) GetChannelsForUser(ctx context.Context, arg GetChannelsForUser
 			&i.ID,
 			&i.Name,
 			&i.AppserverID,
+			&i.IsPrivate,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -152,7 +197,7 @@ func (q *Queries) GetChannelsForUser(ctx context.Context, arg GetChannelsForUser
 }
 
 const listServerChannels = `-- name: ListServerChannels :many
-SELECT id, name, appserver_id, created_at, updated_at
+SELECT id, name, appserver_id, is_private, created_at, updated_at
 FROM channel
 WHERE name=COALESCE($2, name)
   AND appserver_id=$1
@@ -176,6 +221,7 @@ func (q *Queries) ListServerChannels(ctx context.Context, arg ListServerChannels
 			&i.ID,
 			&i.Name,
 			&i.AppserverID,
+			&i.IsPrivate,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

@@ -113,6 +113,11 @@ func (m *MockQuerier) FilterChannelRole(ctx context.Context, arg qx.FilterChanne
 	return returnIfError[[]qx.FilterChannelRoleRow](args, 1)
 }
 
+func (m *MockQuerier) FilterChannel(ctx context.Context, arg qx.FilterChannelParams) ([]qx.Channel, error) {
+	args := m.Called(ctx, arg)
+	return returnIfError[[]qx.Channel](args, 1)
+}
+
 func (m *MockQuerier) ListAppserverUserSubs(ctx context.Context, appserverID uuid.UUID) ([]qx.ListAppserverUserSubsRow, error) {
 	args := m.Called(ctx, appserverID)
 	return returnIfError[[]qx.ListAppserverUserSubsRow](args, 1)

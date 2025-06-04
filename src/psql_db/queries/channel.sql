@@ -1,10 +1,12 @@
 -- name: CreateChannel :one
 INSERT INTO channel (
   name,
-  appserver_id
+  appserver_id,
+  is_private
 ) VALUES (
   $1,
-  $2
+  $2,
+  $3
 )
 RETURNING *;
 
@@ -38,6 +40,13 @@ WHERE channel.appserver_id = $2
     channel_role.id IS NULL -- channels with no roles
     OR appserver_role_sub.appuser_id = $1 -- channels where user has a role
   );
+
+-- name: FilterChannel :many
+SELECT *
+FROM channel
+WHERE appserver_id = COALESCE(sqlc.narg('appserver_id'), appserver_id)
+  AND is_private = COALESCE(sqlc.narg('is_private'), is_private);
+
 
 -- name: DeleteChannel :execrows
 DELETE FROM channel

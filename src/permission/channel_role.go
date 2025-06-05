@@ -73,7 +73,7 @@ func (auth *ChannelRoleAuthorizer) Authorize(
 	}
 
 	if objId != nil {
-		_, err = GetObject(ctx, auth.shared, objId, service.NewChannelRoleService(ctx, auth.DbConn, auth.Db).GetById)
+		_, err = GetObject(ctx, auth.shared, objId, service.NewChannelRoleService(ctx, auth.DbConn, auth.Db, nil).GetById)
 
 		if err != nil {
 			// if the object is not found or invalid uuid, we return error

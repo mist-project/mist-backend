@@ -12,7 +12,10 @@ import (
 
 	"mist/src/faults"
 	"mist/src/faults/message"
+	"mist/src/producer"
+	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel_role"
+	"mist/src/protos/v1/event"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -21,10 +24,11 @@ type ChannelRoleService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
+	mp     producer.MessageProducer
 }
 
-func NewChannelRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *ChannelRoleService {
-	return &ChannelRoleService{ctx: ctx, dbConn: dbConn, db: db}
+func NewChannelRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer) *ChannelRoleService {
+	return &ChannelRoleService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
 }
 
 func (s *ChannelRoleService) PgTypeToPb(cRole *qx.ChannelRole) *channel_role.ChannelRole {
@@ -77,6 +81,19 @@ func (s *ChannelRoleService) GetById(id uuid.UUID) (*qx.ChannelRole, error) {
 
 // Deletes a role from a server, only owner of server and delete role
 func (s *ChannelRoleService) Delete(id uuid.UUID) error {
+
+	channelRole, err := s.GetById(id) // Check if the role exists
+
+	if err != nil {
+		return faults.ExtendError(err)
+	}
+
+	channel, err := s.db.GetChannelById(s.ctx, channelRole.ChannelID)
+
+	if err != nil {
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
+	}
+
 	deleted, err := s.db.DeleteChannelRole(s.ctx, id)
 
 	if err != nil {
@@ -84,5 +101,30 @@ func (s *ChannelRoleService) Delete(id uuid.UUID) error {
 	} else if deleted == 0 {
 		return faults.NotFoundError(fmt.Sprintf("unable to find channel role with id: %v", id), slog.LevelDebug)
 	}
+
+	s.SendNotificationToUsers(&channel, channelRole, event.ActionType_ACTION_REMOVE_CHANNEL)
+
 	return nil
+}
+
+func (s *ChannelRoleService) SendNotificationToUsers(channel *qx.Channel, channelRole *qx.ChannelRole, action event.ActionType) {
+	var (
+		users []*appuser.Appuser
+	)
+
+	appusers, err := s.db.GetAppusersWithOnlySpecifiedRole(s.ctx, channelRole.AppserverRoleID)
+
+	if err != nil {
+		faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError).LogError(s.ctx)
+		return
+	}
+
+	users = make([]*appuser.Appuser, 0, len(appusers))
+
+	for _, user := range appusers {
+		users = append(users, &appuser.Appuser{Id: user.ID.String(), Username: user.Username})
+	}
+
+	s.mp.SendMessage(channel, action, users)
+
 }

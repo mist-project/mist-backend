@@ -123,7 +123,7 @@ SELECT DISTINCT appuser.id, appuser.username, appuser.online_status, appuser.cre
 FROM appuser
 JOIN appserver_role_sub ON appserver_role_sub.appuser_id = appuser.id
 JOIN channel_role ON channel_role.appserver_role_id = appserver_role_sub.app_server_role_id
-WHERE channel_role.id = ANY($1::uuid[])
+WHERE channel_role.appserver_role_id = ANY($1::uuid[])
 `
 
 func (q *Queries) GetChannelUsersByRoles(ctx context.Context, dollar_1 []uuid.UUID) ([]Appuser, error) {

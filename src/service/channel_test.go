@@ -334,9 +334,36 @@ func TestChannelService_Filter(t *testing.T) {
 
 func TestChannelService_Delete(t *testing.T) {
 
-	t.Run("Successful:can_delete_channel", func(t *testing.T) {
+	t.Run("Successful:can_delete_public_channel", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		c := qx.Channel{ID: uuid.New()}
+		channelRows := []qx.FilterChannelRoleRow{
+			{ChannelID: uuid.New(), AppserverID: uuid.New()},
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+		mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, nil)
+		mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
+		mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
+		mockQuerier.On("ListAppserverUserSubs", ctx, mock.Anything).Return([]qx.ListAppserverUserSubsRow{
+			{ID: uuid.New(), Username: "testuser"},
+		}, nil)
+		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		err := svc.Delete(c.ID)
+
+		// ASSERT
+		assert.Equal(t, err, nil)
+		mockProducer.AssertExpectations(t)
+	})
+
+	t.Run("Successful:can_delete_private_channel", func(t *testing.T) {
+		ctx := testutil.Setup(t, func() {})
+		c := qx.Channel{ID: uuid.New(), IsPrivate: true}
 		channelRows := []qx.FilterChannelRoleRow{
 			{ChannelID: uuid.New(), AppserverID: uuid.New()},
 		}
@@ -358,6 +385,7 @@ func TestChannelService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, err, nil)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run(
@@ -375,7 +403,6 @@ func TestChannelService_Delete(t *testing.T) {
 			mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, fmt.Errorf("boom"))
 			mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
 			mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
-			mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
 
 			svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
@@ -387,7 +414,34 @@ func TestChannelService_Delete(t *testing.T) {
 		})
 
 	t.Run(
-		"Successful:error_getting_channel_users_based_on_roles_for_notifications_to_users_does_not_impact_result",
+		"Successful:error_getting_channel_by_roles_for_notifications_does_not_impact_result",
+		func(t *testing.T,
+		) {
+			ctx := testutil.Setup(t, func() {})
+			c := qx.Channel{ID: uuid.New(), IsPrivate: true}
+			channelRows := []qx.FilterChannelRoleRow{
+				{ChannelID: uuid.New(), AppserverID: uuid.New()},
+			}
+			mockQuerier := new(testutil.MockQuerier)
+			mockProducer := new(testutil.MockProducer)
+
+			mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, nil)
+			mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
+			mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
+			mockQuerier.On("GetChannelUsersByRoles", ctx, mock.Anything).Return(nil, fmt.Errorf("boom"))
+
+			svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+			// ACT
+			err := svc.Delete(c.ID)
+
+			// ASSERT
+			assert.Equal(t, err, nil)
+			// assert.True(t, false)
+		})
+
+	t.Run(
+		"Successful:error_getting_users_with_channel_roles_for_notifications_does_not_impact_result",
 		func(t *testing.T,
 		) {
 			ctx := testutil.Setup(t, func() {})
@@ -401,11 +455,9 @@ func TestChannelService_Delete(t *testing.T) {
 			mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, nil)
 			mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
 			mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
-			mockQuerier.On("GetChannelUsersByRoles", ctx, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
+			mockQuerier.On("ListAppserverUserSubs", ctx, mock.Anything).Return(nil, fmt.Errorf("boom"))
 
 			svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
-
 			// ACT
 			err := svc.Delete(c.ID)
 

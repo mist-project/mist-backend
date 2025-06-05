@@ -56,7 +56,7 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 	}
 
 	// Send notification to all users in the channel
-	s.sendNotificationToChannelUsers(&channel, s.PgTypeToPb(&channel), event.ActionType_ACTION_ADD_CHANNEL)
+	s.SendNotificationToChannelUsers(&channel, s.PgTypeToPb(&channel), event.ActionType_ACTION_ADD_CHANNEL)
 
 	return &channel, err
 }
@@ -118,20 +118,17 @@ func (s *ChannelService) Delete(id uuid.UUID) error {
 	}
 
 	if subErr != nil {
-		faults.LogError(
-			s.ctx,
-			faults.DatabaseError(
-				fmt.Sprintf("unable to send delete notification to users on channel delete: %v", subErr), slog.LevelWarn,
-			),
-		)
+		faults.DatabaseError(
+			fmt.Sprintf("unable to send delete notification to users on channel delete: %v", subErr), slog.LevelWarn,
+		).LogError(s.ctx)
 	} else {
-		s.sendNotificationToChannelUsers(&channel, s.PgTypeToPb(&channel), event.ActionType_ACTION_REMOVE_CHANNEL)
+		s.SendNotificationToChannelUsers(&channel, s.PgTypeToPb(&channel), event.ActionType_ACTION_REMOVE_CHANNEL)
 	}
 
 	return err
 }
 
-func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC *channel.Channel, action event.ActionType) {
+func (s *ChannelService) SendNotificationToChannelUsers(channel *qx.Channel, protoC *channel.Channel, action event.ActionType) {
 	var (
 		err   error
 		users []*appuser.Appuser
@@ -147,19 +144,20 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 	}
 
 	// If there are roles in the channel, only users with those roles will be notified
-	if len(roles) > 0 {
+	if channel.IsPrivate {
 		// Extract user IDs from roles
-		userIDs := make([]uuid.UUID, 0, len(roles))
+		roleIDs := make([]uuid.UUID, 0, len(roles))
 		for _, role := range roles {
-			userIDs = append(userIDs, role.ID)
+			roleIDs = append(roleIDs, role.AppserverRoleID)
 		}
 
 		// Get appusers by roles in the channel
-		appusers, err := s.db.GetChannelUsersByRoles(s.ctx, userIDs)
+		appusers, err := s.db.GetChannelUsersByRoles(s.ctx, roleIDs)
 		if err != nil {
 			faults.LogError(s.ctx, faults.ExtendError(err))
 			return
 		}
+
 		users = make([]*appuser.Appuser, 0, len(appusers))
 
 		for _, u := range appusers {
@@ -168,13 +166,14 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 				Username: u.Username,
 			})
 		}
-
 	} else {
 		// No roles in the channel, so all users have access to the channel
-		userSubs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).ListAppserverUserSubs(channel.AppserverID)
+		userSubs, err := s.db.ListAppserverUserSubs(s.ctx, channel.AppserverID)
 
 		if err != nil {
-			faults.LogError(s.ctx, faults.ExtendError(err))
+			faults.LogError(
+				s.ctx, faults.DatabaseError(fmt.Sprintf("error fetching appserver user subscriptions: %v", err), slog.LevelError),
+			)
 			return
 		}
 
@@ -186,6 +185,6 @@ func (s *ChannelService) sendNotificationToChannelUsers(channel *qx.Channel, pbC
 	}
 
 	if len(users) > 0 {
-		s.mp.SendMessage(pbC, action, users)
+		s.mp.SendMessage(protoC, action, users)
 	}
 }

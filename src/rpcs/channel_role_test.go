@@ -276,6 +276,8 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetChannelRoleById", mock.Anything, mock.Anything).Return(qx.ChannelRole{}, nil)
+		mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{}, nil)
 		mockQuerier.On("DeleteChannelRole", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(

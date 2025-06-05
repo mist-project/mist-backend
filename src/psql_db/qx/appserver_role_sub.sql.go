@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAppserverRoleSub = `-- name: CreateAppserverRoleSub :one
@@ -73,6 +74,63 @@ func (q *Queries) DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserve
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const filterAppserverRoleSub = `-- name: FilterAppserverRoleSub :many
+SELECT
+  role_sub.id,
+  role_sub.appuser_id,
+  role_sub.appserver_role_id,
+  role_sub.appserver_id
+FROM appserver_role_sub AS role_sub
+WHERE appuser_id=COALESCE($1, appuser_id)
+  AND appserver_id=COALESCE($2, appserver_id)
+  AND appserver_role_id=COALESCE($3, appserver_role_id)
+  AND appserver_sub_id=COALESCE($4, appserver_sub_id)
+`
+
+type FilterAppserverRoleSubParams struct {
+	AppuserID       pgtype.UUID
+	AppserverID     pgtype.UUID
+	AppserverRoleID pgtype.UUID
+	AppserverSubID  pgtype.UUID
+}
+
+type FilterAppserverRoleSubRow struct {
+	ID              uuid.UUID
+	AppuserID       uuid.UUID
+	AppserverRoleID uuid.UUID
+	AppserverID     uuid.UUID
+}
+
+func (q *Queries) FilterAppserverRoleSub(ctx context.Context, arg FilterAppserverRoleSubParams) ([]FilterAppserverRoleSubRow, error) {
+	rows, err := q.db.Query(ctx, filterAppserverRoleSub,
+		arg.AppuserID,
+		arg.AppserverID,
+		arg.AppserverRoleID,
+		arg.AppserverSubID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FilterAppserverRoleSubRow
+	for rows.Next() {
+		var i FilterAppserverRoleSubRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AppuserID,
+			&i.AppserverRoleID,
+			&i.AppserverID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAppserverRoleSubById = `-- name: GetAppserverRoleSubById :one

@@ -2,7 +2,6 @@ package logger_test
 
 import (
 	"bytes"
-	"fmt"
 	"log/slog"
 	"os"
 	"testing"
@@ -37,7 +36,6 @@ func TestLoggerLevels(t *testing.T) {
 
 		// ASSERT
 		logOutput := buf.String()
-		fmt.Println(logOutput, "okay")
 		assert.Contains(t, logOutput, "debug message")
 		assert.Contains(t, logOutput, `"key":"value"`)
 		assert.Contains(t, logOutput, `"level":"DEBUG"`)

@@ -118,6 +118,11 @@ func (m *MockQuerier) FilterChannel(ctx context.Context, arg qx.FilterChannelPar
 	return returnIfError[[]qx.Channel](args, 1)
 }
 
+func (m *MockQuerier) FilterAppserverRoleSub(ctx context.Context, arg qx.FilterAppserverRoleSubParams) ([]qx.FilterAppserverRoleSubRow, error) {
+	args := m.Called(ctx, arg)
+	return returnIfError[[]qx.FilterAppserverRoleSubRow](args, 1)
+}
+
 func (m *MockQuerier) ListAppserverUserSubs(ctx context.Context, appserverID uuid.UUID) ([]qx.ListAppserverUserSubsRow, error) {
 	args := m.Called(ctx, appserverID)
 	return returnIfError[[]qx.ListAppserverUserSubsRow](args, 1)
@@ -141,6 +146,11 @@ func (m *MockQuerier) GetAppserverRoleById(ctx context.Context, id uuid.UUID) (q
 func (m *MockQuerier) GetAppserverRoleSubById(ctx context.Context, id uuid.UUID) (qx.AppserverRoleSub, error) {
 	args := m.Called(ctx, id)
 	return returnIfError[qx.AppserverRoleSub](args, 1)
+}
+
+func (m *MockQuerier) GetAppusersWithOnlySpecifiedRole(ctx context.Context, appserverRoleID uuid.UUID) ([]qx.Appuser, error) {
+	args := m.Called(ctx, appserverRoleID)
+	return returnIfError[[]qx.Appuser](args, 1)
 }
 
 func (m *MockQuerier) GetChannelRoleById(ctx context.Context, id uuid.UUID) (qx.ChannelRole, error) {

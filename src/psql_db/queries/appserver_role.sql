@@ -39,6 +39,16 @@ WHERE ars.appuser_id = $1
   AND ar.appserver_id = $2;
 
 
+-- name: GetAppusersWithOnlySpecifiedRole :many
+SELECT appuser.*
+FROM appuser
+JOIN appserver_role_sub ON appserver_role_sub.appuser_id = appuser.id
+WHERE appserver_role_sub.appserver_role_id = $1
+GROUP BY appuser.id
+HAVING COUNT(*) = 1
+   AND COUNT(*) FILTER (WHERE appserver_role_sub.appserver_role_id != $1) = 0;
+
+
 -- name: DeleteAppserverRole :execrows
 DELETE FROM appserver_role as ar
 WHERE ar.id=$1;

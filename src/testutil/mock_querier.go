@@ -168,11 +168,6 @@ func (q *MockQuerier) GetChannelsIdIn(ctx context.Context, dollar_1 []uuid.UUID)
 	return returnIfError[[]qx.Channel](args, 1)
 }
 
-func (m *MockQuerier) GetChannelUsersByRoles(ctx context.Context, arg []uuid.UUID) ([]qx.Appuser, error) {
-	args := m.Called(ctx, arg)
-	return returnIfError[[]qx.Appuser](args, 1)
-}
-
 func (m *MockQuerier) ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]qx.AppserverRole, error) {
 	args := m.Called(ctx, appserverID)
 	return returnIfError[[]qx.AppserverRole](args, 1)

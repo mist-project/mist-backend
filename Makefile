@@ -78,7 +78,7 @@ dump-schema:
 setup-test:
 	go run test-setup/main.go
 
-run-tests t: generate-queries setup-test test-rpcs test-middleware test-service test-permission test-errors test-message test-producer test-helpers test-faults test-logging
+run-tests t: generate-queries setup-test test-rpcs test-middleware test-service test-permission test-errors test-message test-producer test-helpers test-faults test-logging test-qx
 
 
 all-tests: setup-test
@@ -134,6 +134,13 @@ test-helpers: setup-test
 	@echo -----------------------------------------
 	@go test mist/src/helpers/... -coverprofile=coverage/coverage.out  $(go_test_flags)
 	@go tool cover $(go_test_coverage_flags)
+
+
+test-qx: setup-test
+	@echo -----------------------------------------
+	@go test mist/src/psql_db/qx/... -coverprofile=coverage/coverage.out  $(go_test_flags)
+	@go tool cover $(go_test_coverage_flags)
+
 
 # ----- FORMAT -----
 lint:

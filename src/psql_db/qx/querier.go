@@ -37,7 +37,6 @@ type Querier interface {
 	GetAppusersWithOnlySpecifiedRole(ctx context.Context, appserverRoleID uuid.UUID) ([]Appuser, error)
 	GetChannelById(ctx context.Context, id uuid.UUID) (Channel, error)
 	GetChannelRoleById(ctx context.Context, id uuid.UUID) (ChannelRole, error)
-	GetChannelUsersByRoles(ctx context.Context, dollar_1 []uuid.UUID) ([]Appuser, error)
 	GetChannelsForUsers(ctx context.Context, arg GetChannelsForUsersParams) ([]GetChannelsForUsersRow, error)
 	GetChannelsIdIn(ctx context.Context, dollar_1 []uuid.UUID) ([]Channel, error)
 	ListAppserverRoles(ctx context.Context, appserverID uuid.UUID) ([]AppserverRole, error)

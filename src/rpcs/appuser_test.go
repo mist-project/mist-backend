@@ -75,5 +75,6 @@ func TestAppuserRPCService_Create(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
 	})
 }

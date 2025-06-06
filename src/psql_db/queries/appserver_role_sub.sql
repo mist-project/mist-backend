@@ -28,10 +28,18 @@ SELECT
 FROM appserver_role_sub AS role_sub
 WHERE role_sub.appserver_id=$1;
 
+-- name: FilterAppserverRoleSub :many
+SELECT
+  role_sub.id,
+  role_sub.appuser_id,
+  role_sub.appserver_role_id,
+  role_sub.appserver_id
+FROM appserver_role_sub AS role_sub
+WHERE appuser_id=COALESCE(sqlc.narg('appuser_id'), appuser_id)
+  AND appserver_id=COALESCE(sqlc.narg('appserver_id'), appserver_id)
+  AND appserver_role_id=COALESCE(sqlc.narg('appserver_role_id'), appserver_role_id)
+  AND appserver_sub_id=COALESCE(sqlc.narg('appserver_sub_id'), appserver_sub_id);
+
 -- name: DeleteAppserverRoleSub :execrows
-DELETE FROM appserver_role_sub AS role_sub
-USING appserver AS a, appserver_role AS ar
-WHERE a.id=ar.appserver_id
-  AND ar.id=role_sub.appserver_role_id
-  AND role_sub.id=$1
-  AND a.appuser_id=$2;
+DELETE FROM appserver_role_sub as ars
+WHERE ars.id=$1;

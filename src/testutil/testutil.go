@@ -46,7 +46,6 @@ var (
 
 	TestDbConn    *pgxpool.Pool
 	TestKProducer = new(MockProducer)
-	lis           net.Listener
 
 	once sync.Once
 
@@ -104,7 +103,7 @@ func SetupTestGRPCServicesAndClient() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	interceptors, err := rpcs.BaseInterceptors()
+	interceptors, _ := rpcs.BaseInterceptors()
 	testServer = grpc.NewServer(interceptors)
 	// for now we will mock all the producer calls to be successful. unit tests should
 	// enture that the producer is called where it should happen

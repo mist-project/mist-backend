@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"mist/src/faults"
-	"mist/src/faults/message"
 	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/psql_db/db"
@@ -157,7 +156,6 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			// ASSERT
 			assert.NotNil(t, err)
-			message.UnauthorizedError(message.Unauthorized)
 		})
 
 		t.Run("Error:nil_object_errors", func(t *testing.T) {

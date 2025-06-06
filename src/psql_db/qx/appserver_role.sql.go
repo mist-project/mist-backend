@@ -146,6 +146,42 @@ func (q *Queries) GetAppuserRoles(ctx context.Context, arg GetAppuserRolesParams
 	return items, nil
 }
 
+const getAppusersWithOnlySpecifiedRole = `-- name: GetAppusersWithOnlySpecifiedRole :many
+SELECT appuser.id, appuser.username, appuser.online_status, appuser.created_at, appuser.updated_at
+FROM appuser
+JOIN appserver_role_sub ON appserver_role_sub.appuser_id = appuser.id
+WHERE appserver_role_sub.appserver_role_id = $1
+GROUP BY appuser.id
+HAVING COUNT(*) = 1
+   AND COUNT(*) FILTER (WHERE appserver_role_sub.appserver_role_id != $1) = 0
+`
+
+func (q *Queries) GetAppusersWithOnlySpecifiedRole(ctx context.Context, appserverRoleID uuid.UUID) ([]Appuser, error) {
+	rows, err := q.db.Query(ctx, getAppusersWithOnlySpecifiedRole, appserverRoleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Appuser
+	for rows.Next() {
+		var i Appuser
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.OnlineStatus,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAppserverRoles = `-- name: ListAppserverRoles :many
 SELECT id, appserver_id, name, appserver_permission_mask, channel_permission_mask, sub_permission_mask, created_at, updated_at
 FROM appserver_role

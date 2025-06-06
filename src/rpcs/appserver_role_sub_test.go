@@ -74,6 +74,8 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.Internal, s.Code())
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -103,6 +105,8 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 		assert.Nil(t, response)
 		assert.True(t, ok)
 		assert.Equal(t, codes.PermissionDenied, s.Code())
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
@@ -166,6 +170,8 @@ func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Successful:can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
@@ -258,6 +264,8 @@ func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -265,6 +273,7 @@ func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 		mockId := uuid.NewString()
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("GetAppserverRoleSubById", mock.Anything, mock.Anything).Return(qx.AppserverRoleSub{}, nil)
 		mockQuerier.On("DeleteAppserverRoleSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
@@ -285,6 +294,8 @@ func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {

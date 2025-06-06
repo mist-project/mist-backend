@@ -99,6 +99,8 @@ func TestAppserverRPCService_List(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -128,10 +130,10 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 
 		// ACT
-		response, err := testutil.TestAppserverClient.GetById(
+		_, err := testutil.TestAppserverClient.GetById(
 			ctx, &appserver.GetByIdRequest{Id: uuid.NewString()},
 		)
-		s, ok := status.FromError(err)
+		_, _ = status.FromError(err)
 
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead).Return(nil)
@@ -141,10 +143,10 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 		}
 
 		// ACT
-		response, err = svc.GetById(
+		response, err := svc.GetById(
 			ctx, &appserver.GetByIdRequest{Id: uuid.NewString()},
 		)
-		s, ok = status.FromError(err)
+		s, ok := status.FromError(err)
 
 		// ASSERT
 		assert.Nil(t, response)
@@ -190,6 +192,8 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -212,7 +216,7 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		}
 
 		// ASSERT
-		testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
+		_ = testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
 
 		serverSubs, _ := service.NewAppserverSubService(
 			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)), new(testutil.MockProducer),
@@ -265,6 +269,8 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -289,6 +295,8 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -379,5 +387,7 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }

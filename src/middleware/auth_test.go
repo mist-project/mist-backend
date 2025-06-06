@@ -160,13 +160,13 @@ func TestAuthJwtInterceptor(t *testing.T) {
 		}
 
 		tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		token, err := tok.SignedString([]byte(os.Getenv("MIST_API_JWT_SECRET_KEY")))
+		token, _ := tok.SignedString([]byte(os.Getenv("MIST_API_JWT_SECRET_KEY")))
 
 		headers := metadata.Pairs("authorization", fmt.Sprintf("Bearer %s", token))
 		ctx = metadata.NewIncomingContext(ctx, headers)
 
 		// ACT
-		_, err = interceptor(ctx, dummyRequest{}, nil, MockHandler)
+		_, err := interceptor(ctx, dummyRequest{}, nil, MockHandler)
 
 		// ASSERT
 		assert.NotNil(t, err)

@@ -29,10 +29,10 @@ WHERE asub.appuser_id=$1;
 -- name: ListAppserverUserSubs :many
 SELECT
   asub.id as appserver_sub_id,
-  auser.id,
-  auser.username,
-  auser.created_at,
-  auser.updated_at
+  auser.id as appuser_id,
+  auser.username as appuser_username,
+  auser.created_at as appuser_created_at,
+  auser.updated_at as appuser_updated_at
 FROM appserver_sub as asub
 JOIN appuser as auser ON asub.appuser_id=auser.id
 WHERE asub.appserver_id=$1;

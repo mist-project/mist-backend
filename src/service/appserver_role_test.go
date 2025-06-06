@@ -71,6 +71,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, res.ID)
 		assert.Equal(t, obj.Name, res.Name)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_create_failure", func(t *testing.T) {
@@ -90,6 +91,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: creation failed")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -112,6 +114,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, roles)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -131,6 +134,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -156,6 +160,7 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, roles)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -177,6 +182,7 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -200,6 +206,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, actual.ID)
 		assert.Equal(t, expected.Name, actual.Name)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
@@ -217,6 +224,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		// ASSERT
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -235,6 +243,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -255,6 +264,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.NoError(t, err)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:no_rows_deleted", func(t *testing.T) {
@@ -274,6 +284,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to to find role with id: %v", params))
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:db_failure_on_delete", func(t *testing.T) {
@@ -293,5 +304,6 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
+		mockQuerier.AssertExpectations(t)
 	})
 }

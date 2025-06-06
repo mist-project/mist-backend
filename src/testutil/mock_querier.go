@@ -78,8 +78,8 @@ func (m *MockQuerier) DeleteAppserverRole(ctx context.Context, id uuid.UUID) (in
 	return returnIfError[int64](args, 1)
 }
 
-func (m *MockQuerier) DeleteAppserverRoleSub(ctx context.Context, arg qx.DeleteAppserverRoleSubParams) (int64, error) {
-	args := m.Called(ctx, arg)
+func (m *MockQuerier) DeleteAppserverRoleSub(ctx context.Context, id uuid.UUID) (int64, error) {
+	args := m.Called(ctx, id)
 	return returnIfError[int64](args, 1)
 }
 
@@ -118,6 +118,11 @@ func (m *MockQuerier) FilterChannel(ctx context.Context, arg qx.FilterChannelPar
 	return returnIfError[[]qx.Channel](args, 1)
 }
 
+func (m *MockQuerier) FilterAppserverRoleSub(ctx context.Context, arg qx.FilterAppserverRoleSubParams) ([]qx.FilterAppserverRoleSubRow, error) {
+	args := m.Called(ctx, arg)
+	return returnIfError[[]qx.FilterAppserverRoleSubRow](args, 1)
+}
+
 func (m *MockQuerier) ListAppserverUserSubs(ctx context.Context, appserverID uuid.UUID) ([]qx.ListAppserverUserSubsRow, error) {
 	args := m.Called(ctx, appserverID)
 	return returnIfError[[]qx.ListAppserverUserSubsRow](args, 1)
@@ -143,13 +148,23 @@ func (m *MockQuerier) GetAppserverRoleSubById(ctx context.Context, id uuid.UUID)
 	return returnIfError[qx.AppserverRoleSub](args, 1)
 }
 
+func (m *MockQuerier) GetAppusersWithOnlySpecifiedRole(ctx context.Context, appserverRoleID uuid.UUID) ([]qx.Appuser, error) {
+	args := m.Called(ctx, appserverRoleID)
+	return returnIfError[[]qx.Appuser](args, 1)
+}
+
 func (m *MockQuerier) GetChannelRoleById(ctx context.Context, id uuid.UUID) (qx.ChannelRole, error) {
 	args := m.Called(ctx, id)
 	return returnIfError[qx.ChannelRole](args, 1)
 }
 
-func (q *MockQuerier) GetChannelsForUser(ctx context.Context, arg qx.GetChannelsForUserParams) ([]qx.Channel, error) {
+func (q *MockQuerier) GetChannelsForUsers(ctx context.Context, arg qx.GetChannelsForUsersParams) ([]qx.GetChannelsForUsersRow, error) {
 	args := q.Called(ctx, arg)
+	return returnIfError[[]qx.GetChannelsForUsersRow](args, 1)
+}
+
+func (q *MockQuerier) GetChannelsIdIn(ctx context.Context, dollar_1 []uuid.UUID) ([]qx.Channel, error) {
+	args := q.Called(ctx, dollar_1)
 	return returnIfError[[]qx.Channel](args, 1)
 }
 

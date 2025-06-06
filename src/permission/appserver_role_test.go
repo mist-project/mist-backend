@@ -251,6 +251,7 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 			assert.NotNil(t, err)
 			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
 			testutil.AssertCustomErrorContains(t, err, "failed to check user subscription")
+			mockQuerier.AssertExpectations(t)
 		})
 
 		t.Run("Error:db_error_on_server_search", func(t *testing.T) {
@@ -284,6 +285,7 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 			assert.NotNil(t, err)
 			assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 			testutil.AssertCustomErrorContains(t, err, "database error: boom")
+			mockQuerier.AssertExpectations(t)
 		})
 
 		t.Run("Error:db_error_on_user_permission_mask", func(t *testing.T) {
@@ -321,6 +323,7 @@ func TestAppserverRoleAuthorizer_Authorize(t *testing.T) {
 			assert.NotNil(t, err)
 			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
 			testutil.AssertCustomErrorContains(t, err, "failed to get user permissions")
+			mockQuerier.AssertExpectations(t)
 		})
 
 		t.Run("Error:invalid_object_id_format", func(t *testing.T) {

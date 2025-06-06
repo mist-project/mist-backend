@@ -86,6 +86,7 @@ func TestAppserverService_Create(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, appserver.ID, response.ID)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:is_returned_when_starting_tx_fails", func(t *testing.T) {
@@ -111,6 +112,7 @@ func TestAppserverService_Create(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "tx initialization error: closed pool")
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:is_returned_when_creating_server_fails", func(t *testing.T) {
@@ -133,6 +135,7 @@ func TestAppserverService_Create(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "create appserver error: a db error")
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:is_returned_when_creating_appserver_sub_fails", func(t *testing.T) {
@@ -158,6 +161,7 @@ func TestAppserverService_Create(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "create appserver sub error: a db error")
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:commit_fails_with_error", func(t *testing.T) {
@@ -194,6 +198,7 @@ func TestAppserverService_Create(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error commit: commit failed")
 		mockTx.AssertExpectations(t)
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -217,6 +222,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, actual.ID)
 		assert.Equal(t, expected.Name, actual.Name)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
@@ -236,6 +242,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, "unable to find appserver with id")
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -255,6 +262,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: connection reset by peer")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -283,6 +291,7 @@ func TestAppserverService_List(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, result)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Successful:without_name_filter", func(t *testing.T) {
@@ -307,6 +316,7 @@ func TestAppserverService_List(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, result)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
@@ -327,6 +337,7 @@ func TestAppserverService_List(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: some db error")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -336,14 +347,12 @@ func TestAppserverService_Delete(t *testing.T) {
 	appserverId := uuid.New()
 
 	t.Run("Successful:deletion", func(t *testing.T) {
-		// ARRANGE\
+		// ARRANGE
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(1), nil)
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return([]qx.ListAppserverUserSubsRow{}, nil)
 
 		mockProducer := new(testutil.MockProducer)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_SERVER, []*appuser.Appuser{}).Return(nil)
-
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
@@ -351,19 +360,21 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.NoError(t, err)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Successful:deletion_with_subs_sends_notification", func(t *testing.T) {
 		// ARRANGE
 		subs := []qx.ListAppserverUserSubsRow{
-			{ID: uuid.New(), Username: "user1"},
-			{ID: uuid.New(), Username: "user2"},
+			{AppuserID: uuid.New(), AppuserUsername: "user1"},
+			{AppuserID: uuid.New(), AppuserUsername: "user2"},
 		}
 		users := make([]*appuser.Appuser, 0, len(subs))
 		for _, sub := range subs {
 			users = append(users, &appuser.Appuser{
-				Id:       sub.ID.String(),
-				Username: sub.Username,
+				Id:       sub.AppuserID.String(),
+				Username: sub.AppuserUsername,
 			})
 		}
 
@@ -375,15 +386,15 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_SERVER, users).Return(nil)
 
 		svc := service.NewAppserverService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
-		svc.Delete(appserverId)
+		_ = svc.Delete(appserverId)
 
 		// ACT
 		err := svc.Delete(appserverId)
 
 		// ASSERT
 		assert.NoError(t, err)
+		mockQuerier.AssertExpectations(t)
 		mockProducer.AssertExpectations(t)
-
 	})
 
 	t.Run("Error:on_no_rows_deleted", func(t *testing.T) {
@@ -401,6 +412,8 @@ func TestAppserverService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_list_subs_failure", func(t *testing.T) {
@@ -418,6 +431,8 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db failure")
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_delete_failure", func(t *testing.T) {
@@ -436,5 +451,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db failure")
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }

@@ -14,6 +14,7 @@ import (
 
 	"mist/src/faults"
 	"mist/src/faults/message"
+	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
 	"mist/src/psql_db/qx"
@@ -63,16 +64,12 @@ func TestChannelService_Create(t *testing.T) {
 		appserver := testutil.TestAppserver(t, nil, false)
 		expectedChannel := qx.Channel{ID: uuid.New(), Name: "foo", AppserverID: appserver.ID}
 		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: expectedChannel.AppserverID}
-		roleFilterParams := qx.FilterChannelRoleParams{ChannelID: pgtype.UUID{Bytes: expectedChannel.ID, Valid: true}}
-
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
-		mockQuerier.On("FilterChannelRole", ctx, roleFilterParams).Return([]qx.FilterChannelRoleRow{}, nil)
-		mockQuerier.On("ListAppserverUserSubs", ctx, expectedChannel.AppserverID).Return([]qx.ListAppserverUserSubsRow{
-			{ID: uuid.New(), AppserverSubID: expectedChannel.AppserverID},
-		}, nil)
+		mockQuerier.On(
+			"ListAppserverUserSubs", ctx, expectedChannel.AppserverID,
+		).Return([]qx.ListAppserverUserSubsRow{}, nil)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL, mock.Anything).Return(nil)
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
@@ -83,57 +80,8 @@ func TestChannelService_Create(t *testing.T) {
 		assert.Equal(t, expectedChannel.ID, channel.ID)
 		assert.Equal(t, expectedChannel.Name, channel.Name)
 		assert.Equal(t, expectedChannel.AppserverID, channel.AppserverID)
-	})
-
-	t.Run("Successful:error_listing_user_subs_for_notifications_to_users_does_not_impact_result", func(t *testing.T) {
-		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil, false)
-		expectedChannel := qx.Channel{ID: uuid.New(), Name: "foo", AppserverID: appserver.ID}
-		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: expectedChannel.AppserverID}
-		roleFilterParams := qx.FilterChannelRoleParams{ChannelID: pgtype.UUID{Bytes: expectedChannel.ID, Valid: true}}
-
-		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
-		mockQuerier.On("FilterChannelRole", ctx, roleFilterParams).Return([]qx.FilterChannelRoleRow{}, nil)
-		mockQuerier.On("ListAppserverUserSubs", ctx, expectedChannel.AppserverID).Return(nil, fmt.Errorf("boom"))
-		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("NotifyMessageFailure", mock.Anything).Return(nil)
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
-
-		// ACT
-		channel, err := svc.Create(createObj)
-
-		// ASSERT
-		assert.Nil(t, err)
-		assert.Equal(t, expectedChannel.ID, channel.ID)
-		assert.Equal(t, expectedChannel.Name, channel.Name)
-		assert.Equal(t, expectedChannel.AppserverID, channel.AppserverID)
-	})
-
-	t.Run("Successful:error_getting_roles_for_notifications_to_users_does_not_impact_result", func(t *testing.T) {
-		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil, false)
-		expectedChannel := qx.Channel{ID: uuid.New(), Name: "foo", AppserverID: appserver.ID}
-		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: expectedChannel.AppserverID}
-		roleFilterParams := qx.FilterChannelRoleParams{ChannelID: pgtype.UUID{Bytes: expectedChannel.ID, Valid: true}}
-
-		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
-		mockQuerier.On("FilterChannelRole", ctx, roleFilterParams).Return(nil, fmt.Errorf("boom"))
-		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("NotifyMessageFailure", mock.Anything).Return(nil)
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
-
-		// ACT
-		channel, err := svc.Create(createObj)
-
-		// ASSERT
-		assert.Nil(t, err)
-		assert.Equal(t, expectedChannel.ID, channel.ID)
-		assert.Equal(t, expectedChannel.Name, channel.Name)
-		assert.Equal(t, expectedChannel.AppserverID, channel.AppserverID)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_error_fail_create", func(t *testing.T) {
@@ -145,7 +93,6 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(nil, fmt.Errorf("error on create"))
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL, mock.Anything).Return(nil)
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
 		// ACT
@@ -154,31 +101,8 @@ func TestChannelService_Create(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "create channel error: error on create")
-	})
-
-	t.Run("Error:on_producer_message_error_it_does_nothing", func(t *testing.T) {
-		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil, false)
-		expectedChannel := qx.Channel{ID: uuid.New(), Name: "foo", AppserverID: appserver.ID}
-		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: expectedChannel.AppserverID}
-
-		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
-		mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return([]qx.FilterChannelRoleRow{}, nil)
-		mockQuerier.On("ListAppserverUserSubs", ctx, mock.Anything).Return([]qx.ListAppserverUserSubsRow{}, nil)
-		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_ADD_CHANNEL, mock.Anything).Return(fmt.Errorf("boom"))
-		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
-
-		// ACT
-		channel, err := svc.Create(createObj)
-
-		// ASSERT
-		assert.Nil(t, err)
-		assert.Equal(t, expectedChannel.ID, channel.ID)
-		assert.Equal(t, expectedChannel.Name, channel.Name)
-		assert.Equal(t, expectedChannel.AppserverID, channel.AppserverID)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }
 
@@ -202,6 +126,8 @@ func TestChannelService_GetById(t *testing.T) {
 		assert.Equal(t, expectedChannel.ID, channel.ID)
 		assert.Equal(t, expectedChannel.Name, channel.Name)
 		assert.Equal(t, expectedChannel.AppserverID, channel.AppserverID)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_no_rows_returned_errors_not_found", func(t *testing.T) {
@@ -219,6 +145,8 @@ func TestChannelService_GetById(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_database_error_it_returns_error", func(t *testing.T) {
@@ -237,6 +165,8 @@ func TestChannelService_GetById(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: error get by id")
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }
 
@@ -265,6 +195,8 @@ func TestChannelService_List(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, result, expected)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
@@ -284,6 +216,8 @@ func TestChannelService_List(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: database error")
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }
 
@@ -311,6 +245,8 @@ func TestChannelService_Filter(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, result, expected)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
@@ -329,27 +265,22 @@ func TestChannelService_Filter(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: database error")
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }
 
 func TestChannelService_Delete(t *testing.T) {
 
-	t.Run("Successful:can_delete_channel", func(t *testing.T) {
+	t.Run("Successful:can_delete_public_channel", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
-		c := qx.Channel{ID: uuid.New()}
-		channelRows := []qx.FilterChannelRoleRow{
-			{ChannelID: uuid.New(), AppserverID: uuid.New()},
-		}
+		c := qx.Channel{ID: uuid.New(), IsPrivate: false, AppserverID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockProducer := new(testutil.MockProducer)
 		mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, nil)
 		mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
-		mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
-		mockQuerier.On("GetChannelUsersByRoles", ctx, mock.Anything).Return([]qx.Appuser{
-			{ID: uuid.New(), Username: "testuser"},
-		}, nil)
-		mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
+		mockQuerier.On("ListAppserverUserSubs", ctx, c.AppserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
 
 		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
@@ -358,60 +289,30 @@ func TestChannelService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, err, nil)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
-	t.Run(
-		"Successful:error_getting_channel_by_id_for_notifications_does_not_impact_result",
-		func(t *testing.T,
-		) {
-			ctx := testutil.Setup(t, func() {})
-			c := qx.Channel{ID: uuid.New()}
-			channelRows := []qx.FilterChannelRoleRow{
-				{ChannelID: uuid.New(), AppserverID: uuid.New()},
-			}
-			mockQuerier := new(testutil.MockQuerier)
-			mockProducer := new(testutil.MockProducer)
+	t.Run("Successful:can_delete_private_channel", func(t *testing.T) {
+		ctx := testutil.Setup(t, func() {})
+		c := qx.Channel{ID: uuid.New(), IsPrivate: true, AppserverID: uuid.New()}
 
-			mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, fmt.Errorf("boom"))
-			mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
-			mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
-			mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+		mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, nil)
+		mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
+		mockQuerier.On("ListAppserverUserSubs", ctx, c.AppserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
 
-			svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
 
-			// ACT
-			err := svc.Delete(c.ID)
+		// ACT
+		err := svc.Delete(c.ID)
 
-			// ASSERT
-			assert.Equal(t, err, nil)
-		})
-
-	t.Run(
-		"Successful:error_getting_channel_users_based_on_roles_for_notifications_to_users_does_not_impact_result",
-		func(t *testing.T,
-		) {
-			ctx := testutil.Setup(t, func() {})
-			c := qx.Channel{ID: uuid.New()}
-			channelRows := []qx.FilterChannelRoleRow{
-				{ChannelID: uuid.New(), AppserverID: uuid.New()},
-			}
-			mockQuerier := new(testutil.MockQuerier)
-			mockProducer := new(testutil.MockProducer)
-
-			mockQuerier.On("GetChannelById", ctx, c.ID).Return(c, nil)
-			mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(1), nil)
-			mockQuerier.On("FilterChannelRole", ctx, mock.Anything).Return(channelRows, nil)
-			mockQuerier.On("GetChannelUsersByRoles", ctx, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockProducer.On("SendMessage", mock.Anything, event.ActionType_ACTION_REMOVE_CHANNEL, mock.Anything).Return(nil)
-
-			svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
-
-			// ACT
-			err := svc.Delete(c.ID)
-
-			// ASSERT
-			assert.Equal(t, err, nil)
-		})
+		// ASSERT
+		assert.Equal(t, err, nil)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
+	})
 
 	t.Run("Error:errors_when_no_channel_found", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
@@ -428,6 +329,27 @@ func TestChannelService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
+	})
+
+	t.Run("Error:when_get_channel_by_id_fails_it_errors", func(t *testing.T) {
+		ctx := testutil.Setup(t, func() {})
+		c := qx.Channel{ID: uuid.New()}
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+		mockQuerier.On("GetChannelById", ctx, c.ID).Return(nil, fmt.Errorf("mock error"))
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		err := svc.Delete(c.ID)
+
+		// ASSERT
+		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+		testutil.AssertCustomErrorContains(t, err, "mock error")
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_delete_fails_it_errors", func(t *testing.T) {
@@ -446,5 +368,194 @@ func TestChannelService_Delete(t *testing.T) {
 		// ASSERT
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "mock error")
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
+}
+
+func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T) {
+	t.Run("Successful:sends_channels_for_each_user", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverID := uuid.New()
+
+		user1 := qx.ListAppserverUserSubsRow{AppuserID: uuid.New()}
+		user2 := qx.ListAppserverUserSubsRow{AppuserID: uuid.New()}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+
+		mockQuerier.On(
+			"ListAppserverUserSubs", ctx, appserverID,
+		).Return([]qx.ListAppserverUserSubsRow{user1, user2}, nil)
+
+		channel1 := qx.GetChannelsForUsersRow{
+			AppuserID:          user1.AppuserID,
+			ChannelID:          pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			ChannelName:        pgtype.Text{String: "chan-1", Valid: true},
+			ChannelAppserverID: pgtype.UUID{Bytes: appserverID, Valid: true},
+			ChannelIsPrivate:   pgtype.Bool{Bool: false, Valid: true},
+		}
+
+		channel2 := qx.GetChannelsForUsersRow{
+			AppuserID:          user2.AppuserID,
+			ChannelID:          pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			ChannelName:        pgtype.Text{String: "chan-2", Valid: true},
+			ChannelAppserverID: pgtype.UUID{Bytes: appserverID, Valid: true},
+			ChannelIsPrivate:   pgtype.Bool{Bool: true, Valid: true},
+		}
+
+		mockQuerier.On(
+			"GetChannelsForUsers", ctx,
+			qx.GetChannelsForUsersParams{Column1: []uuid.UUID{user1.AppuserID, user2.AppuserID}, AppserverID: appserverID},
+		).Return([]qx.GetChannelsForUsersRow{channel1, channel2}, nil)
+
+		mockProducer.On(
+			"SendMessage", mock.AnythingOfType("[]*channel.Channel"), event.ActionType_ACTION_LIST_CHANNELS,
+			[]*appuser.Appuser{{Id: user1.AppuserID.String()}},
+		).Return(nil).Once()
+
+		mockProducer.On(
+			"SendMessage", mock.AnythingOfType("[]*channel.Channel"), event.ActionType_ACTION_LIST_CHANNELS,
+			[]*appuser.Appuser{{Id: user2.AppuserID.String()}},
+		).Return(nil).Once()
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		svc.SendChannelListingUpdateNotificationToUsers(nil, appserverID)
+
+		// ASSERT
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
+	})
+
+	t.Run("Error:early_return_if_no_users", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverID := uuid.New()
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		svc.SendChannelListingUpdateNotificationToUsers(nil, appserverID)
+
+		// ASSERT
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertNotCalled(t, "SendMessage", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("Error:get_channels_fails_logs_and_exits", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverID := uuid.New()
+		user := qx.ListAppserverUserSubsRow{AppuserID: uuid.New()}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverID).Return([]qx.ListAppserverUserSubsRow{user}, nil)
+
+		mockQuerier.On(
+			"GetChannelsForUsers", ctx,
+			qx.GetChannelsForUsersParams{Column1: []uuid.UUID{user.AppuserID}, AppserverID: appserverID},
+		).Return(nil, fmt.Errorf("db error"))
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		svc.SendChannelListingUpdateNotificationToUsers(nil, appserverID)
+
+		// ASSERT
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertNotCalled(t, "SendMessage", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("Error:get_appserver_user_subs_fails_logs_and_exits", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverID := uuid.New()
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverID).Return(nil, fmt.Errorf("db error"))
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		svc.SendChannelListingUpdateNotificationToUsers(nil, appserverID)
+
+		// ASSERT
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertNotCalled(t, "SendMessage", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("Successful:sends_channels_for_single_user", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverID := uuid.New()
+		user := &qx.Appuser{ID: uuid.New()}
+
+		channelRow := qx.GetChannelsForUsersRow{
+			AppuserID:          user.ID,
+			ChannelID:          pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			ChannelName:        pgtype.Text{String: "chan-1", Valid: true},
+			ChannelAppserverID: pgtype.UUID{Bytes: appserverID, Valid: true},
+			ChannelIsPrivate:   pgtype.Bool{Bool: true, Valid: true},
+		}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+
+		mockQuerier.On(
+			"GetChannelsForUsers", ctx,
+			qx.GetChannelsForUsersParams{Column1: []uuid.UUID{user.ID}, AppserverID: appserverID},
+		).Return([]qx.GetChannelsForUsersRow{channelRow}, nil)
+
+		mockProducer.On(
+			"SendMessage", mock.AnythingOfType("[]*channel.Channel"), event.ActionType_ACTION_LIST_CHANNELS,
+			[]*appuser.Appuser{{Id: user.ID.String()}},
+		).Return(nil).Once()
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		svc.SendChannelListingUpdateNotificationToUsers(user, appserverID)
+
+		// ASSERT
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
+	})
+
+	t.Run("EarlyExit:no_channels_for_users", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		appserverID := uuid.New()
+		user := qx.ListAppserverUserSubsRow{AppuserID: uuid.New()}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockProducer := new(testutil.MockProducer)
+
+		mockQuerier.On("ListAppserverUserSubs", ctx, appserverID).Return([]qx.ListAppserverUserSubsRow{user}, nil)
+
+		mockQuerier.On(
+			"GetChannelsForUsers", ctx,
+			qx.GetChannelsForUsersParams{Column1: []uuid.UUID{user.AppuserID}, AppserverID: appserverID},
+		).Return([]qx.GetChannelsForUsersRow{}, nil)
+
+		svc := service.NewChannelService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		// ACT
+		svc.SendChannelListingUpdateNotificationToUsers(nil, appserverID)
+
+		// ASSERT
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertNotCalled(t, "SendMessage", mock.Anything, mock.Anything, mock.Anything)
+	})
+
 }

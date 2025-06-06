@@ -116,6 +116,8 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -182,6 +184,8 @@ func TestChannelRPCService_GetById(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
@@ -225,6 +229,8 @@ func TestChannelRPCService_GetById(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -273,6 +279,8 @@ func TestChannelRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
@@ -314,6 +322,8 @@ func TestChannelRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -375,6 +385,8 @@ func TestChannelRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -403,5 +415,7 @@ func TestChannelRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }

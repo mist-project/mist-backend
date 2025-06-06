@@ -82,7 +82,7 @@ func (kp *KafkaProducer) marshall(data interface{}, action event.ActionType, app
 			return nil, faults.MarshallError(fmt.Sprintf("invalid data type for action %v", action), slog.LevelWarn)
 		}
 
-		data = &event.Event{
+		e = &event.Event{
 			Meta: &event.Meta{Action: action, Appusers: appusers},
 			Data: &event.Event_AddChannel{
 				AddChannel: &event.AddChannel{

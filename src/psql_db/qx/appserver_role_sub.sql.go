@@ -55,21 +55,12 @@ func (q *Queries) CreateAppserverRoleSub(ctx context.Context, arg CreateAppserve
 }
 
 const deleteAppserverRoleSub = `-- name: DeleteAppserverRoleSub :execrows
-DELETE FROM appserver_role_sub AS role_sub
-USING appserver AS a, appserver_role AS ar
-WHERE a.id=ar.appserver_id
-  AND ar.id=role_sub.appserver_role_id
-  AND role_sub.id=$1
-  AND a.appuser_id=$2
+DELETE FROM appserver_role_sub as ars
+WHERE ars.id=$1
 `
 
-type DeleteAppserverRoleSubParams struct {
-	ID        uuid.UUID
-	AppuserID uuid.UUID
-}
-
-func (q *Queries) DeleteAppserverRoleSub(ctx context.Context, arg DeleteAppserverRoleSubParams) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteAppserverRoleSub, arg.ID, arg.AppuserID)
+func (q *Queries) DeleteAppserverRoleSub(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAppserverRoleSub, id)
 	if err != nil {
 		return 0, err
 	}

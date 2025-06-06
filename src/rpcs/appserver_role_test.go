@@ -87,6 +87,8 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.Contains(t, s.Message(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -113,6 +115,8 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 }
@@ -179,6 +183,8 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -205,6 +211,8 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -280,6 +288,8 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -307,5 +317,7 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }

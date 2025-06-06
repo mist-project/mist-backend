@@ -122,7 +122,7 @@ const getChannelUsersByRoles = `-- name: GetChannelUsersByRoles :many
 SELECT DISTINCT appuser.id, appuser.username, appuser.online_status, appuser.created_at, appuser.updated_at
 FROM appuser
 JOIN appserver_role_sub ON appserver_role_sub.appuser_id = appuser.id
-JOIN channel_role ON channel_role.appserver_role_id = appserver_role_sub.app_server_role_id
+JOIN channel_role ON channel_role.appserver_role_id = appserver_role_sub.appserver_role_id
 WHERE channel_role.appserver_role_id = ANY($1::uuid[])
 `
 
@@ -152,25 +152,76 @@ func (q *Queries) GetChannelUsersByRoles(ctx context.Context, dollar_1 []uuid.UU
 	return items, nil
 }
 
-const getChannelsForUser = `-- name: GetChannelsForUser :many
-SELECT DISTINCT channel.id, channel.name, channel.appserver_id, channel.is_private, channel.created_at, channel.updated_at
-FROM channel
-LEFT JOIN channel_role ON channel_role.channel_id = channel.id
-LEFT JOIN appserver_role_sub ON appserver_role_sub.app_server_role_id = channel_role.appserver_role_id
-WHERE channel.appserver_id = $2
-  AND (
-    channel_role.id IS NULL -- channels with no roles
-    OR appserver_role_sub.appuser_id = $1 -- channels where user has a role
-  )
+const getChannelsForUsers = `-- name: GetChannelsForUsers :many
+SELECT DISTINCT
+  u.appuser_id::uuid as appuser_id,
+  channel.id AS channel_id,
+  channel.name AS channel_name,
+  channel.is_private AS channel_is_private,
+  channel.appserver_id AS channel_appserver_id
+FROM (
+  SELECT unnest($1::uuid[]) AS appuser_id
+) u
+LEFT JOIN channel
+  ON channel.appserver_id = $2
+LEFT JOIN channel_role
+  ON channel_role.channel_id = channel.id
+LEFT JOIN appserver_role_sub
+  ON appserver_role_sub.appserver_role_id = channel_role.appserver_role_id
+    AND appserver_role_sub.appuser_id = u.appuser_id
+WHERE
+  channel.is_private = false
+  OR appserver_role_sub.appuser_id IS NOT NULL
+GROUP BY (u.appuser_id, channel.id)
 `
 
-type GetChannelsForUserParams struct {
-	AppuserID   uuid.UUID
+type GetChannelsForUsersParams struct {
+	Column1     []uuid.UUID
 	AppserverID uuid.UUID
 }
 
-func (q *Queries) GetChannelsForUser(ctx context.Context, arg GetChannelsForUserParams) ([]Channel, error) {
-	rows, err := q.db.Query(ctx, getChannelsForUser, arg.AppuserID, arg.AppserverID)
+type GetChannelsForUsersRow struct {
+	AppuserID          uuid.UUID
+	ChannelID          pgtype.UUID
+	ChannelName        pgtype.Text
+	ChannelIsPrivate   pgtype.Bool
+	ChannelAppserverID pgtype.UUID
+}
+
+func (q *Queries) GetChannelsForUsers(ctx context.Context, arg GetChannelsForUsersParams) ([]GetChannelsForUsersRow, error) {
+	rows, err := q.db.Query(ctx, getChannelsForUsers, arg.Column1, arg.AppserverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetChannelsForUsersRow
+	for rows.Next() {
+		var i GetChannelsForUsersRow
+		if err := rows.Scan(
+			&i.AppuserID,
+			&i.ChannelID,
+			&i.ChannelName,
+			&i.ChannelIsPrivate,
+			&i.ChannelAppserverID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getChannelsIdIn = `-- name: GetChannelsIdIn :many
+SELECT id, name, appserver_id, is_private, created_at, updated_at
+FROM channel
+WHERE id = ANY($1::uuid[])
+`
+
+func (q *Queries) GetChannelsIdIn(ctx context.Context, dollar_1 []uuid.UUID) ([]Channel, error) {
+	rows, err := q.db.Query(ctx, getChannelsIdIn, dollar_1)
 	if err != nil {
 		return nil, err
 	}

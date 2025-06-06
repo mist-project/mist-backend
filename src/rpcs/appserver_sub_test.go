@@ -79,6 +79,8 @@ func TestAppserverSubRPCService_ListUserServerSubs(t *testing.T) {
 		// ASSERT
 		assert.True(t, ok)
 		mockAuth.AssertNotCalled(t, "Authorize", mock.Anything, mock.Anything, permission.ActionRead)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -131,6 +133,8 @@ func TestAppserverSubRPCService_ListAppserverUserSubs(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -249,6 +253,8 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -275,5 +281,7 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }

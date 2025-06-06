@@ -29,10 +29,6 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
-		mockQuerier.On("GetAppserver", ctx, server.ID).Return(qx.Appserver{
-			ID:        server.ID,
-			AppuserID: userID,
-		}, nil)
 
 		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
 
@@ -42,6 +38,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.True(t, isOwner)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Success:user_is_not_owner", func(t *testing.T) {
@@ -55,10 +52,6 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
-		mockQuerier.On("GetAppserver", ctx, server.ID).Return(qx.Appserver{
-			ID:        server.ID,
-			AppuserID: uuid.New(), // different owner
-		}, nil)
 
 		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
 
@@ -68,6 +61,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.False(t, isOwner)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -91,6 +85,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		assert.False(t, isOwner)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db fail")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -106,7 +101,6 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
 		mockQuerier.On("FilterAppserverSub", ctx, qx.FilterAppserverSubParams{
 			AppserverID: pgtype.UUID{Valid: true, Bytes: server.ID},
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userID},
@@ -128,6 +122,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.True(t, hasSub)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Success:user_does_not_have_sub", func(t *testing.T) {
@@ -135,13 +130,10 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		server := qx.Appserver{
-			ID:        uuid.New(),
-			Name:      "foo",
-			AppuserID: uuid.New(),
+			ID: uuid.New(),
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
 		mockQuerier.On("FilterAppserverSub", mock.Anything, qx.FilterAppserverSubParams{
 			AppserverID: pgtype.UUID{Valid: true, Bytes: server.ID},
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userID},
@@ -155,6 +147,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.False(t, hasSub)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -168,7 +161,6 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
 		mockQuerier.On("FilterAppserverSub", ctx, qx.FilterAppserverSubParams{
 			AppserverID: pgtype.UUID{Valid: true, Bytes: server.ID},
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userID},
@@ -184,5 +176,6 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		assert.False(t, hasSub)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
+		mockQuerier.AssertExpectations(t)
 	})
 }

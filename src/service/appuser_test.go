@@ -57,6 +57,7 @@ func TestAppuserService_Create(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expectedUser.ID, result.ID)
 		assert.Equal(t, expectedUser.Username, result.Username)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
@@ -77,5 +78,6 @@ func TestAppuserService_Create(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "create appuser: db error")
+		mockQuerier.AssertExpectations(t)
 	})
 }

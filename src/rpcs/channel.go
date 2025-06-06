@@ -54,7 +54,7 @@ func (s *ChannelGRPCService) GetById(
 	}
 
 	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
-	id, err := uuid.Parse(req.Id)
+	id, _ := uuid.Parse(req.Id)
 	c, err := cs.GetById(id)
 
 	if err != nil {

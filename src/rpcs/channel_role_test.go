@@ -89,6 +89,8 @@ func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.Contains(t, s.Message(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
@@ -115,6 +117,8 @@ func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 }
@@ -181,6 +185,8 @@ func TestChannelRoleRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -208,6 +214,8 @@ func TestChannelRoleRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }
 
@@ -215,11 +223,11 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 	t.Run("Successful:roles_can_be_deleted", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
-		aRole := testutil.TestChannelRole(t, nil, true)
+		channelRole := testutil.TestChannelRole(t, nil, true)
 
 		// ACT
 		response, err := testutil.TestChannelRoleClient.Delete(
-			ctx, &channel_role.DeleteRequest{Id: aRole.ID.String(), AppserverId: aRole.AppserverID.String()},
+			ctx, &channel_role.DeleteRequest{Id: channelRole.ID.String(), AppserverId: channelRole.AppserverID.String()},
 		)
 
 		// ASSERT
@@ -269,6 +277,8 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
@@ -277,7 +287,6 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetChannelRoleById", mock.Anything, mock.Anything).Return(qx.ChannelRole{}, nil)
-		mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{}, nil)
 		mockQuerier.On("DeleteChannelRole", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
@@ -298,5 +307,7 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
 	})
 }

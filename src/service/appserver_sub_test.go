@@ -82,10 +82,10 @@ func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
 	// ARRANGE
 	now := time.Now()
 	row := &qx.ListAppserverUserSubsRow{
-		ID:             uuid.New(),
-		Username:       "tester",
-		AppserverSubID: uuid.New(),
-		CreatedAt:      pgtype.Timestamp{Time: now, Valid: true},
+		AppuserID:        uuid.New(),
+		AppuserUsername:  "testeAppuserr",
+		AppserverSubID:   uuid.New(),
+		AppuserCreatedAt: pgtype.Timestamp{Time: now, Valid: true},
 	}
 
 	svc := service.NewAppserverSubService(
@@ -96,8 +96,8 @@ func TestAppserverSubService_PgUserSubRowToPb(t *testing.T) {
 	pb := svc.PgUserSubRowToPb(row)
 
 	// ASSERT
-	assert.Equal(t, row.ID.String(), pb.Appuser.Id)
-	assert.Equal(t, row.Username, pb.Appuser.Username)
+	assert.Equal(t, row.AppuserID.String(), pb.Appuser.Id)
+	assert.Equal(t, row.AppuserUsername, pb.Appuser.Username)
 	assert.Equal(t, row.AppserverSubID.String(), pb.SubId)
 }
 
@@ -120,6 +120,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, result.ID)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:failed_to_create", func(t *testing.T) {
@@ -140,6 +141,7 @@ func TestAppserverSubService_Create(t *testing.T) {
 
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: create error")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -169,6 +171,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, res)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_error", func(t *testing.T) {
@@ -190,6 +193,7 @@ func TestAppserverSubService_ListUserServerSubs(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db boom error")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -201,10 +205,10 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		serverID := uuid.New()
 		expected := []qx.ListAppserverUserSubsRow{
 			{
-				ID:             uuid.New(),
-				Username:       "user1",
-				AppserverSubID: uuid.New(),
-				CreatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
+				AppuserID:        uuid.New(),
+				AppuserUsername:  "user1",
+				AppserverSubID:   uuid.New(),
+				AppuserCreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 			},
 		}
 
@@ -219,6 +223,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, res)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_error", func(t *testing.T) {
@@ -238,6 +243,7 @@ func TestAppserverSubService_ListAppserverUserSubs(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: query error")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -261,6 +267,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		assert.Equal(t, expected.ID, actual.ID)
 		assert.Equal(t, expected.AppserverID, actual.AppserverID)
 		assert.Equal(t, expected.AppuserID, actual.AppuserID)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
@@ -279,6 +286,7 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find appserver sub with id: %v", appserverId))
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -297,6 +305,8 @@ func TestAppserverSubService_GetById(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
+		mockQuerier.AssertExpectations(t)
+
 	})
 }
 
@@ -330,6 +340,7 @@ func TestAppserverSubService_Filter(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, expected, res)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -353,6 +364,7 @@ func TestAppserverSubService_Filter(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: some db failure")
+		mockQuerier.AssertExpectations(t)
 	})
 }
 
@@ -382,6 +394,8 @@ func TestAppserverSubService_Delete(t *testing.T) {
 
 		// ASSERT
 		assert.NoError(t, err)
+		mockQuerier.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_not_found_if_no_rows_deleted", func(t *testing.T) {
@@ -405,6 +419,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find appserver sub with id: %v", mockSub.ID))
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_error_on_db_fail", func(t *testing.T) {
@@ -428,5 +443,6 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
+		mockQuerier.AssertExpectations(t)
 	})
 }

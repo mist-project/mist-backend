@@ -122,13 +122,10 @@ func (s *AppserverService) List(params qx.ListAppserversParams) ([]qx.Appserver,
 func (s *AppserverService) Delete(id uuid.UUID) error {
 
 	// Get all subs for the appserver
-	subs, err := NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).ListAppserverUserSubs(id)
+	subs, err := s.db.ListAppserverUserSubs(s.ctx, id)
 
 	if err != nil {
-		err, ok := err.(*faults.CustomError)
-		if ok {
-			return faults.DatabaseError(fmt.Sprintf("database error: %v", err.StackTrace()), slog.LevelWarn)
-		}
+		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelWarn)
 	}
 
 	deleted, err := s.db.DeleteAppserver(s.ctx, id)
@@ -139,16 +136,23 @@ func (s *AppserverService) Delete(id uuid.UUID) error {
 		return faults.NotFoundError(fmt.Sprintf("unable to find appserver with id: %v", id), slog.LevelDebug)
 	}
 
+	if len(subs) > 0 {
+		s.SendDeleteNotificationToUsers(subs, id)
+	}
+
+	return err
+}
+
+func (s *AppserverService) SendDeleteNotificationToUsers(subs []qx.ListAppserverUserSubsRow, appserverID uuid.UUID) {
+
 	users := make([]*appuser.Appuser, 0, len(subs))
 
 	for _, sub := range subs {
 		users = append(users, &appuser.Appuser{
-			Id:       sub.ID.String(),
-			Username: sub.Username,
+			Id:       sub.AppuserID.String(),
+			Username: sub.AppuserUsername,
 		})
 	}
 
-	s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, users)
-
-	return err
+	_ = s.mp.SendMessage(&appserver.Appserver{Id: appserverID.String()}, event.ActionType_ACTION_REMOVE_SERVER, users)
 }

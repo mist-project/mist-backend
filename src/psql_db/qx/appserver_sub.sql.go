@@ -128,21 +128,21 @@ func (q *Queries) GetAppserverSubById(ctx context.Context, id uuid.UUID) (Appser
 const listAppserverUserSubs = `-- name: ListAppserverUserSubs :many
 SELECT
   asub.id as appserver_sub_id,
-  auser.id,
-  auser.username,
-  auser.created_at,
-  auser.updated_at
+  auser.id as appuser_id,
+  auser.username as appuser_username,
+  auser.created_at as appuser_created_at,
+  auser.updated_at as appuser_updated_at
 FROM appserver_sub as asub
 JOIN appuser as auser ON asub.appuser_id=auser.id
 WHERE asub.appserver_id=$1
 `
 
 type ListAppserverUserSubsRow struct {
-	AppserverSubID uuid.UUID
-	ID             uuid.UUID
-	Username       string
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
+	AppserverSubID   uuid.UUID
+	AppuserID        uuid.UUID
+	AppuserUsername  string
+	AppuserCreatedAt pgtype.Timestamp
+	AppuserUpdatedAt pgtype.Timestamp
 }
 
 func (q *Queries) ListAppserverUserSubs(ctx context.Context, appserverID uuid.UUID) ([]ListAppserverUserSubsRow, error) {
@@ -156,10 +156,10 @@ func (q *Queries) ListAppserverUserSubs(ctx context.Context, appserverID uuid.UU
 		var i ListAppserverUserSubsRow
 		if err := rows.Scan(
 			&i.AppserverSubID,
-			&i.ID,
-			&i.Username,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.AppuserID,
+			&i.AppuserUsername,
+			&i.AppuserCreatedAt,
+			&i.AppuserUpdatedAt,
 		); err != nil {
 			return nil, err
 		}

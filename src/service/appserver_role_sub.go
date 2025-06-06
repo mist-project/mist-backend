@@ -11,6 +11,7 @@ import (
 
 	"mist/src/faults"
 	"mist/src/faults/message"
+	"mist/src/producer"
 	"mist/src/protos/v1/appserver_role_sub"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
@@ -20,10 +21,11 @@ type AppserverRoleSubService struct {
 	ctx    context.Context
 	dbConn *pgxpool.Pool
 	db     db.Querier
+	mp     producer.MessageProducer
 }
 
-func NewAppserverRoleSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppserverRoleSubService {
-	return &AppserverRoleSubService{ctx: ctx, dbConn: dbConn, db: db}
+func NewAppserverRoleSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer) *AppserverRoleSubService {
+	return &AppserverRoleSubService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
 }
 
 func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *appserver_role_sub.AppserverRoleSub {
@@ -42,6 +44,11 @@ func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
+
+	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+		&qx.Appuser{ID: appserverRole.AppuserID},
+		appserverRole.AppserverID,
+	)
 
 	return &appserverRole, err
 }
@@ -77,14 +84,25 @@ func (s *AppserverRoleSubService) GetById(id uuid.UUID) (*qx.AppserverRoleSub, e
 }
 
 // Removes a role to a particular user.
-func (s *AppserverRoleSubService) Delete(obj qx.DeleteAppserverRoleSubParams) error {
-	deleted, err := s.db.DeleteAppserverRoleSub(s.ctx, obj)
+func (s *AppserverRoleSubService) Delete(id uuid.UUID) error {
+	roleSub, err := s.GetById(id)
+
+	if err != nil {
+		return faults.ExtendError(err)
+	}
+
+	deleted, err := s.db.DeleteAppserverRoleSub(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	} else if deleted == 0 {
-		return faults.NotFoundError(fmt.Sprintf("no appserver role sub found for id: %s", obj.ID), slog.LevelDebug)
+		return faults.NotFoundError(fmt.Sprintf("no appserver role sub found for id: %s", id), slog.LevelDebug)
 	}
+
+	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+		&qx.Appuser{ID: roleSub.AppuserID},
+		roleSub.AppserverID,
+	)
 
 	return nil
 }

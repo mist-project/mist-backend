@@ -13,9 +13,7 @@ import (
 	"mist/src/faults"
 	"mist/src/faults/message"
 	"mist/src/producer"
-	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel_role"
-	"mist/src/protos/v1/event"
 	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
@@ -43,13 +41,17 @@ func (s *ChannelRoleService) PgTypeToPb(cRole *qx.ChannelRole) *channel_role.Cha
 
 // Creates an appserver role.
 func (s *ChannelRoleService) Create(obj qx.CreateChannelRoleParams) (*qx.ChannelRole, error) {
-	appserverRole, err := s.db.CreateChannelRole(s.ctx, obj)
+	channelRole, err := s.db.CreateChannelRole(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
-	return &appserverRole, err
+	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+		nil, channelRole.AppserverID,
+	)
+
+	return &channelRole, err
 }
 
 // Lists all the roles for an appserver.
@@ -88,12 +90,6 @@ func (s *ChannelRoleService) Delete(id uuid.UUID) error {
 		return faults.ExtendError(err)
 	}
 
-	channel, err := s.db.GetChannelById(s.ctx, channelRole.ChannelID)
-
-	if err != nil {
-		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
-	}
-
 	deleted, err := s.db.DeleteChannelRole(s.ctx, id)
 
 	if err != nil {
@@ -102,29 +98,9 @@ func (s *ChannelRoleService) Delete(id uuid.UUID) error {
 		return faults.NotFoundError(fmt.Sprintf("unable to find channel role with id: %v", id), slog.LevelDebug)
 	}
 
-	s.SendNotificationToUsers(&channel, channelRole, event.ActionType_ACTION_REMOVE_CHANNEL)
-
-	return nil
-}
-
-func (s *ChannelRoleService) SendNotificationToUsers(channel *qx.Channel, channelRole *qx.ChannelRole, action event.ActionType) {
-	var (
-		users []*appuser.Appuser
+	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+		nil, channelRole.AppserverID,
 	)
 
-	appusers, err := s.db.GetAppusersWithOnlySpecifiedRole(s.ctx, channelRole.AppserverRoleID)
-
-	if err != nil {
-		faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError).LogError(s.ctx)
-		return
-	}
-
-	users = make([]*appuser.Appuser, 0, len(appusers))
-
-	for _, user := range appusers {
-		users = append(users, &appuser.Appuser{Id: user.ID.String(), Username: user.Username})
-	}
-
-	s.mp.SendMessage(channel, action, users)
-
+	return nil
 }

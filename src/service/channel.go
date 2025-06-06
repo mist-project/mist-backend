@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -56,7 +55,7 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 	}
 
 	// Send notification to all users in the channel
-	s.SendNotificationToChannelUsers(&channel, s.PgTypeToPb(&channel), event.ActionType_ACTION_ADD_CHANNEL)
+	s.SendChannelListingUpdateNotificationToUsers(nil, channel.AppserverID)
 
 	return &channel, err
 }
@@ -108,7 +107,12 @@ func (s *ChannelService) Filter(obj qx.FilterChannelParams) ([]qx.Channel, error
 func (s *ChannelService) Delete(id uuid.UUID) error {
 	// TODO: doing double queries here "fetching" the sub and then deleting it. maybe change this so that
 	// we can do it in one query.
-	channel, subErr := s.db.GetChannelById(s.ctx, id)
+	channel, err := s.db.GetChannelById(s.ctx, id)
+
+	if err != nil {
+		return faults.DatabaseError(fmt.Sprintf("error deleting channel: %v", err), slog.LevelError)
+	}
+
 	deleted, err := s.db.DeleteChannel(s.ctx, id)
 
 	if err != nil {
@@ -117,74 +121,68 @@ func (s *ChannelService) Delete(id uuid.UUID) error {
 		return faults.NotFoundError(fmt.Sprintf("unable to find channel with id: (%v)", id), slog.LevelDebug)
 	}
 
-	if subErr != nil {
-		faults.DatabaseError(
-			fmt.Sprintf("unable to send delete notification to users on channel delete: %v", subErr), slog.LevelWarn,
-		).LogError(s.ctx)
-	} else {
-		s.SendNotificationToChannelUsers(&channel, s.PgTypeToPb(&channel), event.ActionType_ACTION_REMOVE_CHANNEL)
-	}
+	s.SendChannelListingUpdateNotificationToUsers(nil, channel.AppserverID)
 
 	return err
 }
 
-func (s *ChannelService) SendNotificationToChannelUsers(channel *qx.Channel, protoC *channel.Channel, action event.ActionType) {
+func (s *ChannelService) SendChannelListingUpdateNotificationToUsers(u *qx.Appuser, appserverId uuid.UUID) {
 	var (
-		err   error
-		users []*appuser.Appuser
+		appuserIds []uuid.UUID
 	)
 
-	roles, err := s.db.FilterChannelRole(s.ctx, qx.FilterChannelRoleParams{
-		ChannelID: pgtype.UUID{Bytes: channel.ID, Valid: true},
-	})
+	if u != nil {
+		appuserIds = []uuid.UUID{u.ID}
+	} else {
+		// get all users in the appserver
+		appusers, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
+
+		if err != nil {
+			faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError).LogError(s.ctx)
+			return
+		}
+
+		// if no users, early exit
+		if len(appusers) == 0 {
+			return
+		}
+
+		appuserIds = make([]uuid.UUID, 0, len(appusers))
+
+		// collect all appuser ids
+		for _, user := range appusers {
+			appuserIds = append(appuserIds, user.AppuserID)
+		}
+	}
+
+	// get all available channel to each user
+	channelUsers, err := s.db.GetChannelsForUsers(
+		s.ctx, qx.GetChannelsForUsersParams{Column1: appuserIds, AppserverID: appserverId},
+	)
 
 	if err != nil {
-		faults.LogError(s.ctx, faults.DatabaseError(fmt.Sprintf("error fetching channel roles: %v", err), slog.LevelError))
+		faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError).LogError(s.ctx)
 		return
 	}
 
-	// If there are roles in the channel, only users with those roles will be notified
-	if channel.IsPrivate {
-		// Extract user IDs from roles
-		roleIDs := make([]uuid.UUID, 0, len(roles))
-		for _, role := range roles {
-			roleIDs = append(roleIDs, role.AppserverRoleID)
-		}
+	userChannelMap := make(map[uuid.UUID][]*channel.Channel)
 
-		// Get appusers by roles in the channel
-		appusers, err := s.db.GetChannelUsersByRoles(s.ctx, roleIDs)
-		if err != nil {
-			faults.LogError(s.ctx, faults.ExtendError(err))
-			return
-		}
-
-		users = make([]*appuser.Appuser, 0, len(appusers))
-
-		for _, u := range appusers {
-			users = append(users, &appuser.Appuser{
-				Id:       u.ID.String(),
-				Username: u.Username,
-			})
-		}
-	} else {
-		// No roles in the channel, so all users have access to the channel
-		userSubs, err := s.db.ListAppserverUserSubs(s.ctx, channel.AppserverID)
-
-		if err != nil {
-			faults.LogError(
-				s.ctx, faults.DatabaseError(fmt.Sprintf("error fetching appserver user subscriptions: %v", err), slog.LevelError),
-			)
-			return
-		}
-
-		users = make([]*appuser.Appuser, 0, len(userSubs))
-
-		for _, sub := range userSubs {
-			users = append(users, &appuser.Appuser{Id: sub.ID.String(), Username: sub.Username})
-		}
+	// map user ids to their channels
+	for _, cu := range channelUsers {
+		userChannelMap[cu.AppuserID] = append(userChannelMap[cu.AppuserID], &channel.Channel{
+			Id:          cu.ChannelID.String(),
+			Name:        cu.ChannelName.String,
+			AppserverId: cu.ChannelAppserverID.String(),
+			IsPrivate:   cu.ChannelIsPrivate.Bool,
+		})
 	}
 
-	if len(users) > 0 {
-		s.mp.SendMessage(protoC, action, users)
+	// if no channels, early exit
+	if len(userChannelMap) == 0 {
+		return
+	}
+
+	for userId, channels := range userChannelMap {
+		s.mp.SendMessage(channels, event.ActionType_ACTION_LIST_CHANNELS, []*appuser.Appuser{{Id: userId.String()}})
 	}
 }

@@ -17,7 +17,6 @@ import (
 )
 
 type dummyRequest struct {
-	requestId string
 }
 
 var requestIdTestHandler = func(ctx context.Context, req interface{}) (interface{}, error) {

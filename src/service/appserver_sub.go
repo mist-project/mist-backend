@@ -60,10 +60,10 @@ func (s *AppserverSubService) PgAppserverSubRowToPb(res *qx.ListUserServerSubsRo
 
 func (s *AppserverSubService) PgUserSubRowToPb(res *qx.ListAppserverUserSubsRow) *appserver_sub.AppuserAndSub {
 	appuser := &appuser.Appuser{
-		Id:        res.ID.String(),
-		Username:  res.Username,
-		CreatedAt: timestamppb.New(res.CreatedAt.Time),
-		UpdatedAt: timestamppb.New(res.UpdatedAt.Time),
+		Id:        res.AppuserID.String(),
+		Username:  res.AppuserUsername,
+		CreatedAt: timestamppb.New(res.AppuserCreatedAt.Time),
+		UpdatedAt: timestamppb.New(res.AppuserUpdatedAt.Time),
 	}
 
 	return &appserver_sub.AppuserAndSub{
@@ -162,7 +162,7 @@ func (s *AppserverSubService) Delete(id uuid.UUID) error {
 			{Id: sub.AppuserID.String()},
 		}
 
-		s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, user)
+		_ = s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, user)
 	}
 
 	return nil

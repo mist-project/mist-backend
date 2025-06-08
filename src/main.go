@@ -6,17 +6,21 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
-	"github.com/IBM/sarama"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 
 	"mist/src/logging/logger"
 	"mist/src/producer"
+	"mist/src/producer/mist_redis"
+	"mist/src/psql_db/db"
+	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )
 
-func InitializeServer(kp *producer.KafkaProducer) {
+func InitializeServer(redisClient *redis.Client) {
 	// ----- DB CONNECTION -----
 	// Set up the database connection pool
 	dbConn, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
@@ -44,7 +48,11 @@ func InitializeServer(kp *producer.KafkaProducer) {
 	// Create a new gRPC server with the interceptors
 	s := grpc.NewServer(interceptors)
 	// Register the gRPC services
-	rpcs.RegisterGrpcServices(s, dbConn, kp)
+	rpcs.RegisterGrpcServices(s, &rpcs.GrpcDependencies{
+		DbConn:    dbConn,
+		Db:        db.NewQuerier(qx.New(dbConn)),
+		MProducer: producer.NewMProducer(redisClient),
+	})
 
 	// Start the gRPC server
 	log.Printf("server listening at %v", lis.Addr())
@@ -55,31 +63,41 @@ func InitializeServer(kp *producer.KafkaProducer) {
 
 func main() {
 
-	// ----- KAFKA PRODUCER -----
-	p, err := connectToKafka([]string{os.Getenv("KAFKA_MAIN_BROKER")})
-	if err != nil {
-		log.Fatalf("failed to create Kafka producer: %v", err)
-	}
-
-	kp := producer.NewKafkaProducer(p, os.Getenv("KAFKA_EVENT_TOPIC"))
-	defer kp.Producer.Close()
-
-	// Check if producer was able to connect to kafka server successfully
-	if err != nil {
-		log.Fatalf("failed to create Kafka producer: %v", err)
-	}
+	// // ----- REDIS CLIENT PRODUCER -----
+	redisClient := connectToRedis()
 
 	logger.InitializeLogger()
-	InitializeServer(kp)
+	InitializeServer(redisClient)
 }
 
-func connectToKafka(brokers []string) (sarama.SyncProducer, error) {
-	config := sarama.NewConfig()
-	config.Producer.Return.Successes = true
-	config.Producer.Return.Errors = true
-	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Idempotent = true
-	config.Net.MaxOpenRequests = 1
+func connectToRedis() *redis.Client {
+	var client *redis.Client
+	ctx := context.Background()
 
-	return sarama.NewSyncProducer(brokers, config)
+	for client == nil {
+		logger.Debug("Initializing Redis client.", "SERVICE", "REDIS")
+		client = mist_redis.ConnectToRedis(os.Getenv("REDIS_DB"))
+
+		// Perform a health check by setting a key
+		result, err := client.Set(ctx, "health", "check", 0).Result()
+
+		if err != nil {
+			logger.Error(fmt.Sprintf("Failed to connect to Redis: %v", err), "SERVICE", "REDIS")
+			logger.Debug("Retrying in 5 seconds...", "SERVICE", "REDIS")
+			client.Close()
+			client = nil // Reset client to retry connection
+			// Wait for 5 seconds before retrying
+			<-time.After(5 * time.Second)
+		}
+
+		if result == "OK" {
+			logger.Debug("Redis connection established", "SERVICE", "REDIS")
+		}
+
+		// Clean up the health check key after setting it
+		client.Del(ctx, "health").Result()
+
+	}
+
+	return client
 }

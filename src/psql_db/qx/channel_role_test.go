@@ -12,7 +12,7 @@ import (
 )
 
 func TestQuerier_CreateChannelRole(t *testing.T) {
-	t.Run("Successful:create_channel_role", func(t *testing.T) {
+	t.Run("Successcreate_channel_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -36,7 +36,7 @@ func TestQuerier_CreateChannelRole(t *testing.T) {
 }
 
 func TestQuerier_DeleteChannelRole(t *testing.T) {
-	t.Run("Successful:delete_channel_role", func(t *testing.T) {
+	t.Run("Successdelete_channel_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -68,7 +68,7 @@ func TestQuerier_DeleteChannelRole(t *testing.T) {
 }
 
 func TestQuerier_GetChannelRoleById(t *testing.T) {
-	t.Run("Successful:get_channel_role_by_id", func(t *testing.T) {
+	t.Run("Successget_channel_role_by_id", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		chRole := testutil.TestChannelRole(t, nil, false)
@@ -96,7 +96,7 @@ func TestQuerier_GetChannelRoleById(t *testing.T) {
 }
 
 func TestQuerier_FilterChannelRole(t *testing.T) {
-	t.Run("Successful:filter_by_all_fields", func(t *testing.T) {
+	t.Run("Successfilter_by_all_fields", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		cr := testutil.TestChannelRole(t, nil, false)
@@ -116,7 +116,7 @@ func TestQuerier_FilterChannelRole(t *testing.T) {
 		assert.Equal(t, cr.ID, results[0].ID)
 	})
 
-	t.Run("Successful:filter_by_partial_fields", func(t *testing.T) {
+	t.Run("Successfilter_by_partial_fields", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		cr := testutil.TestChannelRole(t, nil, false)
@@ -155,7 +155,7 @@ func TestQuerier_FilterChannelRole(t *testing.T) {
 }
 
 func TestQuerier_ListChannelRoles(t *testing.T) {
-	t.Run("Successful:list_channel_roles", func(t *testing.T) {
+	t.Run("Successlist_channel_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		cr := testutil.TestChannelRole(t, nil, false)

@@ -7,25 +7,20 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"mist/src/faults"
 	"mist/src/faults/message"
-	"mist/src/producer"
 	"mist/src/protos/v1/appserver_role_sub"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverRoleSubService struct {
-	ctx    context.Context
-	dbConn *pgxpool.Pool
-	db     db.Querier
-	mp     producer.MessageProducer
+	ctx  context.Context
+	deps *ServiceDeps
 }
 
-func NewAppserverRoleSubService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer) *AppserverRoleSubService {
-	return &AppserverRoleSubService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
+func NewAppserverRoleSubService(ctx context.Context, deps *ServiceDeps) *AppserverRoleSubService {
+	return &AppserverRoleSubService{ctx: ctx, deps: deps}
 }
 
 func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *appserver_role_sub.AppserverRoleSub {
@@ -39,13 +34,13 @@ func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *appser
 
 // Adds a server role to a user.
 func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*qx.AppserverRoleSub, error) {
-	appserverRole, err := s.db.CreateAppserverRoleSub(s.ctx, obj)
+	appserverRole, err := s.deps.Db.CreateAppserverRoleSub(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
-	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+	NewChannelService(s.ctx, s.deps).SendChannelListingUpdateNotificationToUsers(
 		&qx.Appuser{ID: appserverRole.AppuserID},
 		appserverRole.AppserverID,
 	)
@@ -58,7 +53,7 @@ func (s *AppserverRoleSubService) ListServerRoleSubs(
 	appserverId uuid.UUID,
 ) ([]qx.ListServerRoleSubsRow, error) {
 
-	rows, err := s.db.ListServerRoleSubs(s.ctx, appserverId)
+	rows, err := s.deps.Db.ListServerRoleSubs(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -69,7 +64,7 @@ func (s *AppserverRoleSubService) ListServerRoleSubs(
 
 // Gets an appserver role sub by its id.
 func (s *AppserverRoleSubService) GetById(id uuid.UUID) (*qx.AppserverRoleSub, error) {
-	role, err := s.db.GetAppserverRoleSubById(s.ctx, id)
+	role, err := s.deps.Db.GetAppserverRoleSubById(s.ctx, id)
 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
@@ -91,7 +86,7 @@ func (s *AppserverRoleSubService) Delete(id uuid.UUID) error {
 		return faults.ExtendError(err)
 	}
 
-	deleted, err := s.db.DeleteAppserverRoleSub(s.ctx, id)
+	deleted, err := s.deps.Db.DeleteAppserverRoleSub(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -99,7 +94,7 @@ func (s *AppserverRoleSubService) Delete(id uuid.UUID) error {
 		return faults.NotFoundError(fmt.Sprintf("no appserver role sub found for id: %s", id), slog.LevelDebug)
 	}
 
-	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+	NewChannelService(s.ctx, s.deps).SendChannelListingUpdateNotificationToUsers(
 		&qx.Appuser{ID: roleSub.AppuserID},
 		roleSub.AppserverID,
 	)

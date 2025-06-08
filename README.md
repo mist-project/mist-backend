@@ -4,7 +4,7 @@
 
 ### Install homebrew
 
-```
+```shell
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 echo >> ~/.bashrc
@@ -17,7 +17,7 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 As of right now we're going to be using GO version `1.23.4`
 https://go.dev/doc/install
 
-```
+```shell
 # This example is for LINUX
 
 # Remove any existing GO installation and install the one downloaded
@@ -32,7 +32,7 @@ go version
 
 ### Install PostgreSQL
 
-```
+```shell
 # This is for LINUX ARM64 architecture, using version 17.2
 
 sudo apt install curl ca-certificates
@@ -49,17 +49,42 @@ sudo -u postgres psql
 CREATE DATABASE mist;
 ```
 
+### Install redis
+```shell
+sudo apt-get install lsb-release curl gpg
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+sudo apt-get update
+sudo apt-get install redis
+
+# to start redis use 
+sudo systemctl enable redis-server  # this will enable the service to be used
+sudo systemctl start redis-server  # this will start the redis server
+
+# if you want to stop redis sudo systemctl restart redis-server
+```
+
+#### Setting redis user
+```shell
+ACL SETUSER default off  # turn off default user
+
+ACL SETUSER USERNAME on >PASSWORD ~* +@read +@write +@pubsub  # create user with enough permissions ( add username/password)
+redis-cli CONFIG REWRITE  # write the configuration (store/persist)
+```
+
 #### Install DB migration plugin
 
-go install -tags='no_clickhouse no_libsql no_mssql no_mysql no_vertica no_ydb' github.com/pressly/goose/v3/cmd/goose@latest
+
+`go install -tags='no_clickhouse no_libsql no_mssql no_mysql no_vertica no_ydb' github.com/pressly/goose/v3/cmd/goose@latest`
 
 ### Install SQL generator tool
 
-sudo snap install sqlc
+`sudo snap install sqlc`
 
 ### Install protobuf compiler
 
-```
+```shell
 
 brew install bufbuild/buf/buf
 
@@ -80,12 +105,11 @@ buf dep update
 ```
 
 ### Install live reloader
-
-go install github.com/air-verse/air@1.61.1
+`go install github.com/air-verse/air@1.61.1`
 
 ### Install linter
 
-```
+```shell
 
 # binary will be in $(go env GOPATH)/bin/golangci-lint
 

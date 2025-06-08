@@ -23,7 +23,7 @@ import (
 )
 
 func TestChannelRPCService_ListServerChannels(t *testing.T) {
-	t.Run("Successful:returns_nothing_successfully", func(t *testing.T) {
+	t.Run("Successreturns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
@@ -41,7 +41,7 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetChannels()))
 	})
 
-	t.Run("Successful:returns_all_resources_successfully", func(t *testing.T) {
+	t.Run("Successreturns_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		subId := testutil.TestAppserverSub(t, nil, true)
@@ -66,7 +66,7 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetChannels()))
 	})
 
-	t.Run("Successful:can_filter_by_name", func(t *testing.T) {
+	t.Run("Successcan_filter_by_name", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		subId := testutil.TestAppserverSub(t, nil, true)
@@ -102,7 +102,7 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListServerChannels(
@@ -122,7 +122,7 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 }
 
 func TestChannelRPCService_GetById(t *testing.T) {
-	t.Run("Successful:returns_successfully", func(t *testing.T) {
+	t.Run("Successreturns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
@@ -170,7 +170,7 @@ func TestChannelRPCService_GetById(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.GetById(
@@ -215,7 +215,7 @@ func TestChannelRPCService_GetById(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.GetById(
@@ -235,7 +235,7 @@ func TestChannelRPCService_GetById(t *testing.T) {
 }
 
 func TestChannelRPCService_Create(t *testing.T) {
-	t.Run("Successful:creates_successfully", func(t *testing.T) {
+	t.Run("Successcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
@@ -265,7 +265,7 @@ func TestChannelRPCService_Create(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -308,7 +308,7 @@ func TestChannelRPCService_Create(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -328,7 +328,7 @@ func TestChannelRPCService_Create(t *testing.T) {
 }
 
 func TestChannelRPCService_Delete(t *testing.T) {
-	t.Run("Successful:deletes_successfully", func(t *testing.T) {
+	t.Run("Successdeletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		c := testutil.TestChannel(t, nil, true)
@@ -371,7 +371,7 @@ func TestChannelRPCService_Delete(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -401,7 +401,7 @@ func TestChannelRPCService_Delete(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.ChannelGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(

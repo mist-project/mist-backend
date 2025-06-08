@@ -11,6 +11,7 @@ import (
 
 	"mist/src/faults"
 	"mist/src/faults/message"
+	"mist/src/producer"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
 	"mist/src/testutil"
@@ -26,7 +27,12 @@ func TestAppserverRoleSubService_PgTypeToPb(t *testing.T) {
 	}
 
 	svc := service.NewAppserverRoleSubService(
-		context.Background(), testutil.TestDbConn, new(testutil.MockQuerier), new(testutil.MockProducer),
+		context.Background(),
+		&service.ServiceDeps{
+			DbConn:    testutil.TestDbConn,
+			Db:        new(testutil.MockQuerier),
+			MProducer: producer.NewMProducer(new(testutil.MockRedis)),
+		},
 	)
 
 	// ACT
@@ -41,7 +47,7 @@ func TestAppserverRoleSubService_PgTypeToPb(t *testing.T) {
 
 func TestAppserverRoleSubService_Create(t *testing.T) {
 
-	t.Run("Successful:create_role_sub", func(t *testing.T) {
+	t.Run("Successcreate_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		obj := qx.CreateAppserverRoleSubParams{
@@ -57,12 +63,15 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("CreateAppserverRoleSub", ctx, obj).Return(expected, nil)
 		mockQuerier.On("GetChannelsForUsers", ctx, mock.Anything).Return([]qx.GetChannelsForUsersRow{}, nil)
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		res, err := svc.Create(obj)
@@ -71,7 +80,7 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, res.ID)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_create_failure", func(t *testing.T) {
@@ -84,11 +93,14 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("CreateAppserverRoleSub", ctx, obj).Return(nil, fmt.Errorf("insert failed"))
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.Create(obj)
@@ -98,13 +110,13 @@ func TestAppserverRoleSubService_Create(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: insert failed")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }
 
 func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 
-	t.Run("Successful:fetch_role_subs", func(t *testing.T) {
+	t.Run("Successfetch_role_subs", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
@@ -113,11 +125,14 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("ListServerRoleSubs", ctx, appserverId).Return(expected, nil)
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		res, err := svc.ListServerRoleSubs(appserverId)
@@ -126,7 +141,7 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected, res)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -135,13 +150,16 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 		appserverId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("ListServerRoleSubs", ctx, appserverId).Return(
 			[]qx.ListServerRoleSubsRow{}, fmt.Errorf("db fail"),
 		)
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.ListServerRoleSubs(appserverId)
@@ -151,13 +169,13 @@ func TestAppserverRoleSubService_ListServerRoleSubs(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db fail")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }
 
 func TestAppserverRoleSubService_GetById(t *testing.T) {
 
-	t.Run("Successful:return_appserver_role_sub_object", func(t *testing.T) {
+	t.Run("Successreturn_appserver_role_sub_object", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		roleId := uuid.New()
@@ -167,11 +185,14 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("GetAppserverRoleSubById", ctx, roleId).Return(expected, nil)
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		actual, err := svc.GetById(roleId)
@@ -184,7 +205,7 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 		assert.Equal(t, expected.AppserverSubID, actual.AppserverSubID)
 		assert.Equal(t, expected.AppserverID, actual.AppserverID)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
@@ -192,11 +213,14 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("GetAppserverRoleSubById", ctx, appserverId).Return(nil, fmt.Errorf(message.DbNotFound))
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.GetById(appserverId)
@@ -206,7 +230,7 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("no appserver role sub found for id: %s", appserverId))
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
@@ -214,11 +238,14 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("GetAppserverRoleSubById", ctx, appserverId).Return(nil, fmt.Errorf("boom"))
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.GetById(appserverId)
@@ -228,13 +255,13 @@ func TestAppserverRoleSubService_GetById(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }
 
 func TestAppserverRoleSubService_Delete(t *testing.T) {
 
-	t.Run("Successful:delete_role_sub", func(t *testing.T) {
+	t.Run("Successdelete_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		roleSub := qx.AppserverRoleSub{
@@ -246,13 +273,16 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("DeleteAppserverRoleSub", ctx, roleSub.ID).Return(int64(1), nil)
 		mockQuerier.On("GetAppserverRoleSubById", ctx, roleSub.ID).Return(roleSub, nil)
 		mockQuerier.On("GetChannelsForUsers", ctx, mock.Anything).Return([]qx.GetChannelsForUsersRow{}, nil)
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(roleSub.ID)
@@ -260,7 +290,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:no_rows_deleted", func(t *testing.T) {
@@ -275,12 +305,15 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("DeleteAppserverRoleSub", ctx, roleSub.ID).Return(int64(0), nil)
 		mockQuerier.On("GetAppserverRoleSubById", ctx, roleSub.ID).Return(roleSub, nil)
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(roleSub.ID)
@@ -292,7 +325,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 			t, err, fmt.Sprintf("no appserver role sub found for id: %s", roleSub.ID),
 		)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:db_failure_on_delete_role_sub", func(t *testing.T) {
@@ -307,12 +340,15 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("GetAppserverRoleSubById", ctx, roleSub.ID).Return(roleSub, nil)
 		mockQuerier.On("DeleteAppserverRoleSub", ctx, roleSub.ID).Return(nil, fmt.Errorf("db crash"))
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(roleSub.ID)
@@ -322,7 +358,7 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:db_failure_on_get_role_sub_by_id", func(t *testing.T) {
@@ -333,11 +369,14 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
 
 		mockQuerier.On("GetAppserverRoleSubById", ctx, roleSub.ID).Return(nil, fmt.Errorf("db crash"))
 
-		svc := service.NewAppserverRoleSubService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewAppserverRoleSubService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(roleSub.ID)
@@ -347,6 +386,6 @@ func TestAppserverRoleSubService_Delete(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }

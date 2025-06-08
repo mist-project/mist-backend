@@ -38,7 +38,7 @@ func NewSharedAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *SharedAuthorizer 
 
 // Helper function to determine whether a user is owner of the server.
 func (auth *SharedAuthorizer) UserIsServerOwner(ctx context.Context, userId uuid.UUID, serverId uuid.UUID) (bool, error) {
-	server, err := service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById(serverId)
+	server, err := service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById(serverId)
 
 	if err != nil {
 		return false, faults.ExtendError(err)
@@ -49,7 +49,7 @@ func (auth *SharedAuthorizer) UserIsServerOwner(ctx context.Context, userId uuid
 
 // Helper function to determine whether a user is owner of the server.
 func (auth *SharedAuthorizer) UserHasServerSub(ctx context.Context, userId uuid.UUID, serverId uuid.UUID) (bool, error) {
-	sub, err := service.NewAppserverSubService(ctx, auth.DbConn, auth.Db, nil).Filter(
+	sub, err := service.NewAppserverSubService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).Filter(
 		qx.FilterAppserverSubParams{
 			AppserverID: pgtype.UUID{Valid: true, Bytes: serverId},
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userId},
@@ -110,7 +110,9 @@ func GetUserPermissionMask(
 	ctx context.Context, auth *SharedAuthorizer, userId uuid.UUID, obj *qx.Appserver,
 ) (*PermissionMasks, error) {
 
-	roles, err := service.NewAppserverRoleService(ctx, auth.DbConn, auth.Db).GetAppuserRoles(qx.GetAppuserRolesParams{
+	roles, err := service.NewAppserverRoleService(
+		ctx,
+		&service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetAppuserRoles(qx.GetAppuserRolesParams{
 		AppserverID: obj.ID,
 		AppuserID:   userId,
 	})

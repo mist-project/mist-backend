@@ -74,7 +74,12 @@ func (auth *AppserverRoleAuthorizer) Authorize(
 	}
 
 	if objId != nil {
-		_, err = GetObject(ctx, auth.shared, objId, service.NewAppserverRoleService(ctx, auth.DbConn, auth.Db).GetById)
+		_, err = GetObject(
+			ctx,
+			auth.shared,
+			objId,
+			service.NewAppserverRoleService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById,
+		)
 
 		if err != nil {
 			// if the object is not found or invalid uuid, we return err
@@ -82,7 +87,7 @@ func (auth *AppserverRoleAuthorizer) Authorize(
 		}
 	}
 
-	server, err = service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById(serverIdCtx.AppserverId)
+	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById(serverIdCtx.AppserverId)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error

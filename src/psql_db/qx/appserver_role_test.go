@@ -12,7 +12,7 @@ import (
 )
 
 func TestQuerier_CreateAppserverRole(t *testing.T) {
-	t.Run("Successful:create_appserver_role", func(t *testing.T) {
+	t.Run("Successcreate_appserver_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
@@ -35,7 +35,7 @@ func TestQuerier_CreateAppserverRole(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverRoleById(t *testing.T) {
-	t.Run("Successful:get_appserver_role_by_id", func(t *testing.T) {
+	t.Run("Successget_appserver_role_by_id", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, false)
@@ -61,7 +61,7 @@ func TestQuerier_GetAppserverRoleById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserverRole(t *testing.T) {
-	t.Run("Successful:delete_appserver_role", func(t *testing.T) {
+	t.Run("Successdelete_appserver_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, false)
@@ -85,7 +85,7 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successful:deleting_appserver_role_removes_associated_appserver_role_subs", func(t *testing.T) {
+	t.Run("Successdeleting_appserver_role_removes_associated_appserver_role_subs", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
@@ -109,7 +109,7 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 		assert.Contains(t, err.Error(), "no rows in result set")
 	})
 
-	t.Run("Successful:deleting_appserver_role_removes_associated_channel_roles", func(t *testing.T) {
+	t.Run("Successdeleting_appserver_role_removes_associated_channel_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
@@ -137,7 +137,7 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 }
 
 func TestQuerier_ListAppserverRoles(t *testing.T) {
-	t.Run("Successful:list_appserver_roles", func(t *testing.T) {
+	t.Run("Successlist_appserver_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, false)
@@ -165,7 +165,7 @@ func TestQuerier_ListAppserverRoles(t *testing.T) {
 }
 
 func TestQuerier_GetAppuserRoles(t *testing.T) {
-	t.Run("Successful:get_appuser_roles", func(t *testing.T) {
+	t.Run("Successget_appuser_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
@@ -207,7 +207,7 @@ func TestQuerier_GetAppuserRoles(t *testing.T) {
 }
 
 func TestQuerier_GetAppusersWithOnlySpecifiedRole(t *testing.T) {
-	t.Run("Successful:get_users_with_only_specified_role", func(t *testing.T) {
+	t.Run("Successget_users_with_only_specified_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)

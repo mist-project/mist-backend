@@ -30,7 +30,9 @@ func (s *ChannelRoleGRPCService) Create(
 	roleId, _ := uuid.Parse(req.AppserverRoleId)
 	channelId, _ := uuid.Parse(req.ChannelId)
 
-	roleService := service.NewChannelRoleService(ctx, s.DbConn, s.Db, s.Producer)
+	roleService := service.NewChannelRoleService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	roles, err := roleService.Create(
 		qx.CreateChannelRoleParams{AppserverRoleID: roleId, AppserverID: serverId, ChannelID: channelId},
 	)
@@ -61,7 +63,9 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
-	roleService := service.NewChannelRoleService(ctx, s.DbConn, s.Db, s.Producer)
+	roleService := service.NewChannelRoleService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	results, err := roleService.ListChannelRoles(channelId)
 
 	// Error handling
@@ -100,7 +104,9 @@ func (s *ChannelRoleGRPCService) Delete(
 	roleId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err = service.NewChannelRoleService(ctx, s.DbConn, s.Db, s.Producer).Delete(roleId)
+	err = service.NewChannelRoleService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	).Delete(roleId)
 
 	// Error handling
 	if err != nil {

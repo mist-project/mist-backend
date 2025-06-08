@@ -26,7 +26,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 	)
 
 	t.Run("ActionRead", func(t *testing.T) {
-		t.Run("Successful:subscribed_user_can_read_channels", func(t *testing.T) {
+		t.Run("Successsubscribed_user_can_read_channels", func(t *testing.T) {
 			// ARRANGE
 			ctx := testutil.Setup(t, func() {})
 			tu := factory.UserAppserverSub(t)
@@ -64,7 +64,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 	t.Run("ActionWrite", func(t *testing.T) {
 		t.Run(permission.SubActionCreate, func(t *testing.T) {
 
-			t.Run("Successful:owner_can_create_channel", func(t *testing.T) {
+			t.Run("Successowner_can_create_channel", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				tu := factory.UserAppserverOwner(t)
@@ -80,7 +80,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				assert.Nil(t, err)
 			})
 
-			t.Run("Successful:user_with_appserver_permission_can_create_channel", func(t *testing.T) {
+			t.Run("Successuser_with_appserver_permission_can_create_channel", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				tu := factory.UserAppserverWithAllPermissions(t)
@@ -137,7 +137,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 	t.Run("ActionDelete", func(t *testing.T) {
 		t.Run(permission.SubActionDelete, func(t *testing.T) {
 
-			t.Run("Successful:owner_can_delete_channel", func(t *testing.T) {
+			t.Run("Successowner_can_delete_channel", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				tu := factory.UserAppserverOwner(t)
@@ -154,7 +154,7 @@ func TestChannelAuthorizer_Authorize(t *testing.T) {
 				assert.Nil(t, err)
 			})
 
-			t.Run("Successful:user_with_permission_role_can_delete_channel", func(t *testing.T) {
+			t.Run("Successuser_with_permission_role_can_delete_channel", func(t *testing.T) {
 				// ARRANGE
 				ctx := testutil.Setup(t, func() {})
 				tu := factory.UserAppserverWithAllPermissions(t)

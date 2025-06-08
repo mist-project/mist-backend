@@ -16,12 +16,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
 	"mist/src/middleware"
+	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
 	"mist/src/protos/v1/appserver_role"
 	"mist/src/protos/v1/appserver_role_sub"
@@ -29,6 +31,7 @@ import (
 	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/channel_role"
+	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )
@@ -46,12 +49,23 @@ var (
 
 	TestDbConn    *pgxpool.Pool
 	TestKProducer = new(MockProducer)
+	mockRedis     = new(MockRedis)
+	TestRedis     = producer.NewMProducer(mockRedis)
 
 	once sync.Once
 
 	CtxUserKey    = "userRequestId"
 	DefaultUserId = "571637fd-3c1e-4bb5-9077-e35edbe02526"
 )
+
+func ReturnIfError[T any](args mock.Arguments, index int) (T, error) {
+	err := args.Error(index)
+	var zero T
+	if err != nil {
+		return zero, err
+	}
+	return args.Get(0).(T), nil
+}
 
 // ----- SETUP FUNCTION -----
 
@@ -105,10 +119,16 @@ func SetupTestGRPCServicesAndClient() {
 
 	interceptors, _ := rpcs.BaseInterceptors()
 	testServer = grpc.NewServer(interceptors)
+
 	// for now we will mock all the producer calls to be successful. unit tests should
-	// enture that the producer is called where it should happen
+	// ensure that the producer is called where it should happen
 	TestKProducer.On("SendMessage", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	rpcs.RegisterGrpcServices(testServer, TestDbConn, TestKProducer)
+	mockRedis.On("Publish", mock.Anything, mock.Anything, mock.Anything).Return(redis.NewIntCmd(context.Background()))
+	rpcs.RegisterGrpcServices(testServer, &rpcs.GrpcDependencies{
+		DbConn:    TestDbConn,
+		Db:        db.NewQuerier(qx.New(TestDbConn)),
+		MProducer: TestRedis,
+	})
 
 	go func() {
 		if err := testServer.Serve(lis); err != nil {
@@ -177,6 +197,7 @@ func Setup(t *testing.T, cleanup func()) context.Context {
 
 	ctx = metadata.NewOutgoingContext(ctx, grpcMeta)
 	ctx = context.WithValue(ctx, middleware.JwtClaimsK, claims)
+
 	return ctx
 }
 

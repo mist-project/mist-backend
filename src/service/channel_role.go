@@ -7,26 +7,21 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/faults"
 	"mist/src/faults/message"
-	"mist/src/producer"
 	"mist/src/protos/v1/channel_role"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type ChannelRoleService struct {
-	ctx    context.Context
-	dbConn *pgxpool.Pool
-	db     db.Querier
-	mp     producer.MessageProducer
+	ctx  context.Context
+	deps *ServiceDeps
 }
 
-func NewChannelRoleService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer) *ChannelRoleService {
-	return &ChannelRoleService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
+func NewChannelRoleService(ctx context.Context, deps *ServiceDeps) *ChannelRoleService {
+	return &ChannelRoleService{ctx: ctx, deps: deps}
 }
 
 func (s *ChannelRoleService) PgTypeToPb(cRole *qx.ChannelRole) *channel_role.ChannelRole {
@@ -41,13 +36,13 @@ func (s *ChannelRoleService) PgTypeToPb(cRole *qx.ChannelRole) *channel_role.Cha
 
 // Creates an appserver role.
 func (s *ChannelRoleService) Create(obj qx.CreateChannelRoleParams) (*qx.ChannelRole, error) {
-	channelRole, err := s.db.CreateChannelRole(s.ctx, obj)
+	channelRole, err := s.deps.Db.CreateChannelRole(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
-	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+	NewChannelService(s.ctx, s.deps).SendChannelListingUpdateNotificationToUsers(
 		nil, channelRole.AppserverID,
 	)
 
@@ -56,7 +51,7 @@ func (s *ChannelRoleService) Create(obj qx.CreateChannelRoleParams) (*qx.Channel
 
 // Lists all the roles for an appserver.
 func (s *ChannelRoleService) ListChannelRoles(channelId uuid.UUID) ([]qx.ChannelRole, error) {
-	cRoles, err := s.db.ListChannelRoles(s.ctx, channelId)
+	cRoles, err := s.deps.Db.ListChannelRoles(s.ctx, channelId)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -67,7 +62,7 @@ func (s *ChannelRoleService) ListChannelRoles(channelId uuid.UUID) ([]qx.Channel
 
 // Gets an appserver role by its id.
 func (s *ChannelRoleService) GetById(id uuid.UUID) (*qx.ChannelRole, error) {
-	role, err := s.db.GetChannelRoleById(s.ctx, id)
+	role, err := s.deps.Db.GetChannelRoleById(s.ctx, id)
 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
@@ -90,7 +85,7 @@ func (s *ChannelRoleService) Delete(id uuid.UUID) error {
 		return faults.ExtendError(err)
 	}
 
-	deleted, err := s.db.DeleteChannelRole(s.ctx, id)
+	deleted, err := s.deps.Db.DeleteChannelRole(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -98,7 +93,7 @@ func (s *ChannelRoleService) Delete(id uuid.UUID) error {
 		return faults.NotFoundError(fmt.Sprintf("unable to find channel role with id: %v", id), slog.LevelDebug)
 	}
 
-	NewChannelService(s.ctx, s.dbConn, s.db, s.mp).SendChannelListingUpdateNotificationToUsers(
+	NewChannelService(s.ctx, s.deps).SendChannelListingUpdateNotificationToUsers(
 		nil, channelRole.AppserverID,
 	)
 

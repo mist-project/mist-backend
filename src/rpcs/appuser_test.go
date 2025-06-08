@@ -17,7 +17,7 @@ import (
 )
 
 func TestAppuserRPCService_Create(t *testing.T) {
-	t.Run("Successful:creates_successfully", func(t *testing.T) {
+	t.Run("Successcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
 		ctx := testutil.Setup(t, func() {})
@@ -61,7 +61,7 @@ func TestAppuserRPCService_Create(t *testing.T) {
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateAppuser", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
-		svc := &rpcs.AppuserGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn}
+		svc := &rpcs.AppuserGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}}
 
 		// ACT
 		_, err := svc.Create(ctx, &appuser.CreateRequest{

@@ -21,7 +21,7 @@ import (
 )
 
 func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
-	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
@@ -41,7 +41,7 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppserverRoles()))
 	})
 
-	t.Run("Successful:can_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
@@ -74,7 +74,7 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		response, err := svc.ListServerRoles(ctx, &appserver_role.ListServerRolesRequest{
@@ -101,7 +101,7 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListServerRoles(
@@ -122,7 +122,7 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 }
 
 func TestAppserverRoleRPCService_Create(t *testing.T) {
-	t.Run("Successful:creates_successfully", func(t *testing.T) {
+	t.Run("Successcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserver := testutil.TestAppserver(t, nil, true)
@@ -169,7 +169,7 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -197,7 +197,7 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(nil)
 
-		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -217,7 +217,7 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 }
 
 func TestAppserverRoleRPCService_Delete(t *testing.T) {
-	t.Run("Successful:roles_can_only_be_deleted_by_server_owner", func(t *testing.T) {
+	t.Run("Successroles_can_only_be_deleted_by_server_owner", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		aRole := testutil.TestAppserverRole(t, nil, true)
@@ -274,7 +274,7 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -303,7 +303,7 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(

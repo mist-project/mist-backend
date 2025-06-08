@@ -23,7 +23,7 @@ import (
 )
 
 func TestAppserverRPCService_List(t *testing.T) {
-	t.Run("Successful:can_returns_nothing_successfully", func(t *testing.T) {
+	t.Run("Successcan_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		// ACT
@@ -38,7 +38,7 @@ func TestAppserverRPCService_List(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
-	t.Run("Successful:can_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -59,7 +59,7 @@ func TestAppserverRPCService_List(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetAppservers()))
 	})
 
-	t.Run("Successful:can_filter_successfully", func(t *testing.T) {
+	t.Run("Successcan_filter_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -89,7 +89,7 @@ func TestAppserverRPCService_List(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.List(ctx, &appserver.ListRequest{Name: &wrapperspb.StringValue{Value: "foo"}})
@@ -105,7 +105,7 @@ func TestAppserverRPCService_List(t *testing.T) {
 }
 
 func TestAppserverRPCService_GetById(t *testing.T) {
-	t.Run("Successful:returns_successfully", func(t *testing.T) {
+	t.Run("Successreturns_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		aserver := testutil.TestAppserver(t, nil, false)
@@ -139,7 +139,8 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead).Return(nil)
 
 		svc := &rpcs.AppserverGRPCService{
-			Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth,
+			Deps: &rpcs.GrpcDependencies{Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn},
+			Auth: mockAuth,
 		}
 
 		// ACT
@@ -182,7 +183,7 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.GetById(ctx, &appserver.GetByIdRequest{Id: "foo"})
@@ -199,7 +200,7 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 
 func TestAppserverRPCService_Create(t *testing.T) {
 
-	t.Run("Successful:creates_successfully", func(t *testing.T) {
+	t.Run("Successcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		var count int
 		ctx := testutil.Setup(t, func() {})
@@ -219,8 +220,12 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		_ = testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
 
 		serverSubs, _ := service.NewAppserverSubService(
-			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)), new(testutil.MockProducer),
-		).ListUserServerSubs(appuser.ID)
+			ctx,
+			&service.ServiceDeps{
+				Db:        db.NewQuerier(qx.New(testutil.TestDbConn)),
+				DbConn:    testutil.TestDbConn,
+				MProducer: testutil.TestRedis,
+			}).ListUserServerSubs(appuser.ID)
 		assert.NotNil(t, response.Appserver)
 		assert.Equal(t, 1, len(serverSubs))
 		assert.Equal(t, 1, count)
@@ -256,7 +261,7 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionCreate).Return(nil)
 
-		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(ctx, &appserver.CreateRequest{
@@ -283,7 +288,7 @@ func TestAppserverRPCService_Create(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(ctx, &appserver.CreateRequest{
@@ -302,7 +307,7 @@ func TestAppserverRPCService_Create(t *testing.T) {
 
 func TestAppserverRPCService_Delete(t *testing.T) {
 
-	t.Run("Successful:deletes_successfully", func(t *testing.T) {
+	t.Run("Successdeletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -311,7 +316,12 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: aserver.ID, AppuserID: parsedUid}, false)
 
 		subService := service.NewAppserverSubService(
-			ctx, testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)), new(testutil.MockProducer),
+			ctx,
+			&service.ServiceDeps{
+				Db:        db.NewQuerier(qx.New(testutil.TestDbConn)),
+				DbConn:    testutil.TestDbConn,
+				MProducer: testutil.TestRedis,
+			},
 		)
 
 		// ASSERT
@@ -352,7 +362,11 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete).Return(nil)
 		// ACT
 		svc := &rpcs.AppserverGRPCService{
-			Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn, Auth: mockAuth,
+			Deps: &rpcs.GrpcDependencies{
+				Db:     db.NewQuerier(qx.New(testutil.TestDbConn)),
+				DbConn: testutil.TestDbConn,
+			},
+			Auth: mockAuth,
 		}
 		_, err := svc.Delete(ctx, &appserver.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
@@ -373,7 +387,7 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(

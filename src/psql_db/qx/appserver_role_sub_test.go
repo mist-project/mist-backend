@@ -12,7 +12,7 @@ import (
 )
 
 func TestQuerier_ListServerRoleSubs(t *testing.T) {
-	t.Run("Successful:list_role_subs_by_appserver", func(t *testing.T) {
+	t.Run("Successlist_role_subs_by_appserver", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		role1 := testutil.TestAppserverRoleSub(t, nil, false)
@@ -29,7 +29,7 @@ func TestQuerier_ListServerRoleSubs(t *testing.T) {
 }
 
 func TestQuerier_CreateAppserverRoleSub(t *testing.T) {
-	t.Run("Successful:create_appserver_role_sub", func(t *testing.T) {
+	t.Run("Successcreate_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
@@ -70,7 +70,7 @@ func TestQuerier_CreateAppserverRoleSub(t *testing.T) {
 }
 
 func TestQuerier_GetById(t *testing.T) {
-	t.Run("Successful:get_appserver_role_sub_by_id", func(t *testing.T) {
+	t.Run("Successget_appserver_role_sub_by_id", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		role1 := testutil.TestAppserverRoleSub(t, nil, false)
@@ -100,7 +100,7 @@ func TestQuerier_GetById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserverRoleSub(t *testing.T) {
-	t.Run("Successful:delete_appserver_role_sub", func(t *testing.T) {
+	t.Run("Successdelete_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		role1 := testutil.TestAppserverRoleSub(t, nil, false)
@@ -127,7 +127,7 @@ func TestQuerier_DeleteAppserverRoleSub(t *testing.T) {
 }
 
 func TestQuerier_FilterAppserverRoleSub(t *testing.T) {
-	t.Run("Successful:filter_by_all_fields", func(t *testing.T) {
+	t.Run("Successfilter_by_all_fields", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		roleSub := testutil.TestAppserverRoleSub(t, nil, false)
@@ -148,7 +148,7 @@ func TestQuerier_FilterAppserverRoleSub(t *testing.T) {
 		assert.Equal(t, roleSub.ID, results[0].ID)
 	})
 
-	t.Run("Successful:filter_by_partial_fields", func(t *testing.T) {
+	t.Run("Successfilter_by_partial_fields", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		roleSub := testutil.TestAppserverRoleSub(t, nil, false)

@@ -60,7 +60,7 @@ func (auth *AppserverAuthorizer) Authorize(
 		return faults.AuthorizationError(fmt.Sprintf("object id is required for action: %s", action), slog.LevelDebug)
 	}
 
-	obj, err = GetObject(ctx, auth.shared, objId, service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById)
+	obj, err = GetObject(ctx, auth.shared, objId, service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById)
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error
 		return faults.ExtendError(err)

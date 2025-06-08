@@ -4,35 +4,29 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/faults"
 	"mist/src/faults/message"
-	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
 	"mist/src/protos/v1/appserver_sub"
 	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/event"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverSubService struct {
-	ctx    context.Context
-	dbConn *pgxpool.Pool
-	db     db.Querier
-	mp     producer.MessageProducer
+	ctx  context.Context
+	deps *ServiceDeps
 }
 
-func NewAppserverSubService(
-	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer,
-) *AppserverSubService {
-	return &AppserverSubService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
+func NewAppserverSubService(ctx context.Context, deps *ServiceDeps) *AppserverSubService {
+	return &AppserverSubService{ctx: ctx, deps: deps}
 }
 
 func (s *AppserverSubService) PgTypeToPb(aSub *qx.AppserverSub) *appserver_sub.AppserverSub {
@@ -74,7 +68,7 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.ListAppserverUserSubsRow)
 
 // Creates a user to server subscription
 func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.AppserverSub, error) {
-	appserverSub, err := s.db.CreateAppserverSub(s.ctx, obj)
+	appserverSub, err := s.deps.Db.CreateAppserverSub(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -85,7 +79,7 @@ func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.Appse
 
 // Creates a user to server subscription using injected transaction, does not commit the transaction.
 func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx pgx.Tx) (*qx.AppserverSub, error) {
-	txQ := s.db.WithTx(tx)
+	txQ := s.deps.Db.WithTx(tx)
 	appserverSub, err := txQ.CreateAppserverSub(s.ctx, obj)
 
 	return &appserverSub, err
@@ -95,7 +89,7 @@ func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx p
 func (s *AppserverSubService) ListUserServerSubs(userId uuid.UUID) ([]qx.ListUserServerSubsRow, error) {
 	/* Returns all servers a user belongs to. */
 
-	subs, err := s.db.ListUserServerSubs(s.ctx, userId)
+	subs, err := s.deps.Db.ListUserServerSubs(s.ctx, userId)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -107,7 +101,7 @@ func (s *AppserverSubService) ListUserServerSubs(userId uuid.UUID) ([]qx.ListUse
 // Lists all the users in a server.
 func (s *AppserverSubService) ListAppserverUserSubs(appserverId uuid.UUID) ([]qx.ListAppserverUserSubsRow, error) {
 
-	subs, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
+	subs, err := s.deps.Db.ListAppserverUserSubs(s.ctx, appserverId)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -118,7 +112,7 @@ func (s *AppserverSubService) ListAppserverUserSubs(appserverId uuid.UUID) ([]qx
 
 // Gets an appserver sub by its id.
 func (s *AppserverSubService) GetById(id uuid.UUID) (*qx.AppserverSub, error) {
-	role, err := s.db.GetAppserverSubById(s.ctx, id)
+	role, err := s.deps.Db.GetAppserverSubById(s.ctx, id)
 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
@@ -135,7 +129,7 @@ func (s *AppserverSubService) GetById(id uuid.UUID) (*qx.AppserverSub, error) {
 // Filters appserver subs.
 func (s *AppserverSubService) Filter(args qx.FilterAppserverSubParams) ([]qx.FilterAppserverSubRow, error) {
 
-	subs, err := s.db.FilterAppserverSub(s.ctx, args)
+	subs, err := s.deps.Db.FilterAppserverSub(s.ctx, args)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -148,8 +142,8 @@ func (s *AppserverSubService) Filter(args qx.FilterAppserverSubParams) ([]qx.Fil
 func (s *AppserverSubService) Delete(id uuid.UUID) error {
 	// TODO: doing double queries here "fetching" the sub and then deleting it. maybe change this so that
 	// we can do it in one query.
-	sub, subErr := s.db.GetAppserverSubById(s.ctx, id)
-	deleted, err := s.db.DeleteAppserverSub(s.ctx, id)
+	sub, subErr := s.deps.Db.GetAppserverSubById(s.ctx, id)
+	deleted, err := s.deps.Db.DeleteAppserverSub(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -162,7 +156,12 @@ func (s *AppserverSubService) Delete(id uuid.UUID) error {
 			{Id: sub.AppuserID.String()},
 		}
 
-		_ = s.mp.SendMessage(id.String(), event.ActionType_ACTION_REMOVE_SERVER, user)
+		_ = s.deps.MProducer.SendMessage(
+			s.ctx,
+			os.Getenv("REDIS_NOTIFICATION_CHANNEL"),
+			appserver.Appserver{Id: id.String()},
+			event.ActionType_ACTION_REMOVE_SERVER, user,
+		)
 	}
 
 	return nil

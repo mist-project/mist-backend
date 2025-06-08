@@ -1,9 +1,11 @@
 package producer_test
 
 import (
+	"context"
+	"errors"
 	"testing"
 
-	"github.com/IBM/sarama"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -13,71 +15,99 @@ import (
 	"mist/src/testutil"
 )
 
-func TestNewKafkaProducer(t *testing.T) {
-	mockProducer := new(testutil.MockSyncProducer)
-	topic := "test-topic"
-
-	kp := producer.NewKafkaProducer(mockProducer, topic)
-
-	assert.NotNil(t, kp)
-	assert.Equal(t, topic, kp.Topic)
-	assert.Equal(t, mockProducer, kp.Producer)
+type redisBaseCmd struct {
+	err error
 }
 
-func TestKafkaProducer_SendMessage(t *testing.T) {
-	t.Run("Success:message_is_sent", func(t *testing.T) {
+func TestNewMProducer(t *testing.T) {
+	mockRedis := new(testutil.MockRedis)
+
+	mp := producer.NewMProducer(mockRedis)
+
+	assert.NotNil(t, mp)
+	assert.Equal(t, mockRedis, mp.Redis)
+}
+
+func TestMProducer_SendMessage(t *testing.T) {
+	t.Run("Success:event_action_add_channel_successfully_sends_message", func(t *testing.T) {
 		// ARANGE
-		mockProducer := new(testutil.MockSyncProducer)
-		kp := &producer.KafkaProducer{
-			Producer: mockProducer,
-			Topic:    "test-topic",
-		}
-		mockAction := event.ActionType_ACTION_ADD_CHANNEL
+		ctx := context.Background()
+		mockRedis := new(testutil.MockRedis)
 		mockData := &channel.Channel{}
-		mockProducer.On("SendMessage", mock.Anything).Return(int32(1), int64(42), nil)
+		mockRedis.On("Publish", ctx, "channel", mock.Anything).Return(redis.NewIntCmd(ctx))
+
+		kp := &producer.MProducer{Redis: mockRedis}
 		// ACT
-		err := kp.SendMessage(mockData, mockAction, nil)
+		err := kp.SendMessage(ctx, "channel", mockData, event.ActionType_ACTION_ADD_CHANNEL, nil)
 
 		// ASSERT
 		assert.NoError(t, err)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
-	t.Run("Error:invalid_data_structures_have_marshall_error", func(t *testing.T) {
-		// ARRANGE
-		mockProducer := new(testutil.MockSyncProducer)
-		kp := &producer.KafkaProducer{
-			Producer: mockProducer,
-			Topic:    "test-topic",
-		}
+	t.Run("Success:event_action_list_channel_successfully_sends_message", func(t *testing.T) {
+		// ARANGE
+		ctx := context.Background()
+		mockRedis := new(testutil.MockRedis)
+		mockData := []*channel.Channel{}
+		mockRedis.On("Publish", ctx, "channel", mock.Anything).Return(redis.NewIntCmd(ctx))
 
-		mockAction := event.ActionType_ACTION_ADD_CHANNEL
+		kp := &producer.MProducer{Redis: mockRedis}
+		// ACT
+		err := kp.SendMessage(ctx, "channel", mockData, event.ActionType_ACTION_LIST_CHANNELS, nil)
+
+		// ASSERT
+		assert.NoError(t, err)
+		mockRedis.AssertExpectations(t)
+	})
+
+	t.Run("Error:event_action_add_channel_invalid_data_structures_have_marshall_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		mockRedis := new(testutil.MockRedis)
+		kp := &producer.MProducer{Redis: mockRedis}
 
 		// ACT
-		err := kp.SendMessage("booM", mockAction, nil)
+		err := kp.SendMessage(ctx, "channel", "boom", event.ActionType_ACTION_ADD_CHANNEL, nil)
 
 		// ASSERT
 		assert.Error(t, err)
-		mockProducer.AssertNotCalled(t, "SendMessage", mock.Anything)
+		testutil.AssertCustomErrorContains(t, err, "invalid data for action")
+		mockRedis.AssertNotCalled(t, "Publish", mock.Anything)
 	})
 
+	t.Run("Error:event_action_list_channel_invalid_data_structures_have_marshall_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		mockRedis := new(testutil.MockRedis)
+		kp := &producer.MProducer{Redis: mockRedis}
+
+		// ACT
+		err := kp.SendMessage(ctx, "channel", "boom", event.ActionType_ACTION_LIST_CHANNELS, nil)
+
+		// ASSERT
+		assert.Error(t, err)
+		testutil.AssertCustomErrorContains(t, err, "invalid data for action")
+		mockRedis.AssertNotCalled(t, "Publish", mock.Anything)
+	})
 	t.Run("Error:message_not_sent", func(t *testing.T) {
 		// ARRANGE
-		mockProducer := new(testutil.MockSyncProducer)
-		kp := &producer.KafkaProducer{
-			Producer: mockProducer,
-			Topic:    "test-topic",
-		}
+		ctx := context.Background()
+		mockRedis := new(testutil.MockRedis)
+		kp := &producer.MProducer{Redis: mockRedis}
+
 		mockData := &channel.Channel{}
 
-		mockAction := event.ActionType_ACTION_ADD_CHANNEL
-		mockProducer.On("SendMessage", mock.Anything).Return(int32(1), int64(42), sarama.ErrOutOfBrokers)
+		cmd := redis.NewIntCmd(ctx)
+		cmd.SetErr(errors.New("message not sent"))
+
+		mockRedis.On("Publish", ctx, "channel", mock.Anything).Return(cmd)
 
 		// ACT
-		err := kp.SendMessage(mockData, mockAction, nil)
+		err := kp.SendMessage(ctx, "channel", mockData, event.ActionType_ACTION_ADD_CHANNEL, nil)
 
 		// ASSERT
 		assert.Error(t, err)
-		mockProducer.AssertExpectations(t)
+		testutil.AssertCustomErrorContains(t, err, "error sending data to redis: message not sent")
 	})
 }

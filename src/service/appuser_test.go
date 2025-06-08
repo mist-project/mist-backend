@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"mist/src/faults"
+	"mist/src/producer"
 	"mist/src/protos/v1/appuser"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -22,7 +23,14 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 
 	// ARRANGE
 	ctx := context.Background()
-	svc := service.NewAppuserService(ctx, testutil.TestDbConn, new(testutil.MockQuerier))
+	svc := service.NewAppuserService(
+		ctx,
+		&service.ServiceDeps{
+			DbConn:    testutil.TestDbConn,
+			Db:        new(testutil.MockQuerier),
+			MProducer: producer.NewMProducer(new(testutil.MockRedis)),
+		},
+	)
 
 	id := uuid.New()
 	now := time.Now()
@@ -39,16 +47,21 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 
 func TestAppuserService_Create(t *testing.T) {
 
-	t.Run("Successful:can_create_user", func(t *testing.T) {
+	t.Run("Successcan_create_user", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		expectedUser := qx.Appuser{ID: uuid.New(), Username: "testuser"}
 		params := qx.CreateAppuserParams{Username: expectedUser.Username}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("CreateAppuser", ctx, params).Return(expectedUser, nil)
 
-		svc := service.NewAppuserService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppuserService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		result, err := svc.Create(params)
@@ -66,9 +79,14 @@ func TestAppuserService_Create(t *testing.T) {
 		params := qx.CreateAppuserParams{Username: "baduser"}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("CreateAppuser", ctx, params).Return(nil, fmt.Errorf("db error"))
 
-		svc := service.NewAppuserService(ctx, testutil.TestDbConn, mockQuerier)
+		svc := service.NewAppuserService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		result, err := svc.Create(params)

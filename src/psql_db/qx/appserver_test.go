@@ -13,7 +13,7 @@ import (
 )
 
 func TestQuerier_CreateAppserver(t *testing.T) {
-	t.Run("Successful:create_appserver", func(t *testing.T) {
+	t.Run("Successcreate_appserver", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		user := testutil.TestAppuser(t, nil, false)
@@ -34,7 +34,7 @@ func TestQuerier_CreateAppserver(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverById(t *testing.T) {
-	t.Run("Successful:get_appserver_by_id", func(t *testing.T) {
+	t.Run("Successget_appserver_by_id", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
@@ -61,7 +61,7 @@ func TestQuerier_GetAppserverById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserver(t *testing.T) {
-	t.Run("Successful:delete_appserver", func(t *testing.T) {
+	t.Run("Successdelete_appserver", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
@@ -86,7 +86,7 @@ func TestQuerier_DeleteAppserver(t *testing.T) {
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successful:deletes_all_relationships", func(t *testing.T) {
+	t.Run("Successdeletes_all_relationships", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		tu := factory.UserAppserverSub(t)
@@ -151,7 +151,7 @@ func TestQuerier_DeleteAppserver(t *testing.T) {
 }
 
 func TestQuerier_ListAppservers(t *testing.T) {
-	t.Run("Successful:list_appservers_by_user", func(t *testing.T) {
+	t.Run("Successlist_appservers_by_user", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
@@ -169,7 +169,7 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		assert.NotEmpty(t, results)
 	})
 
-	t.Run("Successful:list_appservers_by_user_and_name", func(t *testing.T) {
+	t.Run("Successlist_appservers_by_user_and_name", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
@@ -188,7 +188,7 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		assert.Equal(t, server.ID, results[0].ID)
 	})
 
-	t.Run("Successful:list_appservers_no_results", func(t *testing.T) {
+	t.Run("Successlist_appservers_no_results", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 

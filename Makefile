@@ -156,3 +156,6 @@ psql:
 
 update-all-deps:
 	go get -u ./...
+
+redis:
+	redis-cli -u redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@${REDIS_HOSTNAME}:${REDIS_PORT}

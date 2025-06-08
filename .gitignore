@@ -23,7 +23,7 @@ vendor/
 .LSOverride
 
 # Windows
-Thumbs.db
+Thumbs.Db
 Desktop.ini
 
 # Linux

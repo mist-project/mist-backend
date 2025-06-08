@@ -11,7 +11,7 @@ import (
 )
 
 func TestQuerier_CreateAppuser(t *testing.T) {
-	t.Run("Successful:create_appuser", func(t *testing.T) {
+	t.Run("Successcreate_appuser", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		id := uuid.New()
@@ -33,7 +33,7 @@ func TestQuerier_CreateAppuser(t *testing.T) {
 }
 
 func TestQuerier_GetAppuserById(t *testing.T) {
-	t.Run("Successful:get_appuser_by_id", func(t *testing.T) {
+	t.Run("Successget_appuser_by_id", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		id := uuid.New()

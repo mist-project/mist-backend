@@ -27,7 +27,9 @@ func (s *AppserverRoleSubGRPCService) Create(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
-	roleSubS := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db, s.Producer)
+	roleSubS := service.NewAppserverRoleSubService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 
 	// TODO: Figure out what can go wrong to add error handler
 	subId, _ := uuid.Parse(req.AppserverSubId)
@@ -68,7 +70,9 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
-	results, _ := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db, s.Producer).ListServerRoleSubs(serverId)
+	results, _ := service.NewAppserverRoleSubService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	).ListServerRoleSubs(serverId)
 
 	// Construct the response
 	response := &appserver_role_sub.ListServerRoleSubsResponse{
@@ -104,7 +108,9 @@ func (s *AppserverRoleSubGRPCService) Delete(
 	}
 
 	// Initialize the service for AppserveRole
-	arss := service.NewAppserverRoleSubService(ctx, s.DbConn, s.Db, s.Producer)
+	arss := service.NewAppserverRoleSubService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	roleSubId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method

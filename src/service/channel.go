@@ -4,34 +4,29 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/faults"
 	"mist/src/faults/message"
-	"mist/src/producer"
 	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/event"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type ChannelService struct {
-	ctx    context.Context
-	dbConn *pgxpool.Pool
-	db     db.Querier
-	mp     producer.MessageProducer
+	ctx  context.Context
+	deps *ServiceDeps
 }
 
 // Creates a new ChannelService struct.
 func NewChannelService(
-	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer,
-) *ChannelService {
-	return &ChannelService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
+	ctx context.Context, deps *ServiceDeps) *ChannelService {
+	return &ChannelService{ctx: ctx, deps: deps}
 }
 
 // Convert Channel db object to Channel protobuff object.
@@ -48,7 +43,7 @@ func (s *ChannelService) PgTypeToPb(c *qx.Channel) *channel.Channel {
 // Creates a new appuser.
 func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error) {
 
-	channel, err := s.db.CreateChannel(s.ctx, obj)
+	channel, err := s.deps.Db.CreateChannel(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("create channel error: %v", err), slog.LevelError)
@@ -62,7 +57,7 @@ func (s *ChannelService) Create(obj qx.CreateChannelParams) (*qx.Channel, error)
 
 // Gets an appserver detail by its id.
 func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
-	channel, err := s.db.GetChannelById(s.ctx, id)
+	channel, err := s.deps.Db.GetChannelById(s.ctx, id)
 
 	if err != nil {
 		if strings.Contains(err.Error(), message.DbNotFound) {
@@ -80,7 +75,7 @@ func (s *ChannelService) ListServerChannels(obj qx.ListServerChannelsParams) ([]
 
 	// TODO: This should only return channel that the user has access to. Pull the channels which user has roles to
 	// and pulls all the channels without roles in the server.
-	channels, err := s.db.ListServerChannels(s.ctx, obj)
+	channels, err := s.deps.Db.ListServerChannels(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -94,7 +89,7 @@ func (s *ChannelService) Filter(obj qx.FilterChannelParams) ([]qx.Channel, error
 
 	// TODO: This should only return channel that the user has access to. Pull the channels which user has roles to
 	// and pulls all the channels without roles in the server.
-	channels, err := s.db.FilterChannel(s.ctx, obj)
+	channels, err := s.deps.Db.FilterChannel(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -107,13 +102,13 @@ func (s *ChannelService) Filter(obj qx.FilterChannelParams) ([]qx.Channel, error
 func (s *ChannelService) Delete(id uuid.UUID) error {
 	// TODO: doing double queries here "fetching" the sub and then deleting it. maybe change this so that
 	// we can do it in one query.
-	channel, err := s.db.GetChannelById(s.ctx, id)
+	channel, err := s.deps.Db.GetChannelById(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("error deleting channel: %v", err), slog.LevelError)
 	}
 
-	deleted, err := s.db.DeleteChannel(s.ctx, id)
+	deleted, err := s.deps.Db.DeleteChannel(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("error deleting channel: %v", err), slog.LevelError)
@@ -135,7 +130,7 @@ func (s *ChannelService) SendChannelListingUpdateNotificationToUsers(u *qx.Appus
 		appuserIds = []uuid.UUID{u.ID}
 	} else {
 		// get all users in the appserver
-		appusers, err := s.db.ListAppserverUserSubs(s.ctx, appserverId)
+		appusers, err := s.deps.Db.ListAppserverUserSubs(s.ctx, appserverId)
 
 		if err != nil {
 			faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError).LogError(s.ctx)
@@ -156,7 +151,7 @@ func (s *ChannelService) SendChannelListingUpdateNotificationToUsers(u *qx.Appus
 	}
 
 	// get all available channel to each user
-	channelUsers, err := s.db.GetChannelsForUsers(
+	channelUsers, err := s.deps.Db.GetChannelsForUsers(
 		s.ctx, qx.GetChannelsForUsersParams{Column1: appuserIds, AppserverID: appserverId},
 	)
 
@@ -183,6 +178,12 @@ func (s *ChannelService) SendChannelListingUpdateNotificationToUsers(u *qx.Appus
 	}
 
 	for userId, channels := range userChannelMap {
-		s.mp.SendMessage(channels, event.ActionType_ACTION_LIST_CHANNELS, []*appuser.Appuser{{Id: userId.String()}})
+		s.deps.MProducer.SendMessage(
+			s.ctx,
+			os.Getenv("REDIS_NOTIFICATION_CHANNEL"),
+			channels,
+			event.ActionType_ACTION_LIST_CHANNELS,
+			[]*appuser.Appuser{{Id: userId.String()}},
+		)
 	}
 }

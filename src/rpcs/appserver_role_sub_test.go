@@ -20,7 +20,7 @@ import (
 )
 
 func TestAppserveRoleSubRPCService_Create(t *testing.T) {
-	t.Run("Successful:creates_successfully", func(t *testing.T) {
+	t.Run("Successcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appuser := testutil.TestAppuser(t, nil, false)
@@ -57,7 +57,7 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		response, err := svc.Create(
@@ -88,7 +88,7 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		response, err := svc.Create(
@@ -128,7 +128,7 @@ func TestAppserveRoleSubRPCService_Create(t *testing.T) {
 }
 
 func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
-	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
@@ -156,7 +156,7 @@ func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListServerRoleSubs(
@@ -174,7 +174,7 @@ func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 		mockAuth.AssertExpectations(t)
 	})
 
-	t.Run("Successful:can_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_all_appserver_user_sub_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		userId, _ := uuid.NewUUID()
@@ -214,7 +214,7 @@ func TestAppserveRoleSubRPCService_ListServerRoleSubs(t *testing.T) {
 }
 
 func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
-	t.Run("Successful:can_successfully_delete_appserver_role_sub", func(t *testing.T) {
+	t.Run("Successcan_successfully_delete_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		appserver := testutil.TestAppserver(t, nil, true)
@@ -250,7 +250,7 @@ func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -280,7 +280,7 @@ func TestAppserveRoleSubRPCService_Delete(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.AppserverRoleSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(

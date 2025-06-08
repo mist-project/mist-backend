@@ -13,7 +13,7 @@ import (
 )
 
 func TestQuerier_CreateChannel(t *testing.T) {
-	t.Run("Successful:create_channel", func(t *testing.T) {
+	t.Run("Successcreate_channel", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
@@ -35,7 +35,7 @@ func TestQuerier_CreateChannel(t *testing.T) {
 }
 
 func TestQuerier_GetChannelById(t *testing.T) {
-	t.Run("Successful:get_channel_by_id", func(t *testing.T) {
+	t.Run("Successget_channel_by_id", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -61,7 +61,7 @@ func TestQuerier_GetChannelById(t *testing.T) {
 }
 
 func TestQuerier_DeleteChannel(t *testing.T) {
-	t.Run("Successful:delete_channel", func(t *testing.T) {
+	t.Run("Successdelete_channel", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -74,7 +74,7 @@ func TestQuerier_DeleteChannel(t *testing.T) {
 		assert.Equal(t, int64(1), count)
 	})
 
-	t.Run("Successful:when_channel_is_deleted_it_removes_associated_channel_roles", func(t *testing.T) {
+	t.Run("Successwhen_channel_is_deleted_it_removes_associated_channel_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -109,7 +109,7 @@ func TestQuerier_DeleteChannel(t *testing.T) {
 }
 
 func TestQuerier_FilterChannel(t *testing.T) {
-	t.Run("Successful:filter_channel", func(t *testing.T) {
+	t.Run("Successfilter_channel", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -163,7 +163,7 @@ func TestQuerier_FilterChannel(t *testing.T) {
 }
 
 func TestQuerier_GetChannelsIdIn(t *testing.T) {
-	t.Run("Successful:get_channels_id_in", func(t *testing.T) {
+	t.Run("Successget_channels_id_in", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -192,7 +192,7 @@ func TestQuerier_GetChannelsIdIn(t *testing.T) {
 }
 
 func TestQuerier_ListServerChannels(t *testing.T) {
-	t.Run("Successful:list_server_channels", func(t *testing.T) {
+	t.Run("Successlist_server_channels", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
@@ -230,7 +230,7 @@ func TestQuerier_ListServerChannels(t *testing.T) {
 }
 
 func TestQuerier_GetChannelsForUsers(t *testing.T) {
-	t.Run("Successful:get_channels_for_users", func(t *testing.T) {
+	t.Run("Successget_channels_for_users", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)

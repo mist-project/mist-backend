@@ -4,35 +4,30 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/faults"
 	"mist/src/faults/message"
-	"mist/src/producer"
 	"mist/src/protos/v1/appserver"
 	"mist/src/protos/v1/appuser"
 	"mist/src/protos/v1/event"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppserverService struct {
-	ctx    context.Context
-	dbConn *pgxpool.Pool
-	db     db.Querier
-	mp     producer.MessageProducer
+	ctx  context.Context
+	deps *ServiceDeps
 }
 
 // Creates a new AppserverService struct.
 func NewAppserverService(
-	ctx context.Context, dbConn *pgxpool.Pool, db db.Querier, mp producer.MessageProducer,
-) *AppserverService {
-	return &AppserverService{ctx: ctx, dbConn: dbConn, db: db, mp: mp}
+	ctx context.Context, deps *ServiceDeps) *AppserverService {
+	return &AppserverService{ctx: ctx, deps: deps}
 }
 
 // Converts a database appserver object to protobuff appserver object
@@ -48,7 +43,7 @@ func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *appserver.Appserver {
 // Note: the transaction will be committed in CreateWithTx. The creator of the server gets automatically assigned
 // an appserver sub.
 func (s *AppserverService) Create(obj qx.CreateAppserverParams) (*qx.Appserver, error) {
-	tx, err := s.dbConn.BeginTx(s.ctx, pgx.TxOptions{})
+	tx, err := s.deps.DbConn.BeginTx(s.ctx, pgx.TxOptions{})
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("tx initialization error: %v", err), slog.LevelError)
@@ -63,7 +58,7 @@ func (s *AppserverService) Create(obj qx.CreateAppserverParams) (*qx.Appserver, 
 
 // Creates an appserver with provided transaction. This function will commit the transaction.
 func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx) (*qx.Appserver, error) {
-	txQ := s.db.WithTx(tx)
+	txQ := s.deps.Db.WithTx(tx)
 
 	appserver, err := txQ.CreateAppserver(s.ctx, obj)
 
@@ -73,7 +68,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 	}
 
 	// once the appserver is created, add user as a subscriber
-	_, err = NewAppserverSubService(s.ctx, s.dbConn, s.db, s.mp).CreateWithTx(
+	_, err = NewAppserverSubService(s.ctx, s.deps).CreateWithTx(
 		qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: obj.AppuserID},
 		tx,
 	)
@@ -93,7 +88,7 @@ func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx)
 
 // Gets an appserver detail by its id.
 func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
-	appserver, err := s.db.GetAppserverById(s.ctx, id)
+	appserver, err := s.deps.Db.GetAppserverById(s.ctx, id)
 
 	if err != nil {
 		// TODO: this check must be a standard db error result checker
@@ -109,7 +104,7 @@ func (s *AppserverService) GetById(id uuid.UUID) (*qx.Appserver, error) {
 
 // Lists all appservers based on the owner. Name filter is also added but it may get deprecated.
 func (s *AppserverService) List(params qx.ListAppserversParams) ([]qx.Appserver, error) {
-	appservers, err := s.db.ListAppservers(s.ctx, params)
+	appservers, err := s.deps.Db.ListAppservers(s.ctx, params)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -122,13 +117,13 @@ func (s *AppserverService) List(params qx.ListAppserversParams) ([]qx.Appserver,
 func (s *AppserverService) Delete(id uuid.UUID) error {
 
 	// Get all subs for the appserver
-	subs, err := s.db.ListAppserverUserSubs(s.ctx, id)
+	subs, err := s.deps.Db.ListAppserverUserSubs(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelWarn)
 	}
 
-	deleted, err := s.db.DeleteAppserver(s.ctx, id)
+	deleted, err := s.deps.Db.DeleteAppserver(s.ctx, id)
 
 	if err != nil {
 		return faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
@@ -154,5 +149,10 @@ func (s *AppserverService) SendDeleteNotificationToUsers(subs []qx.ListAppserver
 		})
 	}
 
-	_ = s.mp.SendMessage(&appserver.Appserver{Id: appserverID.String()}, event.ActionType_ACTION_REMOVE_SERVER, users)
+	_ = s.deps.MProducer.SendMessage(
+		s.ctx,
+		os.Getenv("REDIS_NOTIFICATION_CHANNEL"),
+		&appserver.Appserver{Id: appserverID.String()},
+		event.ActionType_ACTION_REMOVE_SERVER, users,
+	)
 }

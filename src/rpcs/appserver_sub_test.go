@@ -21,7 +21,7 @@ import (
 )
 
 func TestAppserverSubRPCService_ListUserServerSubs(t *testing.T) {
-	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 
@@ -37,7 +37,7 @@ func TestAppserverSubRPCService_ListUserServerSubs(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
-	t.Run("Successful:can_return_all_users_appserver_subs_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_all_users_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -66,7 +66,7 @@ func TestAppserverSubRPCService_ListUserServerSubs(t *testing.T) {
 		mockQuerier.On("ListUserServerSubs", mock.Anything, mock.Anything).Return([]qx.ListUserServerSubsRow{}, nil)
 		mockAuth := new(testutil.MockAuthorizer)
 
-		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListUserServerSubs(
@@ -82,11 +82,37 @@ func TestAppserverSubRPCService_ListUserServerSubs(t *testing.T) {
 		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
+
+	t.Run("Error:on_db_error_it_returns_error", func(t *testing.T) {
+		// ARRANGE
+		ctx := testutil.Setup(t, func() {})
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("ListUserServerSubs", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+		mockAuth := new(testutil.MockAuthorizer)
+
+		svc := &rpcs.AppserverSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+
+		// ACT
+		_, err := svc.ListUserServerSubs(
+			ctx,
+			&appserver_sub.ListUserServerSubsRequest{},
+		)
+
+		s, ok := status.FromError(err)
+
+		// ASSERT
+		assert.Equal(t, codes.Internal, s.Code())
+		assert.True(t, ok)
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockAuth.AssertNotCalled(t, "Authorize", mock.Anything, mock.Anything, permission.ActionRead)
+		mockQuerier.AssertExpectations(t)
+		mockAuth.AssertExpectations(t)
+	})
 }
 
 func TestAppserverSubRPCService_ListAppserverUserSubs(t *testing.T) {
 
-	t.Run("Successful:can_return_all_appserver_subs_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_all_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		user1 := testutil.TestAppuser(t, &qx.Appuser{ID: uuid.New(), Username: "foo"}, false)
@@ -119,7 +145,7 @@ func TestAppserverSubRPCService_ListAppserverUserSubs(t *testing.T) {
 			"Authorize", mock.Anything, nilString, permission.ActionRead,
 		).Return(faults.AuthorizationError("Unauthorized", slog.LevelDebug))
 
-		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListAppserverUserSubs(
@@ -139,7 +165,7 @@ func TestAppserverSubRPCService_ListAppserverUserSubs(t *testing.T) {
 }
 
 func TestAppserverSubRPCService_Create(t *testing.T) {
-	t.Run("Successful:creates_successfully", func(t *testing.T) {
+	t.Run("Successcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
@@ -195,7 +221,7 @@ func TestAppserverSubRPCService_Create(t *testing.T) {
 }
 
 func TestAppserverSubRPCService_Delete(t *testing.T) {
-	t.Run("Successful:deletes_successfully", func(t *testing.T) {
+	t.Run("Successdeletes_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		tu := factory.UserAppserverSub(t)
@@ -239,7 +265,7 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -267,7 +293,7 @@ func TestAppserverSubRPCService_Delete(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverSubGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.AppserverSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(

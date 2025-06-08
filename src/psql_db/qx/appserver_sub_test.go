@@ -13,7 +13,7 @@ import (
 )
 
 func TestQuerier_CreateAppserverSub(t *testing.T) {
-	t.Run("Successful:create_appserver_sub", func(t *testing.T) {
+	t.Run("Successcreate_appserver_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		user := testutil.TestAppuser(t, nil, false)
@@ -35,7 +35,7 @@ func TestQuerier_CreateAppserverSub(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserverSub(t *testing.T) {
-	t.Run("Successful:delete_appserver_sub", func(t *testing.T) {
+	t.Run("Successdelete_appserver_sub", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, false)
@@ -55,7 +55,7 @@ func TestQuerier_DeleteAppserverSub(t *testing.T) {
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successful:deleting_appserver_sub_deletes_appserver_role_subs", func(t *testing.T) {
+	t.Run("Successdeleting_appserver_sub_deletes_appserver_role_subs", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
@@ -82,7 +82,7 @@ func TestQuerier_DeleteAppserverSub(t *testing.T) {
 }
 
 func TestQuerier_FilterAppserverSub(t *testing.T) {
-	t.Run("Successful:filter_appserver_sub", func(t *testing.T) {
+	t.Run("Successfilter_appserver_sub", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
 
@@ -111,7 +111,7 @@ func TestQuerier_FilterAppserverSub(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverSubById(t *testing.T) {
-	t.Run("Successful:get_appserver_sub_by_id", func(t *testing.T) {
+	t.Run("Successget_appserver_sub_by_id", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, false)
 
@@ -129,7 +129,7 @@ func TestQuerier_GetAppserverSubById(t *testing.T) {
 }
 
 func TestQuerier_ListAppserverUserSubs(t *testing.T) {
-	t.Run("Successful:list_appserver_user_subs", func(t *testing.T) {
+	t.Run("Successlist_appserver_user_subs", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
 		sub2 := testutil.TestAppserverSub(t, nil, false)
@@ -144,7 +144,7 @@ func TestQuerier_ListAppserverUserSubs(t *testing.T) {
 }
 
 func TestQuerier_ListUserServerSubs(t *testing.T) {
-	t.Run("Successful:list_user_server_subs", func(t *testing.T) {
+	t.Run("Successlist_user_server_subs", func(t *testing.T) {
 		ctx := testutil.Setup(t, func() {})
 		su := factory.UserAppserverSub(t)
 		sub2 := testutil.TestAppserverSub(t, nil, false)

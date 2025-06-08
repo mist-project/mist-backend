@@ -80,14 +80,14 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		return nil // user has base permission, no need to check further
 	}
 
-	sub, err = GetObject(ctx, auth.shared, objId, service.NewAppserverSubService(ctx, auth.DbConn, auth.Db, nil).GetById)
+	sub, err = GetObject(ctx, auth.shared, objId, service.NewAppserverSubService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error
 		return faults.ExtendError(err)
 	}
 
-	server, err = service.NewAppserverService(ctx, auth.DbConn, auth.Db, nil).GetById(serverIdCtx.AppserverId)
+	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById(serverIdCtx.AppserverId)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error

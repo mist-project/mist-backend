@@ -27,7 +27,9 @@ func (s *AppserverRoleGRPCService) Create(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
-	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
+	roleService := service.NewAppserverRoleService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{
 		Name: req.Name, AppserverID: serverId, AppserverPermissionMask: req.AppserverPermissionMask,
 		ChannelPermissionMask: req.ChannelPermissionMask,
@@ -58,7 +60,9 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
-	roleService := service.NewAppserverRoleService(ctx, s.DbConn, s.Db)
+	roleService := service.NewAppserverRoleService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	results, err := roleService.ListAppserverRoles(serverId)
 
 	// Error handling
@@ -97,7 +101,9 @@ func (s *AppserverRoleGRPCService) Delete(
 	roleId, _ := uuid.Parse(req.Id)
 
 	// Call delete service method
-	err = service.NewAppserverRoleService(ctx, s.DbConn, s.Db).Delete(roleId)
+	err = service.NewAppserverRoleService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	).Delete(roleId)
 
 	// Error handling
 	if err != nil {

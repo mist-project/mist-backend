@@ -22,7 +22,7 @@ import (
 )
 
 func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
-	t.Run("Successful:can_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
@@ -42,7 +42,7 @@ func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetChannelRoles()))
 	})
 
-	t.Run("Successful:can_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
+	t.Run("Successcan_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		user := testutil.TestAppuser(t, nil, true)
@@ -76,7 +76,7 @@ func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		response, err := svc.ListChannelRoles(ctx, &channel_role.ListChannelRolesRequest{
@@ -103,7 +103,7 @@ func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListChannelRoles(
@@ -124,7 +124,7 @@ func TestChannelRoleRPCService_ListChannelRoles(t *testing.T) {
 }
 
 func TestChannelRoleRPCService_Create(t *testing.T) {
-	t.Run("Successful:creates_successfully", func(t *testing.T) {
+	t.Run("Successcreates_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, true)
@@ -169,7 +169,7 @@ func TestChannelRoleRPCService_Create(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -198,7 +198,7 @@ func TestChannelRoleRPCService_Create(t *testing.T) {
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(nil)
 
-		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -220,7 +220,7 @@ func TestChannelRoleRPCService_Create(t *testing.T) {
 }
 
 func TestChannelRoleRPCService_Delete(t *testing.T) {
-	t.Run("Successful:roles_can_be_deleted", func(t *testing.T) {
+	t.Run("Successroles_can_be_deleted", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		channelRole := testutil.TestChannelRole(t, nil, true)
@@ -263,7 +263,7 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -293,7 +293,7 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 			nil,
 		)
 
-		svc := &rpcs.ChannelRoleGRPCService{Db: mockQuerier, DbConn: testutil.TestDbConn, Auth: mockAuth}
+		svc := &rpcs.ChannelRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(

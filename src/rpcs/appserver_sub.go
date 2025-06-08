@@ -17,7 +17,9 @@ func (s *AppserverSubGRPCService) Create(
 	ctx context.Context, req *appserver_sub.CreateRequest,
 ) (*appserver_sub.CreateResponse, error) {
 
-	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer)
+	subService := service.NewAppserverSubService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	claims, _ := middleware.GetJWTClaims(ctx)
 
 	serverId, _ := uuid.Parse(req.AppserverId)
@@ -40,13 +42,19 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 ) (*appserver_sub.ListUserServerSubsResponse, error) {
 
 	// Initialize the service for AppserverSub
-	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer)
+	subService := service.NewAppserverSubService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 
 	claims, _ := middleware.GetJWTClaims(ctx)
 
 	// TODO: Handle potential errors that can happen here
 	userId, _ := uuid.Parse(claims.UserID)
-	results, _ := subService.ListUserServerSubs(userId)
+	results, err := subService.ListUserServerSubs(userId)
+
+	if err != nil {
+		return nil, faults.RpcCustomErrorHandler(ctx, err)
+	}
 
 	// Construct the response
 	response := &appserver_sub.ListUserServerSubsResponse{
@@ -76,7 +84,9 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 	}
 
 	// Initialize the service for AppserverSub
-	subService := service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer)
+	subService := service.NewAppserverSubService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	results, _ := subService.ListAppserverUserSubs(serverId)
 
 	// Construct the response
@@ -108,9 +118,9 @@ func (s *AppserverSubGRPCService) Delete(
 	}
 
 	id, _ := uuid.Parse((req.Id))
-	// TODO: needs to remove any appserver permissions
-	// TODO: needs to remove any appserver role sub
-	err = service.NewAppserverSubService(ctx, s.DbConn, s.Db, s.Producer).Delete(id)
+	err = service.NewAppserverSubService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	).Delete(id)
 
 	// Error handling
 	if err != nil {

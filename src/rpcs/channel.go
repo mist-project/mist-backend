@@ -13,9 +13,7 @@ import (
 	"mist/src/service"
 )
 
-func (s *ChannelGRPCService) Create(
-	ctx context.Context, req *channel.CreateRequest,
-) (*channel.CreateResponse, error) {
+func (s *ChannelGRPCService) Create(ctx context.Context, req *channel.CreateRequest) (*channel.CreateResponse, error) {
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
@@ -26,7 +24,9 @@ func (s *ChannelGRPCService) Create(
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
-	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
+	cs := service.NewChannelService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	c, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId, IsPrivate: req.IsPrivate})
 
 	if err != nil {
@@ -53,7 +53,9 @@ func (s *ChannelGRPCService) GetById(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
-	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
+	cs := service.NewChannelService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 	id, _ := uuid.Parse(req.Id)
 	c, err := cs.GetById(id)
 
@@ -79,7 +81,9 @@ func (s *ChannelGRPCService) ListServerChannels(
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 
-	cs := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer)
+	cs := service.NewChannelService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	)
 
 	if req.Name != nil {
 		nameFilter = pgtype.Text{Valid: true, String: req.Name.Value}
@@ -109,7 +113,9 @@ func (s *ChannelGRPCService) Delete(
 	}
 
 	id, _ := uuid.Parse(req.Id)
-	if err := service.NewChannelService(ctx, s.DbConn, s.Db, s.Producer).Delete(id); err != nil {
+	if err := service.NewChannelService(
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+	).Delete(id); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, err)
 	}
 

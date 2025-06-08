@@ -5,24 +5,21 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/faults"
 	"mist/src/protos/v1/appuser"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 )
 
 type AppuserService struct {
-	ctx    context.Context
-	dbConn *pgxpool.Pool
-	db     db.Querier
+	ctx  context.Context
+	deps *ServiceDeps
 }
 
 // Creates a new AppuserService struct.
-func NewAppuserService(ctx context.Context, dbConn *pgxpool.Pool, db db.Querier) *AppuserService {
-	return &AppuserService{ctx: ctx, dbConn: dbConn, db: db}
+func NewAppuserService(ctx context.Context, deps *ServiceDeps) *AppuserService {
+	return &AppuserService{ctx: ctx, deps: deps}
 }
 
 // Convert Appuser db object to Appuser protobuff object.
@@ -36,7 +33,7 @@ func (s *AppuserService) PgTypeToPb(a *qx.Appuser) *appuser.Appuser {
 
 // Creates a new appuser.
 func (s *AppuserService) Create(obj qx.CreateAppuserParams) (*qx.Appuser, error) {
-	as, err := s.db.CreateAppuser(s.ctx, obj)
+	as, err := s.deps.Db.CreateAppuser(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("create appuser: %v", err), slog.LevelError)

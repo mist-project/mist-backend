@@ -13,6 +13,7 @@ import (
 
 	"mist/src/faults"
 	"mist/src/faults/message"
+	"mist/src/producer"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/qx"
 	"mist/src/service"
@@ -42,8 +43,13 @@ func TestChannelRoleService_PgTypeToPb(t *testing.T) {
 		UpdatedAt:       timestamppb.New(now),
 	}
 
-	mockProducer := new(testutil.MockProducer)
-	svc := service.NewChannelRoleService(context.Background(), testutil.TestDbConn, new(testutil.MockQuerier), mockProducer)
+	svc := service.NewChannelRoleService(
+		context.Background(),
+		&service.ServiceDeps{
+			Db:        new(testutil.MockQuerier),
+			DbConn:    testutil.TestDbConn,
+			MProducer: producer.NewMProducer(new(testutil.MockRedis)),
+		})
 
 	// ACT
 	res := svc.PgTypeToPb(role)
@@ -53,18 +59,22 @@ func TestChannelRoleService_PgTypeToPb(t *testing.T) {
 }
 
 func TestChannelRoleService_Create(t *testing.T) {
-	t.Run("Successful:create_channel_role", func(t *testing.T) {
+	t.Run("Successcreate_channel_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		obj := qx.CreateChannelRoleParams{ChannelID: uuid.New(), AppserverRoleID: uuid.New()}
 		expected := qx.ChannelRole{ID: uuid.New(), ChannelID: obj.ChannelID, AppserverRoleID: obj.AppserverRoleID}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("CreateChannelRole", ctx, obj).Return(expected, nil)
 		mockQuerier.On("ListAppserverUserSubs", ctx, obj.AppserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
-		mockProducer := new(testutil.MockProducer)
 
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		res, err := svc.Create(obj)
@@ -73,7 +83,7 @@ func TestChannelRoleService_Create(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, res.ID)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_create_failure", func(t *testing.T) {
@@ -82,9 +92,13 @@ func TestChannelRoleService_Create(t *testing.T) {
 		obj := qx.CreateChannelRoleParams{ChannelID: uuid.New(), AppserverRoleID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("CreateChannelRole", ctx, obj).Return(nil, fmt.Errorf("creation failed"))
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.Create(obj)
@@ -94,21 +108,26 @@ func TestChannelRoleService_Create(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: creation failed")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }
 
 func TestChannelRoleService_ListChannelRoles(t *testing.T) {
-	t.Run("Successful:list_roles", func(t *testing.T) {
+	t.Run("Successlist_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		channelId := uuid.New()
 		expected := []qx.ChannelRole{{ID: uuid.New(), ChannelID: channelId, AppserverRoleID: uuid.New()}}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("ListChannelRoles", ctx, channelId).Return(expected, nil)
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		roles, err := svc.ListChannelRoles(channelId)
@@ -117,7 +136,7 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected, roles)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
@@ -126,9 +145,14 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		channelId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("ListChannelRoles", ctx, channelId).Return(nil, fmt.Errorf("db error"))
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.ListChannelRoles(channelId)
@@ -138,21 +162,26 @@ func TestChannelRoleService_ListChannelRoles(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db error")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }
 
 func TestChannelRoleService_GetById(t *testing.T) {
-	t.Run("Successful:returns_channel_role", func(t *testing.T) {
+	t.Run("Successreturns_channel_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		roleId := uuid.New()
 		expected := qx.ChannelRole{ID: roleId, ChannelID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("GetChannelRoleById", ctx, roleId).Return(expected, nil)
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		actual, err := svc.GetById(roleId)
@@ -161,7 +190,7 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expected.ID, actual.ID)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_not_found", func(t *testing.T) {
@@ -170,9 +199,14 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		roleId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("GetChannelRoleById", ctx, roleId).Return(qx.ChannelRole{}, fmt.Errorf(message.DbNotFound))
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.GetById(roleId)
@@ -182,7 +216,7 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find channel role with id: %v", roleId))
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:returns_db_error", func(t *testing.T) {
@@ -191,9 +225,14 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		roleId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("GetChannelRoleById", ctx, roleId).Return(qx.ChannelRole{}, fmt.Errorf("boom"))
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		_, err := svc.GetById(roleId)
@@ -203,12 +242,12 @@ func TestChannelRoleService_GetById(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }
 
 func TestChannelRoleService_Delete(t *testing.T) {
-	t.Run("Successful:delete_role", func(t *testing.T) {
+	t.Run("Successdelete_role", func(t *testing.T) {
 		// ARRANGE
 		ctx := testutil.Setup(t, func() {})
 		channel := qx.Channel{ID: uuid.New()}
@@ -217,11 +256,16 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		}
 
 		mockQuerier := new(testutil.MockQuerier)
-		mockProducer := new(testutil.MockProducer)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("GetChannelRoleById", ctx, channelRole.ID).Return(channelRole, nil)
 		mockQuerier.On("DeleteChannelRole", ctx, channelRole.ID).Return(int64(1), nil)
 		mockQuerier.On("ListAppserverUserSubs", ctx, channelRole.AppserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(channelRole.ID)
@@ -229,7 +273,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		// ASSERT
 		assert.NoError(t, err)
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:no_rows_deleted", func(t *testing.T) {
@@ -239,10 +283,15 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		channelRole := qx.ChannelRole{ID: uuid.New(), AppserverRoleID: uuid.New(), ChannelID: channel.ID}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("GetChannelRoleById", ctx, channelRole.ID).Return(channelRole, nil)
 		mockQuerier.On("DeleteChannelRole", ctx, channelRole.ID).Return(int64(0), nil)
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(channelRole.ID)
@@ -252,7 +301,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.NotFoundMessage)
 		testutil.AssertCustomErrorContains(t, err, fmt.Sprintf("unable to find channel role with id: %v", channelRole.ID))
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:db_failure_on_get_channel_role_by_id", func(t *testing.T) {
@@ -261,9 +310,14 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		channelRole := qx.ChannelRole{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("GetChannelRoleById", ctx, channelRole.ID).Return(nil, fmt.Errorf("boom"))
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(channelRole.ID)
@@ -273,7 +327,7 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: boom")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
 	t.Run("Error:db_failure_on_delete", func(t *testing.T) {
@@ -282,10 +336,15 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		channelRole := qx.ChannelRole{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
+		mockRedis := new(testutil.MockRedis)
+		producer := producer.NewMProducer(mockRedis)
+
 		mockQuerier.On("GetChannelRoleById", ctx, channelRole.ID).Return(channelRole, nil)
 		mockQuerier.On("DeleteChannelRole", ctx, channelRole.ID).Return(nil, fmt.Errorf("db crash"))
-		mockProducer := new(testutil.MockProducer)
-		svc := service.NewChannelRoleService(ctx, testutil.TestDbConn, mockQuerier, mockProducer)
+
+		svc := service.NewChannelRoleService(
+			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+		)
 
 		// ACT
 		err := svc.Delete(channelRole.ID)
@@ -295,6 +354,6 @@ func TestChannelRoleService_Delete(t *testing.T) {
 		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
 		testutil.AssertCustomErrorContains(t, err, "database error: db crash")
 		mockQuerier.AssertExpectations(t)
-		mockProducer.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 }

@@ -24,7 +24,7 @@ func (s *AppserverRoleSubGRPCService) Create(
 	)
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	roleSubS := service.NewAppserverRoleSubService(
@@ -47,7 +47,7 @@ func (s *AppserverRoleSubGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Return response
@@ -67,7 +67,7 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	results, _ := service.NewAppserverRoleSubService(
@@ -104,7 +104,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Initialize the service for AppserveRole
@@ -118,7 +118,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 
 	// Error handling
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Return success response

@@ -24,7 +24,7 @@ func (s *ChannelRoleGRPCService) Create(
 	)
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	roleId, _ := uuid.Parse(req.AppserverRoleId)
@@ -39,7 +39,7 @@ func (s *ChannelRoleGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Return response
@@ -60,7 +60,7 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	roleService := service.NewChannelRoleService(
@@ -70,7 +70,7 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 
 	// Error handling
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Construct the response
@@ -97,7 +97,7 @@ func (s *ChannelRoleGRPCService) Delete(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Initialize the service for AppserveRole
@@ -110,7 +110,7 @@ func (s *ChannelRoleGRPCService) Delete(
 
 	// Error handling
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Return success response

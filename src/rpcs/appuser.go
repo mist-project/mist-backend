@@ -26,7 +26,7 @@ func (s *AppuserGRPCService) Create(
 	)
 
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	return &appuser.CreateResponse{}, nil

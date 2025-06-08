@@ -21,7 +21,7 @@ func (s *AppserverGRPCService) Create(
 	var err error
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -33,7 +33,7 @@ func (s *AppserverGRPCService) Create(
 	aserver, err := serverS.Create(qx.CreateAppserverParams{Name: req.Name, AppuserID: userId})
 
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	res := serverS.PgTypeToPb(aserver)
@@ -52,7 +52,7 @@ func (s *AppserverGRPCService) GetById(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -63,7 +63,7 @@ func (s *AppserverGRPCService) GetById(
 	id, _ := uuid.Parse(req.Id)
 
 	if aserver, err = as.GetById(id); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	pbA := as.PgTypeToPb(aserver)
@@ -77,7 +77,7 @@ func (s *AppserverGRPCService) List(
 ) (*appserver.ListResponse, error) {
 
 	if err := s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -118,7 +118,7 @@ func (s *AppserverGRPCService) Delete(
 	)
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	id, _ = uuid.Parse(req.Id)
@@ -127,7 +127,7 @@ func (s *AppserverGRPCService) Delete(
 	).Delete(id)
 
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	return &appserver.DeleteResponse{}, nil

@@ -24,7 +24,7 @@ func (s *AppserverRoleGRPCService) Create(
 	)
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	roleService := service.NewAppserverRoleService(
@@ -37,7 +37,7 @@ func (s *AppserverRoleGRPCService) Create(
 
 	// Error handling
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Return response
@@ -57,7 +57,7 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionRead); err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	roleService := service.NewAppserverRoleService(
@@ -67,7 +67,7 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 
 	// Error handling
 	if err != nil {
-		return nil, faults.RpcCustomErrorHandler(ctx, err)
+		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	// Construct the response

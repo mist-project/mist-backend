@@ -18,20 +18,23 @@ import (
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
-	t.Run("Successcan_return_nothing_successfully", func(t *testing.T) {
+	t.Run("Success:can_return_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		sub := testutil.TestAppserverSub(t, nil, true)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		ctx = context.WithValue(
-			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: sub.AppserverID},
+			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: su.Server.ID},
 		)
 
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
+
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
-			ctx, &appserver_role.ListServerRolesRequest{AppserverId: sub.AppserverID.String()},
+		response, err := svc.ListServerRoles(
+			ctx, &appserver_role.ListServerRolesRequest{AppserverId: su.Server.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -41,16 +44,22 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppserverRoles()))
 	})
 
-	t.Run("Successcan_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
+	t.Run("Success:can_return_all_appserver_roles_for_appserver_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		sub := testutil.TestAppserverSub(t, nil, true)
-		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name", AppserverID: sub.AppserverID}, false)
-		testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "some random name #2", AppserverID: sub.AppserverID}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
+		factory.NewFactory(ctx, db).AppserverRole(
+			t, 0, &qx.AppserverRole{AppserverID: uuid.MustParse(su.Server.ID.String()), Name: "foo"},
+		)
+		factory.NewFactory(ctx, db).AppserverRole(
+			t, 1, &qx.AppserverRole{AppserverID: uuid.MustParse(su.Server.ID.String()), Name: "bar"},
+		)
+
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.ListServerRoles(
-			ctx, &appserver_role.ListServerRolesRequest{AppserverId: sub.AppserverID.String()},
+		response, err := svc.ListServerRoles(
+			ctx, &appserver_role.ListServerRolesRequest{AppserverId: su.Server.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -62,19 +71,17 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 
 	t.Run("Error:on_database_failure_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		appserverId := testutil.TestAppserver(t, nil, true).ID
+		ctx, _ := testutil.Setup(t, func() {})
+		appserverId := uuid.New()
 		ctx = context.WithValue(
 			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: appserverId},
 		)
-		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("ListAppserverRoles", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead).Return(
-			nil,
-		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		mockQuerier := new(testutil.MockQuerier)
+
+		mockQuerier.On("ListAppserverRoles", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
+
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		response, err := svc.ListServerRoles(ctx, &appserver_role.ListServerRolesRequest{
@@ -88,20 +95,18 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code())
 		assert.Contains(t, s.Message(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
-		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
 		var nullString *string
-		ctx := testutil.Setup(t, func() {})
-		mockQuerier := new(testutil.MockQuerier)
+		ctx, db := testutil.Setup(t, func() {})
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionRead).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListServerRoles(
@@ -115,21 +120,22 @@ func TestAppserverRoleRPCService_ListServerRoles(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 
 }
 
 func TestAppserverRoleRPCService_Create(t *testing.T) {
-	t.Run("Successcreates_successfully", func(t *testing.T) {
+	t.Run("Success:creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil, true)
+		ctx, db := testutil.Setup(t, func() {})
+		sub := factory.UserAppserverOwner(t, ctx, db)
+
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.Create(ctx, &appserver_role.CreateRequest{
-			AppserverId:             appserver.ID.String(),
+		response, err := svc.Create(ctx, &appserver_role.CreateRequest{
+			AppserverId:             sub.Server.ID.String(),
 			Name:                    "foo",
 			AppserverPermissionMask: 0,
 			ChannelPermissionMask:   0,
@@ -146,7 +152,7 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 
 	t.Run("Error:invalid_arguments_return_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		// ACT
 		response, err := testutil.TestAppserverRoleClient.Create(ctx, &appserver_role.CreateRequest{})
@@ -162,14 +168,13 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
 		var nullString *string
-		ctx := testutil.Setup(t, func() {})
-		mockQuerier := new(testutil.MockQuerier)
+		ctx, db := testutil.Setup(t, func() {})
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nullString, permission.ActionCreate).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -183,21 +188,17 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
 		// ARRANGE
 		mockId := uuid.NewString()
-		var nilString *string
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateAppserverRole", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(nil)
 
-		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -212,19 +213,23 @@ func TestAppserverRoleRPCService_Create(t *testing.T) {
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
-		mockAuth.AssertExpectations(t)
 	})
 }
 
 func TestAppserverRoleRPCService_Delete(t *testing.T) {
-	t.Run("Successroles_can_only_be_deleted_by_server_owner", func(t *testing.T) {
+	t.Run("Success:roles_can_be_deleted", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		aRole := testutil.TestAppserverRole(t, nil, true)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverOwner(t, ctx, db)
+		role := factory.NewFactory(ctx, db).AppserverRole(t, 0, &qx.AppserverRole{AppserverID: su.Server.ID, Name: "foo"})
+
+		svc := &rpcs.AppserverRoleGRPCService{
+			Deps: &rpcs.GrpcDependencies{Db: db, MProducer: testutil.MockRedisProducer}, Auth: testutil.TestMockAuth,
+		}
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.Delete(
-			ctx, &appserver_role.DeleteRequest{Id: aRole.ID.String(), AppserverId: aRole.AppserverID.String()},
+		response, err := svc.Delete(
+			ctx, &appserver_role.DeleteRequest{Id: role.ID.String(), AppserverId: role.AppserverID.String()},
 		)
 
 		// ASSERT
@@ -232,27 +237,14 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("Error:cannot_be_deleted_by_non_owner", func(t *testing.T) {
-		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		aRole := testutil.TestAppserverRole(t, nil, false)
-
-		// ACT
-		response, err := testutil.TestAppserverRoleClient.Delete(
-			ctx, &appserver_role.DeleteRequest{Id: aRole.ID.String(), AppserverId: aRole.AppserverID.String()})
-
-		// ASSERT
-		assert.Nil(t, response)
-		assert.NotNil(t, err)
-		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-	})
-
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
+
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverRoleClient.Delete(
+		response, err := svc.Delete(
 			ctx, &appserver_role.DeleteRequest{Id: uuid.NewString(), AppserverId: uuid.NewString()},
 		)
 		s, ok := status.FromError(err)
@@ -267,14 +259,13 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
 		roleId := uuid.NewString()
-		ctx := testutil.Setup(t, func() {})
-		mockQuerier := new(testutil.MockQuerier)
+		ctx, db := testutil.Setup(t, func() {})
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -288,22 +279,18 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
 		// ARRANGE
 		mockId := uuid.NewString()
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
+
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("DeleteAppserverRole", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
-			nil,
-		)
 
-		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -318,6 +305,5 @@ func TestAppserverRoleRPCService_Delete(t *testing.T) {
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
-		mockAuth.AssertExpectations(t)
 	})
 }

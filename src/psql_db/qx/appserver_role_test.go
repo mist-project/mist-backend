@@ -12,9 +12,9 @@ import (
 )
 
 func TestQuerier_CreateAppserverRole(t *testing.T) {
-	t.Run("Successcreate_appserver_role", func(t *testing.T) {
+	t.Run("Success:create_appserver_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
 		params := qx.CreateAppserverRoleParams{
 			AppserverID:             server.ID,
@@ -35,9 +35,9 @@ func TestQuerier_CreateAppserverRole(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverRoleById(t *testing.T) {
-	t.Run("Successget_appserver_role_by_id", func(t *testing.T) {
+	t.Run("Success:get_appserver_role_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, false)
 
 		// ACT
@@ -50,7 +50,7 @@ func TestQuerier_GetAppserverRoleById(t *testing.T) {
 
 	t.Run("Error:role_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		// ACT
 		_, err := qx.New(testutil.TestDbConn).GetAppserverRoleById(ctx, uuid.New())
 
@@ -61,9 +61,9 @@ func TestQuerier_GetAppserverRoleById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserverRole(t *testing.T) {
-	t.Run("Successdelete_appserver_role", func(t *testing.T) {
+	t.Run("Success:delete_appserver_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, false)
 
 		// ACT
@@ -76,7 +76,7 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 
 	t.Run("Error:role_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		// ACT
 		count, err := qx.New(testutil.TestDbConn).DeleteAppserverRole(ctx, uuid.New())
 
@@ -85,10 +85,10 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successdeleting_appserver_role_removes_associated_appserver_role_subs", func(t *testing.T) {
+	t.Run("Success:deleting_appserver_role_removes_associated_appserver_role_subs", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "test_role", AppserverID: su.Server.ID}, false)
 		rolesub := testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
 			AppuserID:       su.User.ID,
@@ -109,10 +109,10 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 		assert.Contains(t, err.Error(), "no rows in result set")
 	})
 
-	t.Run("Successdeleting_appserver_role_removes_associated_channel_roles", func(t *testing.T) {
+	t.Run("Success:deleting_appserver_role_removes_associated_channel_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "test_role", AppserverID: su.Server.ID}, false)
 		channel := testutil.TestChannel(t, &qx.Channel{AppserverID: role.AppserverID, Name: "c1", IsPrivate: true}, false)
 		channelRole := testutil.TestChannelRole(t, &qx.ChannelRole{
@@ -137,9 +137,9 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 }
 
 func TestQuerier_ListAppserverRoles(t *testing.T) {
-	t.Run("Successlist_appserver_roles", func(t *testing.T) {
+	t.Run("Success:list_appserver_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, false)
 
 		// ACT
@@ -152,7 +152,7 @@ func TestQuerier_ListAppserverRoles(t *testing.T) {
 
 	t.Run("Error:when_no_roles_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 
 		// ACT
@@ -165,10 +165,10 @@ func TestQuerier_ListAppserverRoles(t *testing.T) {
 }
 
 func TestQuerier_GetAppuserRoles(t *testing.T) {
-	t.Run("Successget_appuser_roles", func(t *testing.T) {
+	t.Run("Success:get_appuser_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "mod", AppserverID: su.Server.ID}, false)
 		testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
 			AppuserID: su.User.ID, AppserverID: su.Server.ID,
@@ -189,7 +189,7 @@ func TestQuerier_GetAppuserRoles(t *testing.T) {
 
 	t.Run("Error:get_appuser_roles_for_nonexistent_user", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		nonexistentUserID := uuid.New()
 		appserverID := uuid.New()
 
@@ -207,10 +207,10 @@ func TestQuerier_GetAppuserRoles(t *testing.T) {
 }
 
 func TestQuerier_GetAppusersWithOnlySpecifiedRole(t *testing.T) {
-	t.Run("Successget_users_with_only_specified_role", func(t *testing.T) {
+	t.Run("Success:get_users_with_only_specified_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "solo", AppserverID: su.Server.ID}, false)
 
 		testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
@@ -229,7 +229,7 @@ func TestQuerier_GetAppusersWithOnlySpecifiedRole(t *testing.T) {
 
 	t.Run("Error:get_users_with_only_specified_role_no_users", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		role := testutil.TestAppserverRole(t, nil, false)
 
 		// ACT

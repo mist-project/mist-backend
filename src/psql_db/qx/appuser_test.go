@@ -11,9 +11,9 @@ import (
 )
 
 func TestQuerier_CreateAppuser(t *testing.T) {
-	t.Run("Successcreate_appuser", func(t *testing.T) {
+	t.Run("Success:create_appuser", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		id := uuid.New()
 		username := "testuser"
 
@@ -33,9 +33,9 @@ func TestQuerier_CreateAppuser(t *testing.T) {
 }
 
 func TestQuerier_GetAppuserById(t *testing.T) {
-	t.Run("Successget_appuser_by_id", func(t *testing.T) {
+	t.Run("Success:get_appuser_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		id := uuid.New()
 		username := "retrievable_user"
 		_, err := qx.New(testutil.TestDbConn).CreateAppuser(ctx, qx.CreateAppuserParams{
@@ -55,7 +55,7 @@ func TestQuerier_GetAppuserById(t *testing.T) {
 
 	t.Run("Error:get_nonexistent_appuser", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		nonexistentID := uuid.New()
 
 		// ACT

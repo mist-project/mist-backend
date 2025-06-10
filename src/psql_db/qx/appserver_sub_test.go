@@ -13,9 +13,9 @@ import (
 )
 
 func TestQuerier_CreateAppserverSub(t *testing.T) {
-	t.Run("Successcreate_appserver_sub", func(t *testing.T) {
+	t.Run("Success:create_appserver_sub", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		user := testutil.TestAppuser(t, nil, false)
 		server := testutil.TestAppserver(t, nil, false)
 
@@ -35,9 +35,9 @@ func TestQuerier_CreateAppserverSub(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserverSub(t *testing.T) {
-	t.Run("Successdelete_appserver_sub", func(t *testing.T) {
+	t.Run("Success:delete_appserver_sub", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, false)
 
 		// ACT
@@ -49,16 +49,16 @@ func TestQuerier_DeleteAppserverSub(t *testing.T) {
 	})
 
 	t.Run("Error:sub_does_not_exist", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		count, err := qx.New(testutil.TestDbConn).DeleteAppserverSub(ctx, uuid.New())
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successdeleting_appserver_sub_deletes_appserver_role_subs", func(t *testing.T) {
+	t.Run("Success:deleting_appserver_sub_deletes_appserver_role_subs", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: su.Server.ID}, false)
 		_, err := qx.New(testutil.TestDbConn).CreateAppserverRoleSub(ctx, qx.CreateAppserverRoleSubParams{
 			AppuserID:       su.User.ID,
@@ -82,9 +82,9 @@ func TestQuerier_DeleteAppserverSub(t *testing.T) {
 }
 
 func TestQuerier_FilterAppserverSub(t *testing.T) {
-	t.Run("Successfilter_appserver_sub", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+	t.Run("Success:filter_appserver_sub", func(t *testing.T) {
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 
 		params := qx.FilterAppserverSubParams{
 			AppuserID:   pgtype.UUID{Bytes: su.User.ID, Valid: true},
@@ -98,7 +98,7 @@ func TestQuerier_FilterAppserverSub(t *testing.T) {
 	})
 
 	t.Run("Error:invalid_filter_params", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		params := qx.FilterAppserverSubParams{
 			AppuserID:   pgtype.UUID{Valid: false},
 			AppserverID: pgtype.UUID{Valid: false},
@@ -111,8 +111,8 @@ func TestQuerier_FilterAppserverSub(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverSubById(t *testing.T) {
-	t.Run("Successget_appserver_sub_by_id", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+	t.Run("Success:get_appserver_sub_by_id", func(t *testing.T) {
+		ctx, _ := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, false)
 
 		result, err := qx.New(testutil.TestDbConn).GetAppserverSubById(ctx, sub.ID)
@@ -122,16 +122,16 @@ func TestQuerier_GetAppserverSubById(t *testing.T) {
 	})
 
 	t.Run("Error:sub_does_not_exist", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		_, err := qx.New(testutil.TestDbConn).GetAppserverSubById(ctx, uuid.New())
 		assert.Error(t, err)
 	})
 }
 
 func TestQuerier_ListAppserverUserSubs(t *testing.T) {
-	t.Run("Successlist_appserver_user_subs", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+	t.Run("Success:list_appserver_user_subs", func(t *testing.T) {
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		sub2 := testutil.TestAppserverSub(t, nil, false)
 
 		results, err := qx.New(testutil.TestDbConn).ListAppserverUserSubs(ctx, su.Server.ID)
@@ -144,9 +144,9 @@ func TestQuerier_ListAppserverUserSubs(t *testing.T) {
 }
 
 func TestQuerier_ListUserServerSubs(t *testing.T) {
-	t.Run("Successlist_user_server_subs", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+	t.Run("Success:list_user_server_subs", func(t *testing.T) {
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		sub2 := testutil.TestAppserverSub(t, nil, false)
 
 		results, err := qx.New(testutil.TestDbConn).ListUserServerSubs(ctx, su.User.ID)

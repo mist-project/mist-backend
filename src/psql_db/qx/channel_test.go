@@ -13,9 +13,9 @@ import (
 )
 
 func TestQuerier_CreateChannel(t *testing.T) {
-	t.Run("Successcreate_channel", func(t *testing.T) {
+	t.Run("Success:create_channel", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
 
 		params := qx.CreateChannelParams{
@@ -35,9 +35,9 @@ func TestQuerier_CreateChannel(t *testing.T) {
 }
 
 func TestQuerier_GetChannelById(t *testing.T) {
-	t.Run("Successget_channel_by_id", func(t *testing.T) {
+	t.Run("Success:get_channel_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 
 		// ACT
@@ -50,7 +50,7 @@ func TestQuerier_GetChannelById(t *testing.T) {
 
 	t.Run("Error:channel_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		// ACT
 		_, err := qx.New(testutil.TestDbConn).GetChannelById(ctx, uuid.New())
 
@@ -61,9 +61,9 @@ func TestQuerier_GetChannelById(t *testing.T) {
 }
 
 func TestQuerier_DeleteChannel(t *testing.T) {
-	t.Run("Successdelete_channel", func(t *testing.T) {
+	t.Run("Success:delete_channel", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 
 		// ACT
@@ -74,9 +74,9 @@ func TestQuerier_DeleteChannel(t *testing.T) {
 		assert.Equal(t, int64(1), count)
 	})
 
-	t.Run("Successwhen_channel_is_deleted_it_removes_associated_channel_roles", func(t *testing.T) {
+	t.Run("Success:when_channel_is_deleted_it_removes_associated_channel_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: ch.AppserverID}, false)
 		channelRole := testutil.TestChannelRole(
@@ -98,7 +98,7 @@ func TestQuerier_DeleteChannel(t *testing.T) {
 
 	t.Run("Error:channel_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		// ACT
 		count, err := qx.New(testutil.TestDbConn).DeleteChannel(ctx, uuid.New())
 
@@ -109,9 +109,9 @@ func TestQuerier_DeleteChannel(t *testing.T) {
 }
 
 func TestQuerier_FilterChannel(t *testing.T) {
-	t.Run("Successfilter_channel", func(t *testing.T) {
+	t.Run("Success:filter_channel", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 
 		params := qx.FilterChannelParams{
@@ -129,7 +129,7 @@ func TestQuerier_FilterChannel(t *testing.T) {
 
 	t.Run("Error:filter_channel_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		testutil.TestChannel(t, nil, false)
 
 		params := qx.FilterChannelParams{
@@ -147,7 +147,7 @@ func TestQuerier_FilterChannel(t *testing.T) {
 
 	t.Run("Error:filter_channel_invalid_params", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		params := qx.FilterChannelParams{
 			AppserverID: pgtype.UUID{Valid: false},
 			IsPrivate:   pgtype.Bool{Valid: false},
@@ -163,9 +163,9 @@ func TestQuerier_FilterChannel(t *testing.T) {
 }
 
 func TestQuerier_GetChannelsIdIn(t *testing.T) {
-	t.Run("Successget_channels_id_in", func(t *testing.T) {
+	t.Run("Success:get_channels_id_in", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 		ch2 := testutil.TestChannel(t, nil, false)
 
@@ -181,7 +181,7 @@ func TestQuerier_GetChannelsIdIn(t *testing.T) {
 
 	t.Run("Error:get_channels_id_in_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		// ACT
 		results, err := qx.New(testutil.TestDbConn).GetChannelsIdIn(ctx, []uuid.UUID{uuid.New(), uuid.New()})
 
@@ -192,9 +192,9 @@ func TestQuerier_GetChannelsIdIn(t *testing.T) {
 }
 
 func TestQuerier_ListServerChannels(t *testing.T) {
-	t.Run("Successlist_server_channels", func(t *testing.T) {
+	t.Run("Success:list_server_channels", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 
 		params := qx.ListServerChannelsParams{
@@ -212,7 +212,7 @@ func TestQuerier_ListServerChannels(t *testing.T) {
 
 	t.Run("Error:list_server_channels_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		testutil.TestChannel(t, nil, false)
 
 		params := qx.ListServerChannelsParams{
@@ -230,10 +230,10 @@ func TestQuerier_ListServerChannels(t *testing.T) {
 }
 
 func TestQuerier_GetChannelsForUsers(t *testing.T) {
-	t.Run("Successget_channels_for_users", func(t *testing.T) {
+	t.Run("Success:get_channels_for_users", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		user2 := testutil.TestAppuser(t, nil, false)
 		channel1 := testutil.TestChannel(t, &qx.Channel{Name: "c1", AppserverID: su.Server.ID, IsPrivate: true}, false)
 		_ = testutil.TestChannel(t, &qx.Channel{Name: "c2", AppserverID: su.Server.ID, IsPrivate: false}, false)

@@ -12,9 +12,9 @@ import (
 )
 
 func TestQuerier_CreateChannelRole(t *testing.T) {
-	t.Run("Successcreate_channel_role", func(t *testing.T) {
+	t.Run("Success:create_channel_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: ch.AppserverID}, false)
 
@@ -36,9 +36,9 @@ func TestQuerier_CreateChannelRole(t *testing.T) {
 }
 
 func TestQuerier_DeleteChannelRole(t *testing.T) {
-	t.Run("Successdelete_channel_role", func(t *testing.T) {
+	t.Run("Success:delete_channel_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ch := testutil.TestChannel(t, nil, false)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: ch.AppserverID}, false)
 		cr := testutil.TestChannelRole(t, &qx.ChannelRole{
@@ -55,7 +55,7 @@ func TestQuerier_DeleteChannelRole(t *testing.T) {
 
 	t.Run("Error:delete_nonexistent_channel_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		id := uuid.New()
 
 		// ACT
@@ -68,9 +68,9 @@ func TestQuerier_DeleteChannelRole(t *testing.T) {
 }
 
 func TestQuerier_GetChannelRoleById(t *testing.T) {
-	t.Run("Successget_channel_role_by_id", func(t *testing.T) {
+	t.Run("Success:get_channel_role_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		chRole := testutil.TestChannelRole(t, nil, false)
 
 		// ACT
@@ -83,7 +83,7 @@ func TestQuerier_GetChannelRoleById(t *testing.T) {
 
 	t.Run("Error:get_channel_role_by_id_not_found", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		id := uuid.New()
 
 		// ACT
@@ -96,9 +96,9 @@ func TestQuerier_GetChannelRoleById(t *testing.T) {
 }
 
 func TestQuerier_FilterChannelRole(t *testing.T) {
-	t.Run("Successfilter_by_all_fields", func(t *testing.T) {
+	t.Run("Success:filter_by_all_fields", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		cr := testutil.TestChannelRole(t, nil, false)
 
 		params := qx.FilterChannelRoleParams{
@@ -116,9 +116,9 @@ func TestQuerier_FilterChannelRole(t *testing.T) {
 		assert.Equal(t, cr.ID, results[0].ID)
 	})
 
-	t.Run("Successfilter_by_partial_fields", func(t *testing.T) {
+	t.Run("Success:filter_by_partial_fields", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		cr := testutil.TestChannelRole(t, nil, false)
 
 		params := qx.FilterChannelRoleParams{
@@ -137,7 +137,7 @@ func TestQuerier_FilterChannelRole(t *testing.T) {
 
 	t.Run("EmptyResult:no_match_found", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		params := qx.FilterChannelRoleParams{
 			ChannelID:       pgtype.UUID{Bytes: uuid.New(), Valid: true},
@@ -155,9 +155,9 @@ func TestQuerier_FilterChannelRole(t *testing.T) {
 }
 
 func TestQuerier_ListChannelRoles(t *testing.T) {
-	t.Run("Successlist_channel_roles", func(t *testing.T) {
+	t.Run("Success:list_channel_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		cr := testutil.TestChannelRole(t, nil, false)
 
 		// ACT
@@ -171,7 +171,7 @@ func TestQuerier_ListChannelRoles(t *testing.T) {
 
 	t.Run("EmptyResult:list_channel_roles_empty", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		randomChannelID := uuid.New()
 
 		// ACT

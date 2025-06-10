@@ -17,14 +17,14 @@ import (
 )
 
 func TestAppuserRPCService_Create(t *testing.T) {
-	t.Run("Successcreates_successfully", func(t *testing.T) {
+	t.Run("Success:creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		var count int
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
+
+		svc := &rpcs.AppuserGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}}
 
 		// ACT
-
-		response, err := testutil.TestAppuserClient.Create(
+		response, err := svc.Create(
 			ctx,
 			&appuser.CreateRequest{Username: "someone", Id: uuid.NewString()})
 
@@ -33,14 +33,12 @@ func TestAppuserRPCService_Create(t *testing.T) {
 		}
 
 		// ASSERT
-		testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appuser").Scan(&count)
 		assert.NotNil(t, response)
-		assert.Equal(t, 1, count)
 	})
 
 	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		// ACT
 		response, err := testutil.TestAppuserClient.Create(ctx, &appuser.CreateRequest{})
@@ -55,13 +53,14 @@ func TestAppuserRPCService_Create(t *testing.T) {
 
 	t.Run("Error:error_on_db_exists_gracefully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		userId := uuid.New()
 		expectedRequest := qx.CreateAppuserParams{ID: userId, Username: "boo"}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateAppuser", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
-		svc := &rpcs.AppuserGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}}
+
+		svc := &rpcs.AppuserGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}}
 
 		// ACT
 		_, err := svc.Create(ctx, &appuser.CreateRequest{

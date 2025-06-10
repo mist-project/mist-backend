@@ -19,16 +19,14 @@ func (s *AppserverRoleSubGRPCService) Create(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	roleSubS := service.NewAppserverRoleSubService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 
 	// TODO: Figure out what can go wrong to add error handler
@@ -71,7 +69,7 @@ func (s *AppserverRoleSubGRPCService) ListServerRoleSubs(
 	}
 
 	results, _ := service.NewAppserverRoleSubService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	).ListServerRoleSubs(serverId)
 
 	// Construct the response
@@ -99,9 +97,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
@@ -109,7 +105,7 @@ func (s *AppserverRoleSubGRPCService) Delete(
 
 	// Initialize the service for AppserveRole
 	arss := service.NewAppserverRoleSubService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	roleSubId, _ := uuid.Parse(req.Id)
 

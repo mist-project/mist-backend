@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/faults"
@@ -43,45 +42,25 @@ func (s *AppserverService) PgTypeToPb(a *qx.Appserver) *appserver.Appserver {
 // Note: the transaction will be committed in CreateWithTx. The creator of the server gets automatically assigned
 // an appserver sub.
 func (s *AppserverService) Create(obj qx.CreateAppserverParams) (*qx.Appserver, error) {
-	tx, err := s.deps.DbConn.BeginTx(s.ctx, pgx.TxOptions{})
-
-	if err != nil {
-		return nil, faults.DatabaseError(fmt.Sprintf("tx initialization error: %v", err), slog.LevelError)
-
-	}
-	defer tx.Rollback(s.ctx)
-
-	response, err := s.CreateWithTx(obj, tx)
-
-	return response, err
-}
-
-// Creates an appserver with provided transaction. This function will commit the transaction.
-func (s *AppserverService) CreateWithTx(obj qx.CreateAppserverParams, tx pgx.Tx) (*qx.Appserver, error) {
-	txQ := s.deps.Db.WithTx(tx)
-
-	appserver, err := txQ.CreateAppserver(s.ctx, obj)
+	appserver, err := s.deps.Db.CreateAppserver(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("create appserver error: %v", err), slog.LevelError)
-
 	}
 
 	// once the appserver is created, add user as a subscriber
-	_, err = NewAppserverSubService(s.ctx, s.deps).CreateWithTx(
+	_, err = s.deps.Db.CreateAppserverSub(
+		s.ctx,
 		qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: obj.AppuserID},
-		tx,
 	)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("create appserver sub error: %v", err), slog.LevelError)
-
 	}
 
-	if err := tx.Commit(s.ctx); err != nil {
-		return nil, faults.DatabaseError(fmt.Sprintf("database error commit: %v", err), slog.LevelError)
-
-	}
+	// if err := tx.Commit(s.ctx); err != nil {
+	// 	return nil, faults.DatabaseError(fmt.Sprintf("database error commit: %v", err), slog.LevelError)
+	// }
 
 	return &appserver, err
 }

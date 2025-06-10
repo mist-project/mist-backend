@@ -12,9 +12,9 @@ import (
 )
 
 func TestQuerier_ListServerRoleSubs(t *testing.T) {
-	t.Run("Successlist_role_subs_by_appserver", func(t *testing.T) {
+	t.Run("Success:list_role_subs_by_appserver", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		role1 := testutil.TestAppserverRoleSub(t, nil, false)
 		testutil.TestAppserverRoleSub(t, nil, false)
 
@@ -29,10 +29,10 @@ func TestQuerier_ListServerRoleSubs(t *testing.T) {
 }
 
 func TestQuerier_CreateAppserverRoleSub(t *testing.T) {
-	t.Run("Successcreate_appserver_role_sub", func(t *testing.T) {
+	t.Run("Success:create_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
 		role1 := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "foo", AppserverID: su.Server.ID}, false)
 
 		// ACT
@@ -50,9 +50,9 @@ func TestQuerier_CreateAppserverRoleSub(t *testing.T) {
 
 	t.Run("Error:when_appserver_sub_and_appserver_role_dont_belong_to_same_server_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		user := testutil.TestAppuser(t, nil, false)
-		su := factory.UserAppserverSub(t)
+		su := factory.UserAppserverSub(t, ctx, db)
 		role1 := testutil.TestAppserverRole(t, nil, false)
 
 		// ACT
@@ -70,9 +70,9 @@ func TestQuerier_CreateAppserverRoleSub(t *testing.T) {
 }
 
 func TestQuerier_GetById(t *testing.T) {
-	t.Run("Successget_appserver_role_sub_by_id", func(t *testing.T) {
+	t.Run("Success:get_appserver_role_sub_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		role1 := testutil.TestAppserverRoleSub(t, nil, false)
 
 		// ACT
@@ -86,7 +86,7 @@ func TestQuerier_GetById(t *testing.T) {
 
 	t.Run("Error:when_appserver_role_sub_does_not_exist_it_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		id := uuid.New()
 
 		// ACT
@@ -100,9 +100,9 @@ func TestQuerier_GetById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserverRoleSub(t *testing.T) {
-	t.Run("Successdelete_appserver_role_sub", func(t *testing.T) {
+	t.Run("Success:delete_appserver_role_sub", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		role1 := testutil.TestAppserverRoleSub(t, nil, false)
 
 		// ACT
@@ -115,7 +115,7 @@ func TestQuerier_DeleteAppserverRoleSub(t *testing.T) {
 
 	t.Run("Error:when_appserver_role_sub_does_not_exist_it_returns_zero_count", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		id := uuid.New()
 
 		// ACT
@@ -127,9 +127,9 @@ func TestQuerier_DeleteAppserverRoleSub(t *testing.T) {
 }
 
 func TestQuerier_FilterAppserverRoleSub(t *testing.T) {
-	t.Run("Successfilter_by_all_fields", func(t *testing.T) {
+	t.Run("Success:filter_by_all_fields", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		roleSub := testutil.TestAppserverRoleSub(t, nil, false)
 
 		params := qx.FilterAppserverRoleSubParams{
@@ -148,9 +148,9 @@ func TestQuerier_FilterAppserverRoleSub(t *testing.T) {
 		assert.Equal(t, roleSub.ID, results[0].ID)
 	})
 
-	t.Run("Successfilter_by_partial_fields", func(t *testing.T) {
+	t.Run("Success:filter_by_partial_fields", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		roleSub := testutil.TestAppserverRoleSub(t, nil, false)
 
 		params := qx.FilterAppserverRoleSubParams{
@@ -170,7 +170,7 @@ func TestQuerier_FilterAppserverRoleSub(t *testing.T) {
 
 	t.Run("EmptyResult:when_filter_does_not_match", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		_ = testutil.TestAppserverRoleSub(t, nil, false)
 
 		params := qx.FilterAppserverRoleSubParams{

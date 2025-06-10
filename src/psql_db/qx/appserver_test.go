@@ -13,9 +13,9 @@ import (
 )
 
 func TestQuerier_CreateAppserver(t *testing.T) {
-	t.Run("Successcreate_appserver", func(t *testing.T) {
+	t.Run("Success:create_appserver", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		user := testutil.TestAppuser(t, nil, false)
 
 		params := qx.CreateAppserverParams{
@@ -34,9 +34,9 @@ func TestQuerier_CreateAppserver(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverById(t *testing.T) {
-	t.Run("Successget_appserver_by_id", func(t *testing.T) {
+	t.Run("Success:get_appserver_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
 
 		// ACT
@@ -49,7 +49,7 @@ func TestQuerier_GetAppserverById(t *testing.T) {
 
 	t.Run("Error:appserver_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		// ACT
 		_, err := qx.New(testutil.TestDbConn).GetAppserverById(ctx, uuid.New())
@@ -61,9 +61,9 @@ func TestQuerier_GetAppserverById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserver(t *testing.T) {
-	t.Run("Successdelete_appserver", func(t *testing.T) {
+	t.Run("Success:delete_appserver", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
 
 		// ACT
@@ -76,7 +76,7 @@ func TestQuerier_DeleteAppserver(t *testing.T) {
 
 	t.Run("Error:appserver_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		// ACT
 		count, err := qx.New(testutil.TestDbConn).DeleteAppserver(ctx, uuid.New())
@@ -86,10 +86,10 @@ func TestQuerier_DeleteAppserver(t *testing.T) {
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successdeletes_all_relationships", func(t *testing.T) {
+	t.Run("Success:deletes_all_relationships", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		tu := factory.UserAppserverSub(t)
+		ctx, db := testutil.Setup(t, func() {})
+		tu := factory.UserAppserverSub(t, ctx, db)
 		role := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: tu.Server.ID, Name: "foo"}, false)
 		roleSub := testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
 			AppuserID:       tu.User.ID,
@@ -151,9 +151,9 @@ func TestQuerier_DeleteAppserver(t *testing.T) {
 }
 
 func TestQuerier_ListAppservers(t *testing.T) {
-	t.Run("Successlist_appservers_by_user", func(t *testing.T) {
+	t.Run("Success:list_appservers_by_user", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
 
 		params := qx.ListAppserversParams{
@@ -169,9 +169,9 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		assert.NotEmpty(t, results)
 	})
 
-	t.Run("Successlist_appservers_by_user_and_name", func(t *testing.T) {
+	t.Run("Success:list_appservers_by_user_and_name", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		server := testutil.TestAppserver(t, nil, false)
 
 		params := qx.ListAppserversParams{
@@ -188,9 +188,9 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		assert.Equal(t, server.ID, results[0].ID)
 	})
 
-	t.Run("Successlist_appservers_no_results", func(t *testing.T) {
+	t.Run("Success:list_appservers_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		params := qx.ListAppserversParams{
 			AppuserID: uuid.New(),

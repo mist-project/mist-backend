@@ -23,14 +23,16 @@ import (
 )
 
 func TestChannelRPCService_ListServerChannels(t *testing.T) {
-	t.Run("Successreturns_nothing_successfully", func(t *testing.T) {
+	t.Run("Success:returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		sub := testutil.TestAppserverSub(t, nil, true)
 		ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: sub.AppserverID})
 
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
+
 		// ACT
-		response, err := testutil.TestChannelClient.ListServerChannels(
+		response, err := svc.ListServerChannels(
 			ctx, &channel.ListServerChannelsRequest{AppserverId: sub.AppserverID.String()},
 		)
 		if err != nil {
@@ -41,21 +43,25 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetChannels()))
 	})
 
-	t.Run("Successreturns_all_resources_successfully", func(t *testing.T) {
+	t.Run("Success:returns_all_resources_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		subId := testutil.TestAppserverSub(t, nil, true)
-		serverId := subId.AppserverID
-		testutil.TestChannel(t, nil, false)
-		testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: serverId}, false)
-		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: serverId}, false)
+		ctx, db := testutil.Setup(t, func() {})
+
+		f := factory.NewFactory(ctx, db)
+		s := f.Appserver(t, 0, nil)
+		c0 := f.Channel(t, 0, &qx.Channel{Name: "foo", AppserverID: s.ID})
+		f.Channel(t, 1, &qx.Channel{Name: "bar", AppserverID: s.ID})
+		f.Channel(t, 2, nil)
+
 		ctx = context.WithValue(
-			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: c0.AppserverID},
 		)
 
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
+
 		// ACT
-		response, err := testutil.TestChannelClient.ListServerChannels(ctx, &channel.ListServerChannelsRequest{
-			AppserverId: serverId.String(),
+		response, err := svc.ListServerChannels(ctx, &channel.ListServerChannelsRequest{
+			AppserverId: c0.AppserverID.String(),
 		})
 
 		if err != nil {
@@ -66,21 +72,25 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 		assert.Equal(t, 2, len(response.GetChannels()))
 	})
 
-	t.Run("Successcan_filter_by_name", func(t *testing.T) {
+	t.Run("Success:can_filter_by_name", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		subId := testutil.TestAppserverSub(t, nil, true)
-		serverId := subId.AppserverID
-		testutil.TestChannel(t, nil, false)
-		testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: serverId}, false)
-		testutil.TestChannel(t, &qx.Channel{Name: "bar", AppserverID: serverId}, false)
+		ctx, db := testutil.Setup(t, func() {})
+
+		f := factory.NewFactory(ctx, db)
+		s := f.Appserver(t, 0, nil)
+		c0 := f.Channel(t, 0, &qx.Channel{Name: "foo", AppserverID: s.ID})
+		f.Channel(t, 1, &qx.Channel{Name: "bar", AppserverID: s.ID})
+		f.Channel(t, 2, nil)
+
 		ctx = context.WithValue(
-			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
+			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: c0.AppserverID},
 		)
 
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
+
 		// ACT
-		response, err := testutil.TestChannelClient.ListServerChannels(ctx, &channel.ListServerChannelsRequest{
-			AppserverId: serverId.String(), Name: wrapperspb.String("foo"),
+		response, err := svc.ListServerChannels(ctx, &channel.ListServerChannelsRequest{
+			AppserverId: c0.AppserverID.String(), Name: wrapperspb.String("foo"),
 		})
 
 		if err != nil {
@@ -93,7 +103,7 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		serverId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -102,7 +112,7 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.ListServerChannels(
@@ -122,15 +132,18 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 }
 
 func TestChannelRPCService_GetById(t *testing.T) {
-	t.Run("Successreturns_successfully", func(t *testing.T) {
+	t.Run("Success:returns_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		sub := testutil.TestAppserverSub(t, nil, true)
-		c := testutil.TestChannel(t, &qx.Channel{Name: "foo", AppserverID: sub.AppserverID}, true)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverOwner(t, ctx, db)
+		f := factory.NewFactory(ctx, db)
+		c := f.Channel(t, 0, nil)
+
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestChannelClient.GetById(
-			ctx, &channel.GetByIdRequest{Id: c.ID.String(), AppserverId: sub.AppserverID.String()},
+		response, err := svc.GetById(
+			ctx, &channel.GetByIdRequest{Id: c.ID.String(), AppserverId: su.Server.ID.String()},
 		)
 
 		if err != nil {
@@ -143,12 +156,14 @@ func TestChannelRPCService_GetById(t *testing.T) {
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		tu := factory.UserAppserverWithAllPermissions(t)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverOwner(t, ctx, db)
+
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestChannelClient.GetById(
-			ctx, &channel.GetByIdRequest{Id: uuid.NewString(), AppserverId: tu.Server.AppuserID.String()},
+		response, err := svc.GetById(
+			ctx, &channel.GetByIdRequest{Id: uuid.NewString(), AppserverId: su.Server.ID.String()},
 		)
 		s, ok := status.FromError(err)
 
@@ -162,15 +177,12 @@ func TestChannelRPCService_GetById(t *testing.T) {
 	t.Run("Error:when_get_by_id_search_fails_it_errors", func(t *testing.T) {
 		// ARRANGE
 		channelId := uuid.NewString()
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
+
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &channelId, permission.ActionRead).Return(
-			nil,
-		)
 
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		_, err := svc.GetById(
@@ -185,13 +197,11 @@ func TestChannelRPCService_GetById(t *testing.T) {
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
-		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-
+		ctx, _ := testutil.Setup(t, func() {})
 		// ACT
 		response, err := testutil.TestChannelClient.GetById(
 			ctx, &channel.GetByIdRequest{Id: "foo"},
@@ -207,15 +217,15 @@ func TestChannelRPCService_GetById(t *testing.T) {
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		mockId := uuid.NewString()
-		mockQuerier := new(testutil.MockQuerier)
+
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionRead).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.GetById(
@@ -229,21 +239,24 @@ func TestChannelRPCService_GetById(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 }
 
 func TestChannelRPCService_Create(t *testing.T) {
-	t.Run("Successcreates_successfully", func(t *testing.T) {
+	t.Run("Success:creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		sub := testutil.TestAppserverSub(t, nil, true)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverOwner(t, ctx, db)
+
+		svc := &rpcs.ChannelGRPCService{
+			Deps: &rpcs.GrpcDependencies{Db: db, MProducer: testutil.MockRedisProducer}, Auth: testutil.TestMockAuth,
+		}
 
 		// ACT
-		response, err := testutil.TestChannelClient.Create(
+		response, err := svc.Create(
 			ctx,
-			&channel.CreateRequest{Name: "new channel", AppserverId: sub.AppserverID.String()},
+			&channel.CreateRequest{Name: "new channel", AppserverId: su.Server.ID.String()},
 		)
 
 		if err != nil {
@@ -256,16 +269,11 @@ func TestChannelRPCService_Create(t *testing.T) {
 
 	t.Run("Error:when_create_fails_it_errors", func(t *testing.T) {
 		// ARRANGE
-		var nilString *string
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("CreateChannel", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(
-			nil,
-		)
 
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -280,12 +288,11 @@ func TestChannelRPCService_Create(t *testing.T) {
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
-		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		// ACT
 		response, err := testutil.TestChannelClient.Create(ctx, &channel.CreateRequest{})
@@ -301,14 +308,14 @@ func TestChannelRPCService_Create(t *testing.T) {
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
 		var nilString *string
-		ctx := testutil.Setup(t, func() {})
-		mockQuerier := new(testutil.MockQuerier)
+		ctx, db := testutil.Setup(t, func() {})
+
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, nilString, permission.ActionCreate).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(
@@ -322,19 +329,21 @@ func TestChannelRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 }
 
 func TestChannelRPCService_Delete(t *testing.T) {
-	t.Run("Successdeletes_successfully", func(t *testing.T) {
+	t.Run("Success:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		c := testutil.TestChannel(t, nil, true)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		c := f.Channel(t, 0, nil)
+
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestChannelClient.Delete(
+		response, err := svc.Delete(
 			ctx, &channel.DeleteRequest{Id: c.ID.String(), AppserverId: c.AppserverID.String()},
 		)
 
@@ -345,11 +354,14 @@ func TestChannelRPCService_Delete(t *testing.T) {
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		c := testutil.TestChannel(t, nil, true)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		c := f.Channel(t, 0, nil)
+
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestChannelClient.Delete(
+		response, err := svc.Delete(
 			ctx, &channel.DeleteRequest{Id: uuid.NewString(), AppserverId: c.AppserverID.String()},
 		)
 		s, ok := status.FromError(err)
@@ -364,14 +376,14 @@ func TestChannelRPCService_Delete(t *testing.T) {
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
 		mockId := uuid.NewString()
-		ctx := testutil.Setup(t, func() {})
-		mockQuerier := new(testutil.MockQuerier)
+		ctx, db := testutil.Setup(t, func() {})
+
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -385,23 +397,19 @@ func TestChannelRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 
 	t.Run("Error:when_db_fails_it_errors", func(t *testing.T) {
 		// ARRANGE
 		mockId := uuid.NewString()
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
+
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetChannelById", mock.Anything, mock.Anything).Return(qx.Channel{ID: uuid.New()}, nil)
 		mockQuerier.On("DeleteChannel", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("db error"))
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", mock.Anything, &mockId, permission.ActionDelete).Return(
-			nil,
-		)
 
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -416,6 +424,5 @@ func TestChannelRPCService_Delete(t *testing.T) {
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
-		mockAuth.AssertExpectations(t)
 	})
 }

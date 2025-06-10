@@ -21,13 +21,13 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 	var (
 		err        error
-		authorizer = permission.NewAppserverAuthorizer(testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
-		ctx        = testutil.Setup(t, func() {})
+		authorizer = permission.NewAppserverAuthorizer(db.NewQuerier(testutil.TestDbConn))
+		ctx, _     = testutil.Setup(t, func() {})
 	)
 
 	t.Run("ActionRead", func(t *testing.T) {
 		t.Run(string(permission.ActionRead), func(t *testing.T) {
-			t.Run("Successunsubscribe_user_has_access", func(t *testing.T) {
+			t.Run("Success:unsubscribe_user_has_access", func(t *testing.T) {
 				// ACT
 				err = authorizer.Authorize(ctx, nil, permission.ActionRead)
 
@@ -40,7 +40,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	t.Run("ActionCreate", func(t *testing.T) {
 		t.Run(permission.SubActionCreate, func(t *testing.T) {
 
-			t.Run("Successany_user_can_create_appserver", func(t *testing.T) {
+			t.Run("Success:any_user_can_create_appserver", func(t *testing.T) {
 				// ACT
 				err = authorizer.Authorize(ctx, nil, permission.ActionCreate)
 
@@ -53,7 +53,7 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 	t.Run("ActionDelete", func(t *testing.T) {
 		t.Run(permission.SubActionDelete, func(t *testing.T) {
 
-			t.Run("Successowner_can_delete_server", func(t *testing.T) {
+			t.Run("Success:owner_can_delete_server", func(t *testing.T) {
 				// ARRANGE
 				userID, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 				testutil.TestAppuser(t, &qx.Appuser{ID: userID, Username: "foo"}, false)
@@ -69,7 +69,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			t.Run("Error:user_with_manage_appserver_permission_cannot_delete_server", func(t *testing.T) {
 				// ARRANGE
-				tu := factory.UserAppserverWithAllPermissions(t)
+				ctx, db := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverWithAllPermissions(t, ctx, db)
 				idStr := tu.Server.ID.String()
 
 				// ACT
@@ -83,7 +84,8 @@ func TestAppserverAuthorizer_Authorize(t *testing.T) {
 
 			t.Run("Error:user_without_manage_appserver_permission_cannot_delete_server", func(t *testing.T) {
 				// ARRANGE
-				tu := factory.UserAppserverSub(t)
+				ctx, db := testutil.Setup(t, func() {})
+				tu := factory.UserAppserverSub(t, ctx, db)
 				idStr := tu.Server.ID.String()
 
 				// ACT

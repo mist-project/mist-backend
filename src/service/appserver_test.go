@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -32,7 +31,6 @@ func TestAppserverService_PgTypeToPb(t *testing.T) {
 	svc := service.NewAppserverService(
 		ctx,
 		&service.ServiceDeps{
-			DbConn:    testutil.TestDbConn,
 			Db:        new(testutil.MockQuerier),
 			MProducer: producer.NewMProducer(new(testutil.MockRedis)),
 		},
@@ -65,91 +63,77 @@ func TestAppserverService_PgTypeToPb(t *testing.T) {
 
 func TestAppserverService_Create(t *testing.T) {
 
-	t.Run("Successcreation_on_valid_ops", func(t *testing.T) {
+	t.Run("Success:creation_on_valid_ops", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		ctx, _ := testutil.Setup(t, func() {})
 
-		testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "user bar"}, false)
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: parsedUid}, false)
+		server := &qx.Appserver{ID: uuid.New(), Name: "test-app", AppuserID: uuid.New()}
+		expectedRequest := qx.CreateAppserverParams{Name: server.Name, AppuserID: server.AppuserID}
 
-		expectedRequest := qx.CreateAppserverParams{Name: appserver.Name, AppuserID: parsedUid}
-
-		mockTxQuerier := new(testutil.MockQuerier)
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		mockTxQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(
-			qx.Appserver{ID: appserver.ID, Name: appserver.Name}, nil,
+		mockQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(
+			qx.Appserver{ID: server.ID, Name: server.Name}, nil,
 		)
-		mockTxQuerier.On("CreateAppserverSub", mock.Anything, mock.Anything).Return(
-			qx.AppserverSub{}, nil,
-		)
-		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
+		mockQuerier.On("CreateAppserverSub", mock.Anything, mock.Anything).Return(qx.AppserverSub{}, nil)
 
 		// Service initialization
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		response, err := svc.Create(expectedRequest)
 
 		// ASSERT
 		assert.NoError(t, err)
-		assert.Equal(t, appserver.ID, response.ID)
+		assert.Equal(t, server.ID, response.ID)
 		mockQuerier.AssertExpectations(t)
 	})
 
-	t.Run("Error:is_returned_when_starting_tx_fails", func(t *testing.T) {
-		// ARRANGE
-		badConnection, err := pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
-		badConnection.Close()
+	// t.Run("Error:is_returned_when_starting_tx_fails", func(t *testing.T) {
+	// 	// ARRANGE
+	// 	badConnection, err := pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
+	// 	badConnection.Close()
 
-		if err != nil {
-			t.Fatalf("failed to start db connection")
-		}
+	// 	if err != nil {
+	// 		t.Fatalf("failed to start db connection")
+	// 	}
 
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: parsedUid}
+	// 	ctx, _ := testutil.Setup(t, func() {})
+	// 	parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+	// 	expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: parsedUid}
 
-		mockQuerier := new(testutil.MockQuerier)
-		mockRedis := new(testutil.MockRedis)
-		producer := producer.NewMProducer(mockRedis)
+	// 	mockQuerier := new(testutil.MockQuerier)
+	// 	mockRedis := new(testutil.MockRedis)
+	// 	producer := producer.NewMProducer(mockRedis)
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: badConnection, Db: mockQuerier, MProducer: producer},
-		)
+	// 	svc := service.NewAppserverService(
+	// 		ctx, &service.ServiceDeps{DbConn: badConnection, Db: mockQuerier, MProducer: producer},
+	// 	)
 
-		// ACT
-		_, err = svc.Create(expectedRequest)
+	// 	// ACT
+	// 	_, err = svc.Create(expectedRequest)
 
-		// ASSERT
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
-		testutil.AssertCustomErrorContains(t, err, "tx initialization error: closed pool")
-		mockQuerier.AssertExpectations(t)
-	})
+	// 	// ASSERT
+	// 	assert.NotNil(t, err)
+	// 	assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
+	// 	testutil.AssertCustomErrorContains(t, err, "tx initialization error: closed pool")
+	// 	mockQuerier.AssertExpectations(t)
+	// })
 
 	t.Run("Error:is_returned_when_creating_server_fails", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: parsedUid}
+		ctx, _ := testutil.Setup(t, func() {})
+		expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: uuid.New()}
 
-		mockTxQuerier := new(testutil.MockQuerier)
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		mockTxQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(nil, fmt.Errorf("a db error"))
-		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
+		mockQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(nil, fmt.Errorf("a db error"))
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// // ACT
 		_, err := svc.Create(expectedRequest)
@@ -163,24 +147,20 @@ func TestAppserverService_Create(t *testing.T) {
 
 	t.Run("Error:is_returned_when_creating_appserver_sub_fails", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: parsedUid}
+		ctx, _ := testutil.Setup(t, func() {})
+		server := qx.Appserver{ID: uuid.New(), Name: "test-app", AppuserID: uuid.New()}
+		expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: server.AppuserID}
 
-		mockTxQuerier := new(testutil.MockQuerier)
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		mockTxQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(qx.Appserver{}, nil)
-		mockTxQuerier.On("CreateAppserverSub", mock.Anything, mock.Anything).Return(
-			qx.AppserverSub{}, fmt.Errorf("a db error"),
+		mockQuerier.On("CreateAppserver", mock.Anything, expectedRequest).Return(server, nil)
+		mockQuerier.On("CreateAppserverSub", mock.Anything, mock.Anything).Return(
+			nil, fmt.Errorf("a db error"),
 		)
-		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// // ACT
 		_, err := svc.Create(expectedRequest)
@@ -191,54 +171,13 @@ func TestAppserverService_Create(t *testing.T) {
 		testutil.AssertCustomErrorContains(t, err, "create appserver sub error: a db error")
 		mockQuerier.AssertExpectations(t)
 	})
-
-	t.Run("Error:commit_fails_with_error", func(t *testing.T) {
-		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "user bar"}, false)
-		appserver := testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: parsedUid}, false)
-
-		expectedServer := qx.CreateAppserverParams{Name: appserver.Name, AppuserID: parsedUid}
-		expectedSub := qx.CreateAppserverSubParams{AppserverID: appserver.ID, AppuserID: parsedUid}
-
-		mockTx := new(testutil.MockTx)
-		mockQuerier := new(testutil.MockQuerier)
-		mockRedis := new(testutil.MockRedis)
-		producer := producer.NewMProducer(mockRedis)
-		mockTxQuerier := new(testutil.MockQuerier)
-
-		mockTx.On("Commit", mock.Anything).Return(fmt.Errorf("commit failed"))
-		mockTxQuerier.On("CreateAppserver", mock.Anything, expectedServer).Return(
-			qx.Appserver{ID: appserver.ID, Name: appserver.Name}, nil,
-		)
-		mockTxQuerier.On("CreateAppserverSub", mock.Anything, expectedSub).Return(
-			qx.AppserverSub{}, nil,
-		)
-
-		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
-
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
-
-		// ACT
-		_, err := svc.CreateWithTx(expectedServer, mockTx)
-
-		// ASSERT
-		assert.NotNil(t, err)
-		assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
-		testutil.AssertCustomErrorContains(t, err, "database error commit: commit failed")
-		mockTx.AssertExpectations(t)
-		mockQuerier.AssertExpectations(t)
-	})
 }
 
 func TestAppserverService_GetById(t *testing.T) {
 
-	t.Run("Successappserver_return", func(t *testing.T) {
+	t.Run("Success:appserver_return", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		expected := qx.Appserver{ID: appserverId, Name: "test-app"}
 
@@ -248,9 +187,7 @@ func TestAppserverService_GetById(t *testing.T) {
 
 		mockQuerier.On("GetAppserverById", ctx, appserverId).Return(expected, nil)
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		actual, err := svc.GetById(appserverId)
@@ -264,7 +201,7 @@ func TestAppserverService_GetById(t *testing.T) {
 
 	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -274,9 +211,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		mockQuerier.On("GetAppserverById", ctx, appserverId).
 			Return(nil, fmt.Errorf(message.DbNotFound))
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		_, err := svc.GetById(appserverId)
@@ -290,7 +225,7 @@ func TestAppserverService_GetById(t *testing.T) {
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -300,9 +235,7 @@ func TestAppserverService_GetById(t *testing.T) {
 		mockQuerier.On("GetAppserverById", ctx, appserverId).
 			Return(nil, fmt.Errorf("connection reset by peer"))
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		_, err := svc.GetById(appserverId)
@@ -317,14 +250,13 @@ func TestAppserverService_GetById(t *testing.T) {
 
 func TestAppserverService_List(t *testing.T) {
 
-	t.Run("Successwith_name_filter", func(t *testing.T) {
+	t.Run("Success:with_name_filter", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ownerID := uuid.New()
 		nameFilter := "test-app"
-		expected := []qx.Appserver{
-			{ID: uuid.New(), Name: nameFilter, AppuserID: ownerID},
-		}
+		expected := []qx.Appserver{{ID: uuid.New(), Name: nameFilter, AppuserID: ownerID}}
+		name := pgtype.Text{Valid: true, String: nameFilter}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -334,10 +266,7 @@ func TestAppserverService_List(t *testing.T) {
 			return p.AppuserID == ownerID && p.Name.Valid && p.Name.String == nameFilter
 		})).Return(expected, nil)
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
-		var name = pgtype.Text{Valid: true, String: nameFilter}
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		result, err := svc.List(qx.ListAppserversParams{Name: name, AppuserID: ownerID})
@@ -348,13 +277,12 @@ func TestAppserverService_List(t *testing.T) {
 		mockQuerier.AssertExpectations(t)
 	})
 
-	t.Run("Successwithout_name_filter", func(t *testing.T) {
+	t.Run("Success:without_name_filter", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ownerID := uuid.New()
-		expected := []qx.Appserver{
-			{ID: uuid.New(), Name: "app-1", AppuserID: ownerID},
-		}
+		expected := []qx.Appserver{{ID: uuid.New(), Name: "app-1", AppuserID: ownerID}}
+		name := pgtype.Text{Valid: false, String: ""}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -364,10 +292,7 @@ func TestAppserverService_List(t *testing.T) {
 			return p.AppuserID == ownerID && !p.Name.Valid
 		})).Return(expected, nil)
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
-		var name = pgtype.Text{Valid: false, String: ""}
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		result, err := svc.List(qx.ListAppserversParams{Name: name, AppuserID: ownerID})
@@ -380,8 +305,9 @@ func TestAppserverService_List(t *testing.T) {
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		ownerID := uuid.New()
+		name := pgtype.Text{Valid: false, String: ""}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -390,10 +316,7 @@ func TestAppserverService_List(t *testing.T) {
 		mockQuerier.On("ListAppservers", ctx, mock.Anything).
 			Return([]qx.Appserver(nil), fmt.Errorf("some db error"))
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
-		var name = pgtype.Text{Valid: false, String: ""}
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		_, err := svc.List(qx.ListAppserversParams{Name: name, AppuserID: ownerID})
@@ -408,10 +331,10 @@ func TestAppserverService_List(t *testing.T) {
 
 func TestAppserverService_Delete(t *testing.T) {
 
-	ctx := testutil.Setup(t, func() {})
+	ctx, _ := testutil.Setup(t, func() {})
 	appserverId := uuid.New()
 
-	t.Run("Successdeletion", func(t *testing.T) {
+	t.Run("Success:deletion", func(t *testing.T) {
 		// ARRANGE
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -421,9 +344,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(1), nil)
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return([]qx.ListAppserverUserSubsRow{}, nil)
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		err := svc.Delete(appserverId)
@@ -434,7 +355,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockRedis.AssertExpectations(t)
 	})
 
-	t.Run("Successdeletion_with_subs_sends_notification", func(t *testing.T) {
+	t.Run("Success:deletion_with_subs_sends_notification", func(t *testing.T) {
 		// ARRANGE
 		subs := []qx.ListAppserverUserSubsRow{
 			{AppuserID: uuid.New(), AppuserUsername: "user1"},
@@ -456,9 +377,8 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return(subs, nil)
 		mockRedis.On("Publish", ctx, os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything).Return(redis.NewIntCmd(ctx))
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
+
 		_ = svc.Delete(appserverId)
 
 		// ACT
@@ -478,9 +398,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		err := svc.Delete(appserverId)
@@ -500,9 +418,7 @@ func TestAppserverService_Delete(t *testing.T) {
 
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return(nil, fmt.Errorf("db failure"))
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		err := svc.Delete(appserverId)
@@ -524,9 +440,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return([]qx.ListAppserverUserSubsRow{}, nil)
 		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(nil, fmt.Errorf("db failure"))
 
-		svc := service.NewAppserverService(
-			ctx, &service.ServiceDeps{DbConn: testutil.TestDbConn, Db: mockQuerier, MProducer: producer},
-		)
+		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 
 		// ACT
 		err := svc.Delete(appserverId)

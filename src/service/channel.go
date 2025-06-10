@@ -102,10 +102,10 @@ func (s *ChannelService) Filter(obj qx.FilterChannelParams) ([]qx.Channel, error
 func (s *ChannelService) Delete(id uuid.UUID) error {
 	// TODO: doing double queries here "fetching" the sub and then deleting it. maybe change this so that
 	// we can do it in one query.
-	channel, err := s.deps.Db.GetChannelById(s.ctx, id)
+	channel, err := s.GetById(id)
 
 	if err != nil {
-		return faults.DatabaseError(fmt.Sprintf("error deleting channel: %v", err), slog.LevelError)
+		return faults.ExtendError(err)
 	}
 
 	deleted, err := s.deps.Db.DeleteChannel(s.ctx, id)

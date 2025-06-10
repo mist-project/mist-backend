@@ -47,10 +47,11 @@ var (
 	TestChannelRoleClient      channel_role.ChannelRoleServiceClient
 	testClientConn             *grpc.ClientConn
 
-	TestDbConn    *pgxpool.Pool
-	TestKProducer = new(MockProducer)
-	mockRedis     = new(MockRedis)
-	TestRedis     = producer.NewMProducer(mockRedis)
+	TestDbConn        *pgxpool.Pool
+	TestKProducer     = new(MockProducer)
+	mockRedis         = new(MockRedis)
+	MockRedisProducer = producer.NewMProducer(mockRedis)
+	TestMockAuth      = new(MockAuthorizer)
 
 	once sync.Once
 
@@ -113,6 +114,9 @@ func SetupTestGRPCServicesAndClient() {
 		lis net.Listener
 	)
 
+	// Base MockAuth to skip authorization in tests
+	TestMockAuth.On("Authorize", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 	if lis, err = net.Listen("tcp", ":0"); err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -125,9 +129,8 @@ func SetupTestGRPCServicesAndClient() {
 	TestKProducer.On("SendMessage", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	mockRedis.On("Publish", mock.Anything, mock.Anything, mock.Anything).Return(redis.NewIntCmd(context.Background()))
 	rpcs.RegisterGrpcServices(testServer, &rpcs.GrpcDependencies{
-		DbConn:    TestDbConn,
-		Db:        db.NewQuerier(qx.New(TestDbConn)),
-		MProducer: TestRedis,
+		Db:        db.NewQuerier(TestDbConn),
+		MProducer: MockRedisProducer,
 	})
 
 	go func() {
@@ -170,12 +173,19 @@ func RpcTestCleanup() {
 	}
 }
 
-func Setup(t *testing.T, cleanup func()) context.Context {
+func Setup(t *testing.T, cleanup func()) (context.Context, db.Querier) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	DefaultUserId = uuid.NewString()
 	ctx = context.WithValue(ctx, CtxUserKey, DefaultUserId)
 
+	q, err := db.NewQuerier(TestDbConn).Begin(ctx)
+
+	if err != nil {
+		t.Fatalf("failed to begin transaction: %v", err)
+	}
+
 	t.Cleanup(func() {
+		q.Rollback(ctx)
 		teardown(ctx)
 		cleanup()
 		cancel()
@@ -198,7 +208,7 @@ func Setup(t *testing.T, cleanup func()) context.Context {
 	ctx = metadata.NewOutgoingContext(ctx, grpcMeta)
 	ctx = context.WithValue(ctx, middleware.JwtClaimsK, claims)
 
-	return ctx
+	return ctx, q
 }
 
 func teardown(ctx context.Context) {
@@ -217,7 +227,8 @@ func teardown(ctx context.Context) {
 		query := fmt.Sprintf(`TRUNCATE TABLE %s RESTART IDENTITY CASCADE;`, table)
 
 		if _, err := TestDbConn.Exec(ctx, query); err != nil {
-			log.Fatalf("Failed to truncate table: %v", err)
+			// add calee to the log message for better debugging
+			log.Printf("Failed to truncate table %s: %v", table, err)
 		}
 	}
 }

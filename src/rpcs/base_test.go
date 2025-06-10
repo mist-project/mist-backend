@@ -12,13 +12,13 @@ import (
 )
 
 func TestBaseInterceptors_Success(t *testing.T) {
-	t.Run("Successcreating_interceptors_does_not_fail", func(t *testing.T) {
+	t.Run("Success:creating_interceptors_does_not_fail", func(t *testing.T) {
 		opt, err := rpcs.BaseInterceptors()
 		assert.NotNil(t, opt)
 		assert.Nil(t, err)
 	})
 
-	t.Run("Successcreating_interceptors_does_not_fail", func(t *testing.T) {
+	t.Run("Success:creating_interceptors_does_not_fail", func(t *testing.T) {
 		// ARRANGE
 		mockValidator := new(testutil.MockProtovalidator)
 		// Backup and override the global validator creator

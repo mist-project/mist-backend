@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 
 	"mist/src/faults"
 	"mist/src/middleware"
@@ -16,18 +16,16 @@ import (
 )
 
 type AppserverAuthorizer struct {
-	DbConn *pgxpool.Pool
+	DbTx   pgx.Tx
 	Db     db.Querier
 	shared *SharedAuthorizer
 }
 
-func NewAppserverAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverAuthorizer {
+func NewAppserverAuthorizer(Db db.Querier) *AppserverAuthorizer {
 	return &AppserverAuthorizer{
-		DbConn: DbConn,
-		Db:     Db,
+		Db: Db,
 		shared: &SharedAuthorizer{
-			DbConn: DbConn,
-			Db:     Db,
+			Db: Db,
 		},
 	}
 }
@@ -60,7 +58,7 @@ func (auth *AppserverAuthorizer) Authorize(
 		return faults.AuthorizationError(fmt.Sprintf("object id is required for action: %s", action), slog.LevelDebug)
 	}
 
-	obj, err = GetObject(ctx, auth.shared, objId, service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById)
+	obj, err = GetObject(ctx, auth.shared, objId, service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db}).GetById)
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error
 		return faults.ExtendError(err)

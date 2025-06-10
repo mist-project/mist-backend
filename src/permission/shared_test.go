@@ -19,7 +19,7 @@ import (
 func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 	t.Run("Success:user_is_owner", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		server := qx.Appserver{
 			ID:        uuid.New(),
@@ -30,7 +30,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
 
-		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
+		auth := permission.NewSharedAuthorizer(mockQuerier)
 
 		// ACT
 		isOwner, err := auth.UserIsServerOwner(ctx, userID, server.ID)
@@ -43,7 +43,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 
 	t.Run("Success:user_is_not_owner", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		server := qx.Appserver{
 			ID:   uuid.New(),
@@ -53,7 +53,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
 
-		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
+		auth := permission.NewSharedAuthorizer(mockQuerier)
 
 		// ACT
 		isOwner, err := auth.UserIsServerOwner(ctx, userID, server.ID)
@@ -66,7 +66,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		server := qx.Appserver{
 			ID: uuid.New(),
@@ -75,7 +75,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(qx.Appserver{}, fmt.Errorf("db fail"))
 
-		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
+		auth := permission.NewSharedAuthorizer(mockQuerier)
 
 		// ACT
 		isOwner, err := auth.UserIsServerOwner(ctx, userID, server.ID)
@@ -92,7 +92,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 	t.Run("Success:user_has_sub", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		server := qx.Appserver{
 			ID:        uuid.New(),
@@ -114,7 +114,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 			},
 		}, nil)
 
-		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
+		auth := permission.NewSharedAuthorizer(mockQuerier)
 
 		// ACT
 		hasSub, err := auth.UserHasServerSub(ctx, userID, server.ID)
@@ -127,7 +127,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 
 	t.Run("Success:user_does_not_have_sub", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		server := qx.Appserver{
 			ID: uuid.New(),
@@ -139,7 +139,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userID},
 		}).Return([]qx.FilterAppserverSubRow{}, nil)
 
-		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
+		auth := permission.NewSharedAuthorizer(mockQuerier)
 
 		// ACT
 		hasSub, err := auth.UserHasServerSub(ctx, userID, server.ID)
@@ -152,7 +152,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
 		server := qx.Appserver{
 			ID:        uuid.New(),
@@ -166,7 +166,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 			AppuserID:   pgtype.UUID{Valid: true, Bytes: userID},
 		}).Return(nil, fmt.Errorf("db error"))
 
-		auth := permission.NewSharedAuthorizer(testutil.TestDbConn, mockQuerier)
+		auth := permission.NewSharedAuthorizer(mockQuerier)
 
 		// ACT
 		hasSub, err := auth.UserHasServerSub(ctx, userID, server.ID)

@@ -16,7 +16,6 @@ import (
 	"mist/src/producer"
 	"mist/src/producer/mist_redis"
 	"mist/src/psql_db/db"
-	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )
 
@@ -46,11 +45,11 @@ func InitializeServer(redisClient *redis.Client) {
 	}
 
 	// Create a new gRPC server with the interceptors
+
 	s := grpc.NewServer(interceptors)
 	// Register the gRPC services
 	rpcs.RegisterGrpcServices(s, &rpcs.GrpcDependencies{
-		DbConn:    dbConn,
-		Db:        db.NewQuerier(qx.New(dbConn)),
+		Db:        db.NewQuerier(dbConn),
 		MProducer: producer.NewMProducer(redisClient),
 	})
 

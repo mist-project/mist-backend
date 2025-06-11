@@ -6,7 +6,6 @@ import (
 	"mist/src/psql_db/qx"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -14,9 +13,29 @@ type MockQuerier struct {
 	mock.Mock
 }
 
-func (m *MockQuerier) WithTx(tx pgx.Tx) db.Querier {
-	args := m.Called(tx)
-	return args.Get(0).(db.Querier)
+func (m *MockQuerier) Begin(ctx context.Context) (db.Querier, error) {
+	args := m.Called(ctx)
+
+	err := args.Error(1)
+	if err != nil {
+		return nil, err
+	}
+
+	return args.Get(0).(db.Querier), nil
+}
+
+func (m *MockQuerier) Commit(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
+// Rollback(ctx context.Context) error
+func (m *MockQuerier) Rollback(ctx context.Context) error {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return args.Error(0)
+	}
+	return args.Error(0)
 }
 
 func (m *MockQuerier) CreateAppserver(ctx context.Context, arg qx.CreateAppserverParams) (qx.Appserver, error) {

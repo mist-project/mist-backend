@@ -18,7 +18,7 @@ func (s *AppserverSubGRPCService) Create(
 ) (*appserver_sub.CreateResponse, error) {
 
 	subService := service.NewAppserverSubService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	claims, _ := middleware.GetJWTClaims(ctx)
 
@@ -43,7 +43,7 @@ func (s *AppserverSubGRPCService) ListUserServerSubs(
 
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 
 	claims, _ := middleware.GetJWTClaims(ctx)
@@ -85,7 +85,7 @@ func (s *AppserverSubGRPCService) ListAppserverUserSubs(
 
 	// Initialize the service for AppserverSub
 	subService := service.NewAppserverSubService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	results, _ := subService.ListAppserverUserSubs(serverId)
 
@@ -109,9 +109,7 @@ func (s *AppserverSubGRPCService) Delete(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
@@ -119,7 +117,7 @@ func (s *AppserverSubGRPCService) Delete(
 
 	id, _ := uuid.Parse((req.Id))
 	err = service.NewAppserverSubService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	).Delete(id)
 
 	// Error handling

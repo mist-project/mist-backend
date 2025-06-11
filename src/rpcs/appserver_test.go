@@ -13,21 +13,24 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"mist/src/faults"
+	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/protos/v1/appserver"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 	"mist/src/service"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestAppserverRPCService_List(t *testing.T) {
-	t.Run("Successcan_returns_nothing_successfully", func(t *testing.T) {
+	t.Run("Success:can_returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
+
 		// ACT
-		response, err := testutil.TestAppserverClient.List(
+		response, err := svc.List(
 			ctx, &appserver.ListRequest{Name: wrapperspb.String("random")},
 		)
 		if err != nil {
@@ -38,16 +41,14 @@ func TestAppserverRPCService_List(t *testing.T) {
 		assert.Equal(t, 0, len(response.GetAppservers()))
 	})
 
-	t.Run("Successcan_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
+	t.Run("Success:can_return_all_resources_associated_with_user_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
-		testutil.TestAppserver(t, &qx.Appserver{Name: "foo", AppuserID: appuser.ID}, false)
-		testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		factory.UserAppserverOwner(t, ctx, db)
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverClient.List(
+		response, err := svc.List(
 			ctx, &appserver.ListRequest{},
 		)
 
@@ -56,20 +57,19 @@ func TestAppserverRPCService_List(t *testing.T) {
 		}
 
 		// ASSERT
-		assert.Equal(t, 2, len(response.GetAppservers()))
+		assert.Equal(t, 1, len(response.GetAppservers()))
 	})
 
-	t.Run("Successcan_filter_successfully", func(t *testing.T) {
+	t.Run("Success:can_filter_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
-		aserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: appuser.ID}, false)
-		testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverOwner(t, ctx, db)
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverClient.List(
-			ctx, &appserver.ListRequest{Name: wrapperspb.String(aserver.Name)},
+		response, err := svc.List(
+			ctx, &appserver.ListRequest{Name: wrapperspb.String(su.Server.Name)},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)
@@ -81,15 +81,15 @@ func TestAppserverRPCService_List(t *testing.T) {
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 
-		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
+
 		mockAuth.On("Authorize", mock.Anything, mock.Anything, permission.ActionRead).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.List(ctx, &appserver.ListRequest{Name: &wrapperspb.StringValue{Value: "foo"}})
@@ -99,20 +99,21 @@ func TestAppserverRPCService_List(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 }
 
 func TestAppserverRPCService_GetById(t *testing.T) {
-	t.Run("Successreturns_successfully", func(t *testing.T) {
+	t.Run("Success:returns_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		aserver := testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		server := factory.NewFactory(ctx, db).Appserver(t, 0, nil)
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverClient.GetById(
-			ctx, &appserver.GetByIdRequest{Id: aserver.ID.String()},
+		response, err := svc.GetById(
+			ctx, &appserver.GetByIdRequest{Id: server.ID.String()},
 		)
 
 		if err != nil {
@@ -120,28 +121,16 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 		}
 
 		// ASSERT
-		assert.Equal(t, aserver.ID.String(), response.GetAppserver().Id)
+		assert.Equal(t, server.ID.String(), response.GetAppserver().Id)
 		assert.Equal(t, false, response.GetAppserver().IsOwner)
-		assert.Equal(t, aserver.Name, response.GetAppserver().Name)
+		assert.Equal(t, server.Name, response.GetAppserver().Name)
 	})
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 
-		// ACT
-		_, err := testutil.TestAppserverClient.GetById(
-			ctx, &appserver.GetByIdRequest{Id: uuid.NewString()},
-		)
-		_, _ = status.FromError(err)
-
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead).Return(nil)
-
-		svc := &rpcs.AppserverGRPCService{
-			Deps: &rpcs.GrpcDependencies{Db: db.NewQuerier(qx.New(testutil.TestDbConn)), DbConn: testutil.TestDbConn},
-			Auth: mockAuth,
-		}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		response, err := svc.GetById(
@@ -158,7 +147,7 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 
 	t.Run("Error:invalid_uuid_returns_parsing_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		// ACT
 		response, err := testutil.TestAppserverClient.GetById(
@@ -175,15 +164,15 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 
-		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
+
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionRead).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.GetById(ctx, &appserver.GetByIdRequest{Id: "foo"})
@@ -193,23 +182,32 @@ func TestAppserverRPCService_GetById(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 }
 
 func TestAppserverRPCService_Create(t *testing.T) {
 
-	t.Run("Successcreates_successfully", func(t *testing.T) {
+	t.Run("Success:creates_successfully", func(t *testing.T) {
 		// ARRANGE
-		var count int
-		ctx := testutil.Setup(t, func() {})
-		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: userId, Username: "foo"}, false)
+		ctx, _ := testutil.Setup(t, func() {})
+		claims, _ := middleware.GetJWTClaims(ctx)
+		serverId := uuid.New()
+		expectedRequest := qx.CreateAppserverParams{AppuserID: uuid.MustParse(claims.UserID), Name: "boo"}
+		expectedSub := qx.CreateAppserverSubParams{AppuserID: uuid.MustParse(claims.UserID), AppserverID: serverId}
 
+		mockQuerier := new(testutil.MockQuerier)
+		mockTxQuerier := new(testutil.MockQuerier)
+
+		mockQuerier.On("Begin", mock.Anything).Return(mockTxQuerier, nil)
+		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(qx.Appserver{ID: serverId}, nil)
+		mockTxQuerier.On("CreateAppserverSub", ctx, expectedSub).Return(qx.AppserverSub{}, nil)
+		mockTxQuerier.On("Commit", ctx).Return(nil)
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 		// ACT
-		response, err := testutil.TestAppserverClient.Create(
-			ctx, &appserver.CreateRequest{Name: "someone"},
+		_, err := svc.Create(
+			ctx, &appserver.CreateRequest{Name: expectedRequest.Name},
 		)
 
 		if err != nil {
@@ -217,23 +215,13 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		}
 
 		// ASSERT
-		_ = testutil.TestDbConn.QueryRow(ctx, "SELECT COUNT(*) FROM appserver").Scan(&count)
-
-		serverSubs, _ := service.NewAppserverSubService(
-			ctx,
-			&service.ServiceDeps{
-				Db:        db.NewQuerier(qx.New(testutil.TestDbConn)),
-				DbConn:    testutil.TestDbConn,
-				MProducer: testutil.TestRedis,
-			}).ListUserServerSubs(appuser.ID)
-		assert.NotNil(t, response.Appserver)
-		assert.Equal(t, 1, len(serverSubs))
-		assert.Equal(t, 1, count)
+		mockTxQuerier.AssertExpectations(t)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:invalid_arguments_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 
 		// ACT
 		response, err := testutil.TestAppserverClient.Create(ctx, &appserver.CreateRequest{})
@@ -248,25 +236,22 @@ func TestAppserverRPCService_Create(t *testing.T) {
 
 	t.Run("Error:error_on_db_exists_gracefully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
+
 		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
 		expectedRequest := qx.CreateAppserverParams{AppuserID: userId, Name: "boo"}
 
-		mockTxQuerier := new(testutil.MockQuerier)
-		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
-
 		mockQuerier := new(testutil.MockQuerier)
-		mockQuerier.On("WithTx", mock.Anything).Return(mockTxQuerier)
+		mockTxQuerier := new(testutil.MockQuerier)
 
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionCreate).Return(nil)
+		mockQuerier.On("Begin", mock.Anything).Return(mockTxQuerier, nil)
+		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
+		mockTxQuerier.On("Rollback", ctx).Return(nil, fmt.Errorf("a db error"))
 
-		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		_, err := svc.Create(ctx, &appserver.CreateRequest{
-			Name: "boo",
-		})
+		_, err := svc.Create(ctx, &appserver.CreateRequest{Name: "boo"})
 
 		// ASSERT
 		s, ok := status.FromError(err)
@@ -275,20 +260,40 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
-		mockAuth.AssertExpectations(t)
+		mockTxQuerier.AssertExpectations(t)
+	})
+
+	t.Run("Error:error_on_db_begin_exists_gracefully", func(t *testing.T) {
+		// ARRANGE
+		ctx, _ := testutil.Setup(t, func() {})
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("Begin", mock.Anything).Return(nil, faults.DatabaseError("a db error", slog.LevelError))
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
+
+		// ACT
+		_, err := svc.Create(ctx, &appserver.CreateRequest{Name: "boo"})
+
+		// ASSERT
+		s, ok := status.FromError(err)
+		assert.NotNil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 
-		mockQuerier := new(testutil.MockQuerier)
 		mockAuth := new(testutil.MockAuthorizer)
 		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionCreate).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Create(ctx, &appserver.CreateRequest{
@@ -300,41 +305,40 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 }
 
 func TestAppserverRPCService_Delete(t *testing.T) {
 
-	t.Run("Successdeletes_successfully", func(t *testing.T) {
+	t.Run("Success:deletes_successfully", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-		appuser := testutil.TestAppuser(t, &qx.Appuser{ID: parsedUid, Username: "foo"}, false)
-		aserver := testutil.TestAppserver(t, &qx.Appserver{Name: "bar", AppuserID: parsedUid}, false)
-		testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: aserver.ID, AppuserID: parsedUid}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		sub := factory.NewFactory(ctx, db).AppserverSub(t, 0, nil)
 
 		subService := service.NewAppserverSubService(
 			ctx,
 			&service.ServiceDeps{
-				Db:        db.NewQuerier(qx.New(testutil.TestDbConn)),
-				DbConn:    testutil.TestDbConn,
-				MProducer: testutil.TestRedis,
+				Db:        db,
+				MProducer: testutil.MockRedisProducer,
 			},
 		)
 
 		// ASSERT
-		serverSubs, _ := subService.ListUserServerSubs(appuser.ID)
+		serverSubs, _ := subService.ListUserServerSubs(sub.AppuserID)
 		assert.Equal(t, 1, len(serverSubs))
 
+		svc := &rpcs.AppserverGRPCService{
+			Deps: &rpcs.GrpcDependencies{Db: db, MProducer: testutil.MockRedisProducer}, Auth: testutil.TestMockAuth,
+		}
+
 		// ACT
-		response, err := testutil.TestAppserverClient.Delete(
-			ctx, &appserver.DeleteRequest{Id: aserver.ID.String()},
+		response, err := svc.Delete(
+			ctx, &appserver.DeleteRequest{Id: sub.AppserverID.String()},
 		)
 
 		// ASSERT
-		serverSubs, _ = subService.ListUserServerSubs(appuser.ID)
+		serverSubs, _ = subService.ListUserServerSubs(sub.AppuserID)
 		assert.NotNil(t, response)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(serverSubs))
@@ -342,10 +346,12 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 
 	t.Run("Error:invalid_id_returns_not_found_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
-		response, err := testutil.TestAppserverClient.Delete(ctx, &appserver.DeleteRequest{Id: uuid.NewString()})
+		response, err := svc.Delete(ctx, &appserver.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// ASSERT
@@ -357,37 +363,35 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 
 	t.Run("Error:on_database_failure_it_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		mockAuth := new(testutil.MockAuthorizer)
-		mockAuth.On("Authorize", ctx, mock.Anything, permission.ActionDelete).Return(nil)
+		ctx, _ := testutil.Setup(t, func() {})
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockQuerier.On("ListAppserverUserSubs", ctx, mock.Anything).Return(nil, fmt.Errorf("a db error"))
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
+
 		// ACT
-		svc := &rpcs.AppserverGRPCService{
-			Deps: &rpcs.GrpcDependencies{
-				Db:     db.NewQuerier(qx.New(testutil.TestDbConn)),
-				DbConn: testutil.TestDbConn,
-			},
-			Auth: mockAuth,
-		}
 		_, err := svc.Delete(ctx, &appserver.DeleteRequest{Id: uuid.NewString()})
 		s, ok := status.FromError(err)
 
 		// // ASSERT
 		assert.True(t, ok)
-		assert.Equal(t, codes.NotFound, s.Code())               // Check that the error code is NotFound
-		assert.Contains(t, s.Message(), faults.NotFoundMessage) // Check the error message
+		assert.Equal(t, codes.Internal, s.Code())                    // Check that the error code is NotFound
+		assert.Contains(t, s.Message(), faults.DatabaseErrorMessage) // Check the error message
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {
 		// ARRANGE
 		roleId := uuid.NewString()
-		ctx := testutil.Setup(t, func() {})
-		mockQuerier := new(testutil.MockQuerier)
+		ctx, db := testutil.Setup(t, func() {})
+
 		mockAuth := new(testutil.MockAuthorizer)
+
 		mockAuth.On("Authorize", mock.Anything, &roleId, permission.ActionDelete).Return(
 			faults.AuthorizationError("Unauthorized", slog.LevelDebug),
 		)
 
-		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier, DbConn: testutil.TestDbConn}, Auth: mockAuth}
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: mockAuth}
 
 		// ACT
 		_, err := svc.Delete(
@@ -401,7 +405,6 @@ func TestAppserverRPCService_Delete(t *testing.T) {
 		assert.Equal(t, codes.PermissionDenied, s.Code())
 		assert.True(t, ok)
 		assert.Contains(t, err.Error(), faults.AuthorizationErrorMessage)
-		mockQuerier.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
 	})
 }

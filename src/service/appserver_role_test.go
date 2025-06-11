@@ -46,7 +46,6 @@ func TestAppserverRoleService_PgTypeToPb(t *testing.T) {
 	svc := service.NewAppserverRoleService(
 		context.Background(),
 		&service.ServiceDeps{
-			DbConn:    testutil.TestDbConn,
 			Db:        new(testutil.MockQuerier),
 			MProducer: producer.NewMProducer(new(testutil.MockRedis)),
 		},
@@ -61,9 +60,9 @@ func TestAppserverRoleService_PgTypeToPb(t *testing.T) {
 
 func TestAppserverRoleService_Create(t *testing.T) {
 
-	t.Run("Successcreate_role", func(t *testing.T) {
+	t.Run("Success:create_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		obj := qx.CreateAppserverRoleParams{AppserverID: uuid.New(), Name: "editor"}
 		expected := qx.AppserverRole{ID: uuid.New(), AppserverID: obj.AppserverID, Name: obj.Name}
 
@@ -74,7 +73,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 		mockQuerier.On("CreateAppserverRole", ctx, obj).Return(expected, nil)
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -89,7 +88,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 
 	t.Run("Error:on_create_failure", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		obj := qx.CreateAppserverRoleParams{AppserverID: uuid.New(), Name: "viewer"}
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -99,7 +98,7 @@ func TestAppserverRoleService_Create(t *testing.T) {
 		mockQuerier.On("CreateAppserverRole", ctx, obj).Return(nil, fmt.Errorf("creation failed"))
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -115,9 +114,9 @@ func TestAppserverRoleService_Create(t *testing.T) {
 
 func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 
-	t.Run("Successlist_roles", func(t *testing.T) {
+	t.Run("Success:list_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		expected := []qx.AppserverRole{{ID: uuid.New(), AppserverID: appserverId, Name: "admin"}}
 
@@ -128,7 +127,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 		mockQuerier.On("ListAppserverRoles", ctx, appserverId).Return(expected, nil)
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -142,7 +141,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -152,7 +151,7 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 		mockQuerier.On("ListAppserverRoles", ctx, appserverId).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -168,9 +167,9 @@ func TestAppserverRoleService_ListAppserverRoles(t *testing.T) {
 
 func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 
-	t.Run("Successgets_roles", func(t *testing.T) {
+	t.Run("Success:gets_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		expectedRequest := qx.GetAppuserRolesParams{
 			AppserverID: uuid.New(),
 			AppuserID:   uuid.New(),
@@ -184,7 +183,7 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 		mockQuerier.On("GetAppuserRoles", ctx, expectedRequest).Return(expected, nil)
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -198,7 +197,7 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 
 	t.Run("Error:on_db_failure", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		expectedRequest := qx.GetAppuserRolesParams{
 			AppserverID: uuid.New(),
 			AppuserID:   uuid.New(),
@@ -210,7 +209,7 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 		mockQuerier.On("GetAppuserRoles", ctx, expectedRequest).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -226,9 +225,9 @@ func TestAppserverRoleService_GetAppuserRoles(t *testing.T) {
 
 func TestAppserverRoleService_GetById(t *testing.T) {
 
-	t.Run("Successreturns_appserver_role_object", func(t *testing.T) {
+	t.Run("Success:returns_appserver_role_object", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		roleId := uuid.New()
 		expected := qx.AppserverRole{ID: roleId, Name: "test-app"}
 
@@ -239,7 +238,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		mockQuerier.On("GetAppserverRoleById", ctx, roleId).Return(expected, nil)
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -254,7 +253,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 	t.Run("Error:returns_not_found_when_no_rows", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -263,7 +262,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).Return(nil, fmt.Errorf(message.DbNotFound))
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -277,7 +276,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 	t.Run("Error:returns_database_error_on_failure", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -286,7 +285,7 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 		mockQuerier.On("GetAppserverRoleById", ctx, appserverId).Return(nil, fmt.Errorf("boom"))
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -302,9 +301,9 @@ func TestAppserverRoleService_GetById(t *testing.T) {
 
 func TestAppserverRoleService_Delete(t *testing.T) {
 
-	t.Run("Successdelete_role", func(t *testing.T) {
+	t.Run("Success:delete_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		params := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -314,7 +313,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(int64(1), nil)
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -327,7 +326,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 	t.Run("Error:no_rows_deleted", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		params := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -337,7 +336,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(int64(0), nil)
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -352,7 +351,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 
 	t.Run("Error:db_failure_on_delete", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		params := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -362,7 +361,7 @@ func TestAppserverRoleService_Delete(t *testing.T) {
 		mockQuerier.On("DeleteAppserverRole", ctx, params).Return(nil, fmt.Errorf("db crash"))
 
 		svc := service.NewAppserverRoleService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT

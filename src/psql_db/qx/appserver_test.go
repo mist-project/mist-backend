@@ -13,18 +13,18 @@ import (
 )
 
 func TestQuerier_CreateAppserver(t *testing.T) {
-	t.Run("Successcreate_appserver", func(t *testing.T) {
+	t.Run("Success:create_appserver", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		user := testutil.TestAppuser(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		u := factory.NewFactory(ctx, db).Appuser(t, 0, nil)
 
 		params := qx.CreateAppserverParams{
 			Name:      "Test Server",
-			AppuserID: user.ID,
+			AppuserID: u.ID,
 		}
 
 		// ACT
-		server, err := qx.New(testutil.TestDbConn).CreateAppserver(ctx, params)
+		server, err := db.CreateAppserver(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -34,13 +34,13 @@ func TestQuerier_CreateAppserver(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverById(t *testing.T) {
-	t.Run("Successget_appserver_by_id", func(t *testing.T) {
+	t.Run("Success:get_appserver_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		server := testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		server := factory.NewFactory(ctx, db).Appserver(t, 0, nil)
 
 		// ACT
-		result, err := qx.New(testutil.TestDbConn).GetAppserverById(ctx, server.ID)
+		result, err := db.GetAppserverById(ctx, server.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -49,10 +49,10 @@ func TestQuerier_GetAppserverById(t *testing.T) {
 
 	t.Run("Error:appserver_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 
 		// ACT
-		_, err := qx.New(testutil.TestDbConn).GetAppserverById(ctx, uuid.New())
+		_, err := db.GetAppserverById(ctx, uuid.New())
 
 		// ASSERT
 		assert.Error(t, err)
@@ -61,13 +61,13 @@ func TestQuerier_GetAppserverById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserver(t *testing.T) {
-	t.Run("Successdelete_appserver", func(t *testing.T) {
+	t.Run("Success:delete_appserver", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		server := testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		server := factory.NewFactory(ctx, db).Appserver(t, 0, nil)
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteAppserver(ctx, server.ID)
+		count, err := db.DeleteAppserver(ctx, server.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -76,48 +76,35 @@ func TestQuerier_DeleteAppserver(t *testing.T) {
 
 	t.Run("Error:appserver_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteAppserver(ctx, uuid.New())
+		count, err := db.DeleteAppserver(ctx, uuid.New())
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successdeletes_all_relationships", func(t *testing.T) {
+	t.Run("Success:deletes_all_relationships", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		tu := factory.UserAppserverSub(t)
-		role := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: tu.Server.ID, Name: "foo"}, false)
-		roleSub := testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
-			AppuserID:       tu.User.ID,
-			AppserverID:     tu.Server.ID,
-			AppserverRoleID: role.ID,
-			AppserverSubID:  tu.Sub.ID,
-		}, false)
-
-		channel := testutil.TestChannel(t, &qx.Channel{
-			Name:        "general",
-			AppserverID: tu.Server.ID,
-			IsPrivate:   false,
-		}, false)
-
-		channelRole := testutil.TestChannelRole(t, &qx.ChannelRole{
-			ChannelID:       channel.ID,
-			AppserverRoleID: role.ID,
-			AppserverID:     tu.Server.ID,
-		}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		server := f.Appserver(t, 0, nil)
+		sub := f.AppserverSub(t, 0, nil)
+		role := f.AppserverRole(t, 0, nil)
+		roleSub := f.AppserverRoleSub(t, 0, nil)
+		channel := f.Channel(t, 0, nil)
+		channelRole := f.ChannelRole(t, 0, nil)
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteAppserver(ctx, tu.Server.ID)
+		count, err := db.DeleteAppserver(ctx, server.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), count)
 
-		q := qx.New(testutil.TestDbConn)
+		q := db
 		// Verify that the AppserverRoleSub is deleted
 		_, err = q.GetAppserverRoleSubById(ctx, roleSub.ID)
 		assert.Error(t, err)
@@ -139,22 +126,22 @@ func TestQuerier_DeleteAppserver(t *testing.T) {
 		assert.Contains(t, err.Error(), "no rows in result set")
 
 		// Verify that the Appserver is deleted
-		_, err = q.GetAppserverById(ctx, tu.Server.ID)
+		_, err = q.GetAppserverById(ctx, server.ID)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "no rows in result set")
 
 		// Verify that the AppserverSub is deleted
-		_, err = q.GetAppserverSubById(ctx, tu.Sub.ID)
+		_, err = q.GetAppserverSubById(ctx, sub.ID)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "no rows in result set")
 	})
 }
 
 func TestQuerier_ListAppservers(t *testing.T) {
-	t.Run("Successlist_appservers_by_user", func(t *testing.T) {
+	t.Run("Success:list_appservers_by_user", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		server := testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		server := factory.NewFactory(ctx, db).Appserver(t, 0, nil)
 
 		params := qx.ListAppserversParams{
 			AppuserID: server.AppuserID,
@@ -162,17 +149,17 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).ListAppservers(ctx, params)
+		results, err := db.ListAppservers(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.NotEmpty(t, results)
 	})
 
-	t.Run("Successlist_appservers_by_user_and_name", func(t *testing.T) {
+	t.Run("Success:list_appservers_by_user_and_name", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		server := testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		server := factory.NewFactory(ctx, db).Appserver(t, 0, nil)
 
 		params := qx.ListAppserversParams{
 			AppuserID: server.AppuserID,
@@ -180,7 +167,7 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).ListAppservers(ctx, params)
+		results, err := db.ListAppservers(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -188,9 +175,9 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		assert.Equal(t, server.ID, results[0].ID)
 	})
 
-	t.Run("Successlist_appservers_no_results", func(t *testing.T) {
+	t.Run("Success:list_appservers_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 
 		params := qx.ListAppserversParams{
 			AppuserID: uuid.New(),
@@ -198,7 +185,7 @@ func TestQuerier_ListAppservers(t *testing.T) {
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).ListAppservers(ctx, params)
+		results, err := db.ListAppservers(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)

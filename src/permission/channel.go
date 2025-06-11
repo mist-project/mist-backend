@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 
 	"mist/src/faults"
 	"mist/src/middleware"
@@ -16,18 +16,16 @@ import (
 )
 
 type ChannelAuthorizer struct {
-	DbConn *pgxpool.Pool
+	DbTx   pgx.Tx
 	Db     db.Querier
 	shared *SharedAuthorizer
 }
 
-func NewChannelAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *ChannelAuthorizer {
+func NewChannelAuthorizer(Db db.Querier) *ChannelAuthorizer {
 	return &ChannelAuthorizer{
-		DbConn: DbConn,
-		Db:     Db,
+		Db: Db,
 		shared: &SharedAuthorizer{
-			DbConn: DbConn,
-			Db:     Db,
+			Db: Db,
 		},
 	}
 }
@@ -54,7 +52,6 @@ func (auth *ChannelAuthorizer) Authorize(
 	if userId, err = uuid.Parse(claims.UserID); err != nil {
 		return faults.AuthorizationError(fmt.Sprintf("invalid user id: %s", claims.UserID), slog.LevelDebug)
 	}
-
 	serverIdCtx, authOk = ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
 
 	if !authOk {
@@ -73,7 +70,7 @@ func (auth *ChannelAuthorizer) Authorize(
 	}
 
 	if objId != nil {
-		_, err = GetObject(ctx, auth.shared, objId, service.NewChannelService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById)
+		_, err = GetObject(ctx, auth.shared, objId, service.NewChannelService(ctx, &service.ServiceDeps{Db: auth.Db}).GetById)
 
 		if err != nil {
 			// if the object is not found or invalid uuid, we return error
@@ -81,7 +78,7 @@ func (auth *ChannelAuthorizer) Authorize(
 		}
 	}
 
-	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById(serverIdCtx.AppserverId)
+	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db}).GetById(serverIdCtx.AppserverId)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error

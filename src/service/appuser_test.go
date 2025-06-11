@@ -26,7 +26,6 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 	svc := service.NewAppuserService(
 		ctx,
 		&service.ServiceDeps{
-			DbConn:    testutil.TestDbConn,
 			Db:        new(testutil.MockQuerier),
 			MProducer: producer.NewMProducer(new(testutil.MockRedis)),
 		},
@@ -47,9 +46,9 @@ func TestAppuserService_PgTypeToPb(t *testing.T) {
 
 func TestAppuserService_Create(t *testing.T) {
 
-	t.Run("Successcan_create_user", func(t *testing.T) {
+	t.Run("Success:can_create_user", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		expectedUser := qx.Appuser{ID: uuid.New(), Username: "testuser"}
 		params := qx.CreateAppuserParams{Username: expectedUser.Username}
 
@@ -60,7 +59,7 @@ func TestAppuserService_Create(t *testing.T) {
 		mockQuerier.On("CreateAppuser", ctx, params).Return(expectedUser, nil)
 
 		svc := service.NewAppuserService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -75,7 +74,7 @@ func TestAppuserService_Create(t *testing.T) {
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		params := qx.CreateAppuserParams{Username: "baduser"}
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -85,7 +84,7 @@ func TestAppuserService_Create(t *testing.T) {
 		mockQuerier.On("CreateAppuser", ctx, params).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewAppuserService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT

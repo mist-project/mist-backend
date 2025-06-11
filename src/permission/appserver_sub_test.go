@@ -13,7 +13,6 @@ import (
 	"mist/src/faults"
 	"mist/src/middleware"
 	"mist/src/permission"
-	"mist/src/psql_db/db"
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
 	"mist/src/testutil/factory"
@@ -21,16 +20,15 @@ import (
 
 func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 	var (
-		err     error
-		subAuth = permission.NewAppserverSubAuthorizer(testutil.TestDbConn, db.NewQuerier(qx.New(testutil.TestDbConn)))
+		err error
 	)
 
 	t.Run("ActionRead", func(t *testing.T) {
 
-		t.Run("Successowner_can_read", func(t *testing.T) {
+		t.Run("Success:owner_can_read", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			tu := factory.UserAppserverOwner(t)
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverOwner(t, ctx, db)
 			idString := tu.Sub.ID.String()
 
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
@@ -38,16 +36,16 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			})
 
 			// ACT
-			err = subAuth.Authorize(ctx, &idString, permission.ActionRead)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idString, permission.ActionRead)
 
 			// ASSERT
 			assert.Nil(t, err)
 		})
 
-		t.Run("Successsubscribed_user_can_read", func(t *testing.T) {
+		t.Run("Success:subscribed_user_can_read", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			tu := factory.UserAppserverSub(t)
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverSub(t, ctx, db)
 			idString := tu.Sub.ID.String()
 
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
@@ -55,7 +53,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			})
 
 			// ACT
-			err = subAuth.Authorize(ctx, &idString, permission.ActionRead)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idString, permission.ActionRead)
 
 			// ASSERT
 			assert.Nil(t, err)
@@ -63,15 +61,15 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:unsubscribed_user_cannot_read", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			tu := factory.UserAppserverUnsub(t)
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverUnsub(t, ctx, db)
 			idString := tu.Sub.ID.String()
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
 
 			// ACT
-			err = subAuth.Authorize(ctx, &idString, permission.ActionRead)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idString, permission.ActionRead)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -81,127 +79,137 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 	})
 
 	t.Run("ActionWrite", func(t *testing.T) {
-		t.Run(permission.SubActionCreate, func(t *testing.T) {
 
-			t.Run("Successanyone_can_create_appserver_sub", func(t *testing.T) {
-				// ARRANGE
-				ctx := testutil.Setup(t, func() {})
-				tu := factory.UserAppserverUnsub(t)
+		t.Run("Success:anyone_can_create_appserver_sub", func(t *testing.T) {
+			// ARRANGE
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverUnsub(t, ctx, db)
 
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: tu.Server.ID,
-				})
-
-				// ACT
-				err = subAuth.Authorize(ctx, nil, permission.ActionCreate)
-
-				// ASSERT
-				assert.Nil(t, err)
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: tu.Server.ID,
 			})
+
+			// ACT
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, nil, permission.ActionCreate)
+
+			// ASSERT
+			assert.Nil(t, err)
 		})
 	})
 
 	t.Run("ActionDelete", func(t *testing.T) {
-		t.Run(permission.SubActionDelete, func(t *testing.T) {
-			t.Run("Successowner_can_delete_another_user_sub", func(t *testing.T) {
-				// ARRANGE
-				ctx := testutil.Setup(t, func() {})
-				tu := factory.UserAppserverOwner(t)
-				user := testutil.TestAppuser(t, nil, false)
-				sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: tu.Server.ID, AppuserID: user.ID}, false)
-				idStr := sub.ID.String()
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: tu.Server.ID,
-				})
-
-				// ACT
-				err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete)
-
-				// ASSERT
-				assert.Nil(t, err)
+		t.Run("Success:owner_can_delete_another_user_sub", func(t *testing.T) {
+			// ARRANGE
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverOwner(t, ctx, db)
+			f := factory.NewFactory(ctx, db)
+			user := f.Appuser(t, 1, nil)
+			sub := f.AppserverSub(t, 1, &qx.AppserverSub{
+				AppserverID: tu.Server.ID,
+				AppuserID:   user.ID,
+			})
+			idStr := sub.ID.String()
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: tu.Server.ID,
 			})
 
-			t.Run("Error:nobody_can_delete_owner_sub", func(t *testing.T) {
-				// ARRANGE
-				ctx := testutil.Setup(t, func() {})
-				tu := factory.UserAppserverOwner(t)
+			// ACT
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idStr, permission.ActionDelete)
 
-				idStr := tu.Sub.ID.String()
+			// ASSERT
+			assert.Nil(t, err)
+		})
 
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: tu.Server.ID,
-				})
+		t.Run("Error:nobody_can_delete_owner_sub", func(t *testing.T) {
+			// ARRANGE
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverOwner(t, ctx, db)
 
-				// ACT
-				err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+			idStr := tu.Sub.ID.String()
 
-				// ASSERT
-				assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
-				testutil.AssertCustomErrorContains(t, err, "cannot delete the owner's sub")
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: tu.Server.ID,
 			})
 
-			t.Run("Error:object_owner_can_delete_its_own_subscription", func(t *testing.T) {
-				// ARRANGE
-				ctx := testutil.Setup(t, func() {})
-				tu := factory.UserAppserverSub(t)
+			// ACT
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idStr, permission.ActionDelete)
 
-				idStr := tu.Sub.ID.String()
+			// ASSERT
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "cannot delete the owner's sub")
+		})
 
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: tu.Server.ID,
-				})
+		t.Run("Error:object_owner_can_delete_its_own_subscription", func(t *testing.T) {
+			// ARRANGE
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverSub(t, ctx, db)
 
-				// ACT
-				err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete)
+			idStr := tu.Sub.ID.String()
 
-				// ASSERT
-				assert.Nil(t, err)
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: tu.Server.ID,
 			})
 
-			t.Run("Successuser_with_delete_permission_can_delete_sub", func(t *testing.T) {
-				// ARRANGE
-				ctx := testutil.Setup(t, func() {})
-				tu := factory.UserAppserverWithAllPermissions(t)
-				user := testutil.TestAppuser(t, nil, false)
-				sub := testutil.TestAppserverSub(t, &qx.AppserverSub{AppserverID: tu.Server.ID, AppuserID: user.ID}, false)
+			// ACT
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idStr, permission.ActionDelete)
 
-				idStr := sub.ID.String()
+			// ASSERT
+			assert.Nil(t, err)
+		})
 
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: tu.Server.ID,
-				})
-
-				// ACT
-				err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete)
-
-				// ASSERT
-				assert.Nil(t, err)
+		t.Run("Success:user_with_delete_permission_can_delete_sub", func(t *testing.T) {
+			// ARRANGE
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverWithAllPermissions(t, ctx, db)
+			f := factory.NewFactory(ctx, db)
+			user := f.Appuser(t, 2, nil)
+			sub := f.AppserverSub(t, 2, &qx.AppserverSub{
+				AppserverID: tu.Server.ID,
+				AppuserID:   user.ID,
 			})
 
-			t.Run("Error:subscribed_user_without_permission_cannot_delete_other_user_sub", func(t *testing.T) {
-				// ARRANGE
-				ctx := testutil.Setup(t, func() {})
-				sub := testutil.TestAppserverSub(t, nil, false)
-				ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-					AppserverId: sub.AppserverID,
-				})
-				idStr := sub.ID.String()
+			idStr := sub.ID.String()
 
-				// ACT
-				err = subAuth.Authorize(ctx, &idStr, permission.ActionDelete)
-
-				// ASSERT
-				assert.NotNil(t, err)
-				assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
-				testutil.AssertCustomErrorContains(t, err, "user does not have permission to manage subscriptions")
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: tu.Server.ID,
 			})
+
+			// ACT
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idStr, permission.ActionDelete)
+
+			// ASSERT
+			assert.Nil(t, err)
+		})
+
+		t.Run("Error:subscribed_user_without_permission_cannot_delete_other_user_sub", func(t *testing.T) {
+			// ARRANGE
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverSub(t, ctx, db)
+			f := factory.NewFactory(ctx, db)
+			user := f.Appuser(t, 2, nil)
+			sub := f.AppserverSub(t, 2, &qx.AppserverSub{
+				AppserverID: tu.Server.ID,
+				AppuserID:   user.ID,
+			})
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: sub.AppserverID,
+			})
+			idStr := sub.ID.String()
+
+			// ACT
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &idStr, permission.ActionDelete)
+
+			// ASSERT
+			assert.NotNil(t, err)
+			assert.Equal(t, err.Error(), faults.AuthorizationErrorMessage)
+			testutil.AssertCustomErrorContains(t, err, "user does not have permission to manage subscriptions")
 		})
 	})
 
 	t.Run("Errors", func(t *testing.T) {
 		t.Run("Error:invalid_userid_in_context", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
+			ctx, db := testutil.Setup(t, func() {})
 			_, claims := testutil.CreateJwtToken(t, &testutil.CreateTokenParams{
 				Iss:       os.Getenv("MIST_API_JWT_ISSUER"),
 				Aud:       []string{os.Getenv("MIST_API_JWT_AUDIENCE")},
@@ -211,7 +219,7 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 			badCtx := context.WithValue(ctx, middleware.JwtClaimsK, claims)
 
 			// ACT
-			err = subAuth.Authorize(badCtx, nil, permission.ActionRead)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(badCtx, nil, permission.ActionRead)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -221,13 +229,14 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:db_error_on_sub_check", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
+			ctx, _ := testutil.Setup(t, func() {})
+			serverId := uuid.New()
 			mockQuerier := new(testutil.MockQuerier)
-			tu := factory.UserAppserverSub(t)
 			mockQuerier.On("FilterAppserverSub", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockSubAuth := permission.NewAppserverSubAuthorizer(testutil.TestDbConn, mockQuerier)
+			mockSubAuth := permission.NewAppserverSubAuthorizer(mockQuerier)
+
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: tu.Server.ID,
+				AppserverId: serverId,
 			})
 			idStr := uuid.New().String()
 
@@ -243,27 +252,31 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:db_error_on_server_search", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
+			ctx, _ := testutil.Setup(t, func() {})
+			userId := uuid.New()
+			serverId := uuid.New()
+			subId := uuid.New()
+			idStr := uuid.New().String()
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: serverId,
+			})
+
 			mockQuerier := new(testutil.MockQuerier)
-			tu := factory.UserAppserverSub(t)
 			mockQuerier.On("FilterAppserverSub", mock.Anything, mock.Anything).Return([]qx.FilterAppserverSubRow{
 				{
-					ID:          tu.Sub.ID,
-					AppserverID: tu.Server.ID,
-					AppuserID:   tu.User.ID,
+					ID:          subId,
+					AppserverID: serverId,
+					AppuserID:   userId,
 				},
 			}, nil)
 			mockQuerier.On("GetAppserverSubById", mock.Anything, mock.Anything).Return(qx.AppserverSub{
-				ID:          tu.Sub.ID,
-				AppserverID: tu.Server.ID,
-				AppuserID:   tu.User.ID,
+				ID:          subId,
+				AppserverID: serverId,
+				AppuserID:   userId,
 			}, nil)
 			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockSubAuth := permission.NewAppserverSubAuthorizer(testutil.TestDbConn, mockQuerier)
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: tu.Server.ID,
-			})
-			idStr := uuid.New().String()
+
+			mockSubAuth := permission.NewAppserverSubAuthorizer(mockQuerier)
 
 			// ACT
 			err = mockSubAuth.Authorize(ctx, &idStr, permission.ActionDelete)
@@ -277,31 +290,35 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:db_error_on_user_permission_mask", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
+			ctx, _ := testutil.Setup(t, func() {})
+			userId := uuid.New()
+			serverId := uuid.New()
+			subId := uuid.New()
+			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
+				AppserverId: serverId,
+			})
+			idStr := uuid.New().String()
+
 			mockQuerier := new(testutil.MockQuerier)
-			tu := factory.UserAppserverSub(t)
 			mockQuerier.On("FilterAppserverSub", mock.Anything, mock.Anything).Return([]qx.FilterAppserverSubRow{
 				{
-					ID:          tu.Sub.ID,
-					AppserverID: tu.Server.ID,
-					AppuserID:   tu.User.ID,
+					ID:          subId,
+					AppserverID: serverId,
+					AppuserID:   userId,
 				},
 			}, nil)
 			mockQuerier.On("GetAppserverSubById", mock.Anything, mock.Anything).Return(qx.AppserverSub{
-				ID:          tu.Sub.ID,
-				AppserverID: tu.Server.ID,
-				AppuserID:   uuid.New(),
+				ID:          subId,
+				AppserverID: serverId,
+				AppuserID:   userId,
 			}, nil)
 			mockQuerier.On("GetAppserverById", mock.Anything, mock.Anything).Return(qx.Appserver{
-				ID:        tu.Server.ID,
-				AppuserID: tu.Server.AppuserID,
+				ID:        serverId,
+				AppuserID: uuid.New(),
 			}, nil)
 			mockQuerier.On("GetAppuserRoles", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("boom"))
-			mockSubAuth := permission.NewAppserverSubAuthorizer(testutil.TestDbConn, mockQuerier)
-			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
-				AppserverId: tu.Server.ID,
-			})
-			idStr := uuid.New().String()
+
+			mockSubAuth := permission.NewAppserverSubAuthorizer(mockQuerier)
 
 			// ACT
 			err = mockSubAuth.Authorize(ctx, &idStr, permission.ActionDelete)
@@ -315,16 +332,15 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:invalid_object_id_format", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			tu := factory.UserAppserverSub(t)
-			testutil.TestAppserverSub(t, nil, true)
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverSub(t, ctx, db)
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
 			badId := "invalid"
 
 			// ACT
-			err = subAuth.Authorize(ctx, &badId, permission.ActionDelete)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &badId, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -334,12 +350,12 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:invalid_server_id_format", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			testutil.TestAppserverSub(t, nil, true)
+			ctx, db := testutil.Setup(t, func() {})
+			factory.UserAppserverSub(t, ctx, db)
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, "invalid")
 
 			// ACT
-			err = subAuth.Authorize(ctx, nil, permission.ActionDelete)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, nil, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -349,16 +365,15 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:object_id_not_found", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			tu := factory.UserAppserverSub(t)
-			testutil.TestAppserverSub(t, nil, true)
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverSub(t, ctx, db)
 			nonExistentId := uuid.NewString()
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
 
 			// ACT
-			err = subAuth.Authorize(ctx, &nonExistentId, permission.ActionDelete)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, &nonExistentId, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)
@@ -368,15 +383,15 @@ func TestAppserverSubAuthorizer_Authorize(t *testing.T) {
 
 		t.Run("Error:nil_object_errors", func(t *testing.T) {
 			// ARRANGE
-			ctx := testutil.Setup(t, func() {})
-			tu := factory.UserAppserverSub(t)
+			ctx, db := testutil.Setup(t, func() {})
+			tu := factory.UserAppserverSub(t, ctx, db)
 			ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{
 				AppserverId: tu.Server.ID,
 			})
 			var nilObj *string
 
 			// ACT
-			err = subAuth.Authorize(ctx, nilObj, permission.ActionDelete)
+			err = permission.NewAppserverSubAuthorizer(db).Authorize(ctx, nilObj, permission.ActionDelete)
 
 			// ASSERT
 			assert.NotNil(t, err)

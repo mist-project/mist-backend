@@ -17,15 +17,14 @@ func (s *ChannelGRPCService) Create(ctx context.Context, req *channel.CreateRequ
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
+
 	cs := service.NewChannelService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	c, err := cs.Create(qx.CreateChannelParams{Name: req.Name, AppserverID: serverId, IsPrivate: req.IsPrivate})
 
@@ -45,16 +44,14 @@ func (s *ChannelGRPCService) GetById(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionRead); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	cs := service.NewChannelService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	id, _ := uuid.Parse(req.Id)
 	c, err := cs.GetById(id)
@@ -82,7 +79,7 @@ func (s *ChannelGRPCService) ListServerChannels(
 	}
 
 	cs := service.NewChannelService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 
 	if req.Name != nil {
@@ -114,7 +111,7 @@ func (s *ChannelGRPCService) Delete(
 
 	id, _ := uuid.Parse(req.Id)
 	if err := service.NewChannelService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	).Delete(id); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}

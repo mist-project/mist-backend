@@ -13,10 +13,10 @@ import (
 )
 
 func TestQuerier_CreateChannel(t *testing.T) {
-	t.Run("Successcreate_channel", func(t *testing.T) {
+	t.Run("Success:create_channel", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		server := testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		server := factory.NewFactory(ctx, db).Appserver(t, 0, nil)
 
 		params := qx.CreateChannelParams{
 			Name:        "general",
@@ -25,7 +25,7 @@ func TestQuerier_CreateChannel(t *testing.T) {
 		}
 
 		// ACT
-		ch, err := qx.New(testutil.TestDbConn).CreateChannel(ctx, params)
+		ch, err := db.CreateChannel(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -35,13 +35,13 @@ func TestQuerier_CreateChannel(t *testing.T) {
 }
 
 func TestQuerier_GetChannelById(t *testing.T) {
-	t.Run("Successget_channel_by_id", func(t *testing.T) {
+	t.Run("Success:get_channel_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		ch := testutil.TestChannel(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		ch := factory.NewFactory(ctx, db).Channel(t, 0, nil)
 
 		// ACT
-		result, err := qx.New(testutil.TestDbConn).GetChannelById(ctx, ch.ID)
+		result, err := db.GetChannelById(ctx, ch.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -50,9 +50,11 @@ func TestQuerier_GetChannelById(t *testing.T) {
 
 	t.Run("Error:channel_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+
+		ctx, db := testutil.Setup(t, func() {})
+
 		// ACT
-		_, err := qx.New(testutil.TestDbConn).GetChannelById(ctx, uuid.New())
+		_, err := db.GetChannelById(ctx, uuid.New())
 
 		// ASSERT
 		assert.Error(t, err)
@@ -61,46 +63,44 @@ func TestQuerier_GetChannelById(t *testing.T) {
 }
 
 func TestQuerier_DeleteChannel(t *testing.T) {
-	t.Run("Successdelete_channel", func(t *testing.T) {
+	t.Run("Success:delete_channel", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		ch := testutil.TestChannel(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		ch := factory.NewFactory(ctx, db).Channel(t, 0, nil)
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteChannel(ctx, ch.ID)
+		count, err := db.DeleteChannel(ctx, ch.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), count)
 	})
 
-	t.Run("Successwhen_channel_is_deleted_it_removes_associated_channel_roles", func(t *testing.T) {
+	t.Run("Success:when_channel_is_deleted_it_removes_associated_channel_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		ch := testutil.TestChannel(t, nil, false)
-		role := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: ch.AppserverID}, false)
-		channelRole := testutil.TestChannelRole(
-			t, &qx.ChannelRole{
-				ChannelID: ch.ID, AppserverRoleID: role.ID, AppserverID: ch.AppserverID,
-			}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		ch := f.Channel(t, 0, nil)
+		f.AppserverRole(t, 0, nil)
+		channelRole := f.ChannelRole(t, 0, nil)
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteChannel(ctx, ch.ID)
+		count, err := db.DeleteChannel(ctx, ch.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), count)
 		// Verify that the channel role is also deleted
-		_, err = qx.New(testutil.TestDbConn).GetChannelRoleById(ctx, channelRole.ID)
+		_, err = db.GetChannelRoleById(ctx, channelRole.ID)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "no rows in result set")
 	})
 
 	t.Run("Error:channel_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteChannel(ctx, uuid.New())
+		count, err := db.DeleteChannel(ctx, uuid.New())
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -109,10 +109,10 @@ func TestQuerier_DeleteChannel(t *testing.T) {
 }
 
 func TestQuerier_FilterChannel(t *testing.T) {
-	t.Run("Successfilter_channel", func(t *testing.T) {
+	t.Run("Success:filter_channel", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		ch := testutil.TestChannel(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		ch := factory.NewFactory(ctx, db).Channel(t, 0, nil)
 
 		params := qx.FilterChannelParams{
 			AppserverID: pgtype.UUID{Bytes: ch.AppserverID, Valid: true},
@@ -120,7 +120,7 @@ func TestQuerier_FilterChannel(t *testing.T) {
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).FilterChannel(ctx, params)
+		results, err := db.FilterChannel(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -129,8 +129,8 @@ func TestQuerier_FilterChannel(t *testing.T) {
 
 	t.Run("Error:filter_channel_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		testutil.TestChannel(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		factory.NewFactory(ctx, db).Channel(t, 0, nil)
 
 		params := qx.FilterChannelParams{
 			AppserverID: pgtype.UUID{Bytes: uuid.New(), Valid: true},
@@ -138,7 +138,7 @@ func TestQuerier_FilterChannel(t *testing.T) {
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).FilterChannel(ctx, params)
+		results, err := db.FilterChannel(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -147,14 +147,14 @@ func TestQuerier_FilterChannel(t *testing.T) {
 
 	t.Run("Error:filter_channel_invalid_params", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		params := qx.FilterChannelParams{
 			AppserverID: pgtype.UUID{Valid: false},
 			IsPrivate:   pgtype.Bool{Valid: false},
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).FilterChannel(ctx, params)
+		results, err := db.FilterChannel(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -163,27 +163,30 @@ func TestQuerier_FilterChannel(t *testing.T) {
 }
 
 func TestQuerier_GetChannelsIdIn(t *testing.T) {
-	t.Run("Successget_channels_id_in", func(t *testing.T) {
+	t.Run("Success:get_channels_id_in", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		ch := testutil.TestChannel(t, nil, false)
-		ch2 := testutil.TestChannel(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		ch1 := f.Channel(t, 0, nil)
+		ch2 := f.Channel(t, 1, nil)
+		f.Channel(t, 2, nil)
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).GetChannelsIdIn(ctx, []uuid.UUID{ch.ID, ch2.ID})
+		results, err := db.GetChannelsIdIn(ctx, []uuid.UUID{ch1.ID, ch2.ID})
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Len(t, results, 2)
-		assert.Equal(t, ch.ID, results[0].ID)
+		assert.Equal(t, ch1.ID, results[0].ID)
 		assert.Equal(t, ch2.ID, results[1].ID)
 	})
 
 	t.Run("Error:get_channels_id_in_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
+
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).GetChannelsIdIn(ctx, []uuid.UUID{uuid.New(), uuid.New()})
+		results, err := db.GetChannelsIdIn(ctx, []uuid.UUID{uuid.New(), uuid.New()})
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -192,10 +195,10 @@ func TestQuerier_GetChannelsIdIn(t *testing.T) {
 }
 
 func TestQuerier_ListServerChannels(t *testing.T) {
-	t.Run("Successlist_server_channels", func(t *testing.T) {
+	t.Run("Success:list_server_channels", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		ch := testutil.TestChannel(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		ch := factory.NewFactory(ctx, db).Channel(t, 0, nil)
 
 		params := qx.ListServerChannelsParams{
 			AppserverID: ch.AppserverID,
@@ -203,7 +206,7 @@ func TestQuerier_ListServerChannels(t *testing.T) {
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).ListServerChannels(ctx, params)
+		results, err := db.ListServerChannels(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -212,8 +215,9 @@ func TestQuerier_ListServerChannels(t *testing.T) {
 
 	t.Run("Error:list_server_channels_no_results", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		testutil.TestChannel(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		f.Channel(t, 0, nil)
 
 		params := qx.ListServerChannelsParams{
 			AppserverID: uuid.New(),
@@ -221,7 +225,7 @@ func TestQuerier_ListServerChannels(t *testing.T) {
 		}
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).ListServerChannels(ctx, params)
+		results, err := db.ListServerChannels(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -230,30 +234,26 @@ func TestQuerier_ListServerChannels(t *testing.T) {
 }
 
 func TestQuerier_GetChannelsForUsers(t *testing.T) {
-	t.Run("Successget_channels_for_users", func(t *testing.T) {
+	t.Run("Success:get_channels_for_users", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
-		user2 := testutil.TestAppuser(t, nil, false)
-		channel1 := testutil.TestChannel(t, &qx.Channel{Name: "c1", AppserverID: su.Server.ID, IsPrivate: true}, false)
-		_ = testutil.TestChannel(t, &qx.Channel{Name: "c2", AppserverID: su.Server.ID, IsPrivate: false}, false)
-		role := testutil.TestAppserverRole(t, &qx.AppserverRole{AppserverID: su.Server.ID, Name: "test_role"}, false)
-		testutil.TestChannelRole(
-			t, &qx.ChannelRole{
-				ChannelID: channel1.ID, AppserverRoleID: role.ID, AppserverID: su.Server.ID,
-			}, false)
+		ctx, db := testutil.Setup(t, func() {})
 
-		testutil.TestAppserverRoleSub(
-			t,
-			&qx.AppserverRoleSub{
-				AppuserID: su.User.ID, AppserverRoleID: role.ID, AppserverSubID: su.Sub.ID, AppserverID: su.Server.ID,
-			}, false,
-		)
+		f := factory.NewFactory(ctx, db)
+		server := f.Appserver(t, 0, nil)
+		f.Channel(t, 0, &qx.Channel{Name: "c1", AppserverID: server.ID, IsPrivate: true})
+		f.Channel(t, 1, &qx.Channel{Name: "c2", AppserverID: server.ID, IsPrivate: false})
+		f.AppserverRole(t, 0, nil)
+		user1 := f.Appuser(t, 0, nil)
+		user2 := f.Appuser(t, 1, nil)
+		f.AppserverSub(t, 0, nil)
+		f.AppserverSub(t, 1, &qx.AppserverSub{AppuserID: user2.ID, AppserverID: server.ID})
+		f.AppserverRoleSub(t, 0, nil)
+		f.ChannelRole(t, 0, nil)
 
 		// ACT
-		results, err := qx.New(testutil.TestDbConn).GetChannelsForUsers(ctx, qx.GetChannelsForUsersParams{
-			Column1:     []uuid.UUID{su.User.ID, user2.ID},
-			AppserverID: su.Server.ID,
+		results, err := db.GetChannelsForUsers(ctx, qx.GetChannelsForUsersParams{
+			Column1:     []uuid.UUID{user1.ID, user2.ID},
+			AppserverID: server.ID,
 		})
 
 		// ASSERT
@@ -266,9 +266,9 @@ func TestQuerier_GetChannelsForUsers(t *testing.T) {
 			users = append(users, r.AppuserID)
 			userChannels[r.AppuserID] = append(userChannels[r.AppuserID], r.ChannelID.Bytes)
 		}
-		assert.Contains(t, users, su.User.ID)
+		assert.Contains(t, users, user1.ID)
 		assert.Contains(t, users, user2.ID)
-		assert.Equal(t, 2, len(userChannels[su.User.ID]))
+		assert.Equal(t, 2, len(userChannels[user1.ID]))
 		assert.Equal(t, 1, len(userChannels[user2.ID]))
 	})
 }

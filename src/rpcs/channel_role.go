@@ -19,9 +19,7 @@ func (s *ChannelRoleGRPCService) Create(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
@@ -31,7 +29,7 @@ func (s *ChannelRoleGRPCService) Create(
 	channelId, _ := uuid.Parse(req.ChannelId)
 
 	roleService := service.NewChannelRoleService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	roles, err := roleService.Create(
 		qx.CreateChannelRoleParams{AppserverRoleID: roleId, AppserverID: serverId, ChannelID: channelId},
@@ -64,7 +62,7 @@ func (s *ChannelRoleGRPCService) ListChannelRoles(
 	}
 
 	roleService := service.NewChannelRoleService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	results, err := roleService.ListChannelRoles(channelId)
 
@@ -92,9 +90,7 @@ func (s *ChannelRoleGRPCService) Delete(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
@@ -105,7 +101,7 @@ func (s *ChannelRoleGRPCService) Delete(
 
 	// Call delete service method
 	err = service.NewChannelRoleService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	).Delete(roleId)
 
 	// Error handling

@@ -3,7 +3,7 @@ package rpcs
 import (
 	"github.com/bufbuild/protovalidate-go"
 	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 
 	"mist/src/middleware"
@@ -21,7 +21,7 @@ import (
 
 type GrpcDependencies struct {
 	Db        db.Querier
-	DbConn    *pgxpool.Pool
+	DbTx      pgx.Tx
 	MProducer *producer.MProducer
 }
 
@@ -81,7 +81,7 @@ func RegisterGrpcServices(s *grpc.Server, deps *GrpcDependencies) {
 		s,
 		&AppserverGRPCService{
 			Deps: deps,
-			Auth: permission.NewAppserverAuthorizer(deps.DbConn, deps.Db),
+			Auth: permission.NewAppserverAuthorizer(deps.Db),
 		},
 	)
 
@@ -90,7 +90,7 @@ func RegisterGrpcServices(s *grpc.Server, deps *GrpcDependencies) {
 		s,
 		&AppserverRoleGRPCService{
 			Deps: deps,
-			Auth: permission.NewAppserverRoleAuthorizer(deps.DbConn, deps.Db),
+			Auth: permission.NewAppserverRoleAuthorizer(deps.Db),
 		},
 	)
 
@@ -99,7 +99,7 @@ func RegisterGrpcServices(s *grpc.Server, deps *GrpcDependencies) {
 		s,
 		&AppserverRoleSubGRPCService{
 			Deps: deps,
-			Auth: permission.NewAppserverRoleSubAuthorizer(deps.DbConn, deps.Db),
+			Auth: permission.NewAppserverRoleSubAuthorizer(deps.Db),
 		},
 	)
 
@@ -108,7 +108,7 @@ func RegisterGrpcServices(s *grpc.Server, deps *GrpcDependencies) {
 		s,
 		&AppserverSubGRPCService{
 			Deps: deps,
-			Auth: permission.NewAppserverSubAuthorizer(deps.DbConn, deps.Db),
+			Auth: permission.NewAppserverSubAuthorizer(deps.Db),
 		},
 	)
 
@@ -117,7 +117,7 @@ func RegisterGrpcServices(s *grpc.Server, deps *GrpcDependencies) {
 		s,
 		&ChannelGRPCService{
 			Deps: deps,
-			Auth: permission.NewChannelAuthorizer(deps.DbConn, deps.Db),
+			Auth: permission.NewChannelAuthorizer(deps.Db),
 		},
 	)
 
@@ -126,7 +126,7 @@ func RegisterGrpcServices(s *grpc.Server, deps *GrpcDependencies) {
 		s,
 		&ChannelRoleGRPCService{
 			Deps: deps,
-			Auth: permission.NewChannelRoleAuthorizer(deps.DbConn, deps.Db),
+			Auth: permission.NewChannelRoleAuthorizer(deps.Db),
 		},
 	)
 }

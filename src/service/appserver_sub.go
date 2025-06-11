@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"mist/src/faults"
@@ -73,14 +72,6 @@ func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.Appse
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
-
-	return &appserverSub, err
-}
-
-// Creates a user to server subscription using injected transaction, does not commit the transaction.
-func (s *AppserverSubService) CreateWithTx(obj qx.CreateAppserverSubParams, tx pgx.Tx) (*qx.AppserverSub, error) {
-	txQ := s.deps.Db.WithTx(tx)
-	appserverSub, err := txQ.CreateAppserverSub(s.ctx, obj)
 
 	return &appserverSub, err
 }

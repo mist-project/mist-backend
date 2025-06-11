@@ -111,7 +111,7 @@ ALTER TABLE ONLY public.appserver_sub
     ADD CONSTRAINT appserver_sub_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.appserver_sub
-    ADD CONSTRAINT appserver_sub_uk_appserver_owner UNIQUE (appserver_id, appuser_id);
+    ADD CONSTRAINT appserver_sub_uk_appserver_user UNIQUE (appserver_id, appuser_id);
 
 ALTER TABLE ONLY public.appserver_sub
     ADD CONSTRAINT appserver_sub_uk_server_sub UNIQUE (appserver_id, id);

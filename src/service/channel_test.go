@@ -27,7 +27,6 @@ func TestChannelService_PgTypeToPb(t *testing.T) {
 
 	sharedDeps := &service.ServiceDeps{
 		Db:        new(testutil.MockQuerier),
-		DbConn:    testutil.TestDbConn,
 		MProducer: producer.NewMProducer(new(testutil.MockRedis)),
 	}
 
@@ -65,12 +64,13 @@ func TestChannelService_PgTypeToPb(t *testing.T) {
 }
 func TestChannelService_Create(t *testing.T) {
 
-	t.Run("Successcreate_channel_for_appserver", func(t *testing.T) {
+	t.Run("Success:create_channel_for_appserver", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		appserver := testutil.TestAppserver(t, nil, false)
-		expectedChannel := qx.Channel{ID: uuid.New(), Name: "foo", AppserverID: appserver.ID}
+		ctx, _ := testutil.Setup(t, func() {})
+
+		expectedChannel := qx.Channel{ID: uuid.New(), Name: "foo", AppserverID: uuid.New()}
 		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: expectedChannel.AppserverID}
+
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
@@ -81,7 +81,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(expectedChannel, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -98,7 +98,7 @@ func TestChannelService_Create(t *testing.T) {
 
 	t.Run("Error:returns_error_fail_create", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		expectedChannel := qx.Channel{}
 		createObj := qx.CreateChannelParams{Name: expectedChannel.Name, AppserverID: uuid.New()}
 
@@ -109,7 +109,7 @@ func TestChannelService_Create(t *testing.T) {
 		mockQuerier.On("CreateChannel", ctx, createObj).Return(nil, fmt.Errorf("error on create"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -125,19 +125,19 @@ func TestChannelService_Create(t *testing.T) {
 
 func TestChannelService_GetById(t *testing.T) {
 
-	t.Run("Successreturns_a_channel_object", func(t *testing.T) {
+	t.Run("Success:returns_a_channel_object", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		expectedChannel := testutil.TestChannel(t, nil, false)
+		ctx, _ := testutil.Setup(t, func() {})
+		expectedChannel := qx.Channel{}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		mockQuerier.On("GetChannelById", ctx, expectedChannel.ID).Return(*expectedChannel, nil)
+		mockQuerier.On("GetChannelById", ctx, expectedChannel.ID).Return(expectedChannel, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -154,8 +154,8 @@ func TestChannelService_GetById(t *testing.T) {
 
 	t.Run("Error:when_no_rows_returned_errors_not_found", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		channel := testutil.TestChannel(t, nil, false)
+		ctx, _ := testutil.Setup(t, func() {})
+		channel := qx.Channel{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -164,7 +164,7 @@ func TestChannelService_GetById(t *testing.T) {
 		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(nil, fmt.Errorf(message.DbNotFound))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -178,17 +178,17 @@ func TestChannelService_GetById(t *testing.T) {
 
 	t.Run("Error:on_database_error_it_returns_error", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		channel := testutil.TestChannel(t, nil, false)
+		ctx, _ := testutil.Setup(t, func() {})
+		channel := qx.Channel{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(*channel, fmt.Errorf("error get by id"))
+		mockQuerier.On("GetChannelById", ctx, channel.ID).Return(channel, fmt.Errorf("error get by id"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -204,9 +204,9 @@ func TestChannelService_GetById(t *testing.T) {
 
 func TestChannelService_List(t *testing.T) {
 
-	t.Run("Successwith_appserver_filter", func(t *testing.T) {
+	t.Run("Success:with_appserver_filter", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		var nameFilter = pgtype.Text{Valid: false, String: ""}
 		expected := []qx.Channel{
@@ -222,7 +222,7 @@ func TestChannelService_List(t *testing.T) {
 		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(expected, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -236,7 +236,7 @@ func TestChannelService_List(t *testing.T) {
 	})
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
 		var nameFilter = pgtype.Text{Valid: false, String: ""}
 		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: appserverId}
@@ -248,7 +248,7 @@ func TestChannelService_List(t *testing.T) {
 		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(nil, fmt.Errorf("database error"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -264,9 +264,9 @@ func TestChannelService_List(t *testing.T) {
 
 func TestChannelService_Filter(t *testing.T) {
 
-	t.Run("Successwith_appserver_filter", func(t *testing.T) {
+	t.Run("Success:with_appserver_filter", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := pgtype.UUID{Bytes: uuid.New(), Valid: true}
 		expected := []qx.Channel{
 			{ID: uuid.New(), Name: "foo", AppserverID: uuid.New()},
@@ -281,7 +281,7 @@ func TestChannelService_Filter(t *testing.T) {
 		mockQuerier.On("FilterChannel", ctx, queryParams).Return(expected, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -295,7 +295,7 @@ func TestChannelService_Filter(t *testing.T) {
 	})
 
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := pgtype.UUID{Bytes: uuid.New(), Valid: true}
 		queryParams := qx.FilterChannelParams{AppserverID: appserverId}
 
@@ -306,7 +306,7 @@ func TestChannelService_Filter(t *testing.T) {
 		mockQuerier.On("FilterChannel", ctx, queryParams).Return(nil, fmt.Errorf("database error"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -322,8 +322,8 @@ func TestChannelService_Filter(t *testing.T) {
 
 func TestChannelService_Delete(t *testing.T) {
 
-	t.Run("Successcan_delete_public_channel", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+	t.Run("Success:can_delete_public_channel", func(t *testing.T) {
+		ctx, _ := testutil.Setup(t, func() {})
 		c := qx.Channel{ID: uuid.New(), IsPrivate: false, AppserverID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -335,7 +335,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockQuerier.On("ListAppserverUserSubs", ctx, c.AppserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -347,8 +347,8 @@ func TestChannelService_Delete(t *testing.T) {
 		mockRedis.AssertExpectations(t)
 	})
 
-	t.Run("Successcan_delete_private_channel", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+	t.Run("Success:can_delete_private_channel", func(t *testing.T) {
+		ctx, _ := testutil.Setup(t, func() {})
 		c := qx.Channel{ID: uuid.New(), IsPrivate: true, AppserverID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -360,7 +360,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockQuerier.On("ListAppserverUserSubs", ctx, c.AppserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -373,7 +373,7 @@ func TestChannelService_Delete(t *testing.T) {
 	})
 
 	t.Run("Error:errors_when_no_channel_found", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		c := qx.Channel{ID: uuid.New()}
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -383,7 +383,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockQuerier.On("DeleteChannel", ctx, c.ID).Return(int64(0), nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -396,7 +396,7 @@ func TestChannelService_Delete(t *testing.T) {
 	})
 
 	t.Run("Error:when_get_channel_by_id_fails_it_errors", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		c := qx.Channel{ID: uuid.New()}
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -405,7 +405,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockQuerier.On("GetChannelById", ctx, c.ID).Return(nil, fmt.Errorf("mock error"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -419,7 +419,7 @@ func TestChannelService_Delete(t *testing.T) {
 	})
 
 	t.Run("Error:when_delete_fails_it_errors", func(t *testing.T) {
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		c := qx.Channel{ID: uuid.New()}
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -429,7 +429,7 @@ func TestChannelService_Delete(t *testing.T) {
 		mockQuerier.On("DeleteChannel", ctx, c.ID).Return(nil, fmt.Errorf("mock error"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -444,9 +444,9 @@ func TestChannelService_Delete(t *testing.T) {
 }
 
 func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T) {
-	t.Run("Successsends_channels_for_each_user", func(t *testing.T) {
+	t.Run("Success:sends_channels_for_each_user", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 
 		user1 := qx.ListAppserverUserSubsRow{AppuserID: uuid.New()}
@@ -490,7 +490,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		).Return(redis.NewIntCmd(ctx)).Once()
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -503,7 +503,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 
 	t.Run("Error:early_return_if_no_users", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
@@ -512,7 +512,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverID).Return([]qx.ListAppserverUserSubsRow{}, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -525,7 +525,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 
 	t.Run("Error:get_channels_fails_logs_and_exits", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 		user := qx.ListAppserverUserSubsRow{AppuserID: uuid.New()}
 
@@ -541,7 +541,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -554,7 +554,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 
 	t.Run("Error:get_appserver_user_subs_fails_logs_and_exits", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 
 		mockQuerier := new(testutil.MockQuerier)
@@ -564,7 +564,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverID).Return(nil, fmt.Errorf("db error"))
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -575,9 +575,9 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		mockRedis.AssertNotCalled(t, "SendMessage", mock.Anything, mock.Anything, mock.Anything)
 	})
 
-	t.Run("Successsends_channels_for_single_user", func(t *testing.T) {
+	t.Run("Success:sends_channels_for_single_user", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 		user := &qx.Appuser{ID: uuid.New()}
 
@@ -603,7 +603,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		).Return(redis.NewIntCmd(ctx)).Once()
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT
@@ -616,7 +616,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 
 	t.Run("EarlyExit:no_channels_for_users", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, _ := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 		user := qx.ListAppserverUserSubsRow{AppuserID: uuid.New()}
 
@@ -632,7 +632,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		).Return([]qx.GetChannelsForUsersRow{}, nil)
 
 		svc := service.NewChannelService(
-			ctx, &service.ServiceDeps{Db: mockQuerier, DbConn: testutil.TestDbConn, MProducer: producer},
+			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
 		)
 
 		// ACT

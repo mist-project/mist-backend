@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 
 	"mist/src/faults"
 	"mist/src/middleware"
@@ -16,18 +16,16 @@ import (
 )
 
 type AppserverSubAuthorizer struct {
-	DbConn *pgxpool.Pool
+	DbTx   pgx.Tx
 	Db     db.Querier
 	shared *SharedAuthorizer
 }
 
-func NewAppserverSubAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverSubAuthorizer {
+func NewAppserverSubAuthorizer(Db db.Querier) *AppserverSubAuthorizer {
 	return &AppserverSubAuthorizer{
-		DbConn: DbConn,
-		Db:     Db,
+		Db: Db,
 		shared: &SharedAuthorizer{
-			DbConn: DbConn,
-			Db:     Db,
+			Db: Db,
 		},
 	}
 }
@@ -80,14 +78,14 @@ func (auth *AppserverSubAuthorizer) Authorize(
 		return nil // user has base permission, no need to check further
 	}
 
-	sub, err = GetObject(ctx, auth.shared, objId, service.NewAppserverSubService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById)
+	sub, err = GetObject(ctx, auth.shared, objId, service.NewAppserverSubService(ctx, &service.ServiceDeps{Db: auth.Db}).GetById)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error
 		return faults.ExtendError(err)
 	}
 
-	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById(serverIdCtx.AppserverId)
+	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db}).GetById(serverIdCtx.AppserverId)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error

@@ -19,16 +19,14 @@ func (s *AppserverRoleGRPCService) Create(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, nil, permission.ActionCreate); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
 	roleService := service.NewAppserverRoleService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	aRole, err := roleService.Create(qx.CreateAppserverRoleParams{
 		Name: req.Name, AppserverID: serverId, AppserverPermissionMask: req.AppserverPermissionMask,
@@ -61,7 +59,7 @@ func (s *AppserverRoleGRPCService) ListServerRoles(
 	}
 
 	roleService := service.NewAppserverRoleService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 	results, err := roleService.ListAppserverRoles(serverId)
 
@@ -89,9 +87,7 @@ func (s *AppserverRoleGRPCService) Delete(
 	var err error
 
 	serverId, _ := uuid.Parse(req.AppserverId)
-	ctx = context.WithValue(
-		ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId},
-	)
+	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
 
 	if err = s.Auth.Authorize(ctx, &req.Id, permission.ActionDelete); err != nil {
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
@@ -102,7 +98,7 @@ func (s *AppserverRoleGRPCService) Delete(
 
 	// Call delete service method
 	err = service.NewAppserverRoleService(
-		ctx, &service.ServiceDeps{Db: s.Deps.Db, DbConn: s.Deps.DbConn, MProducer: s.Deps.MProducer},
+		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	).Delete(roleId)
 
 	// Error handling

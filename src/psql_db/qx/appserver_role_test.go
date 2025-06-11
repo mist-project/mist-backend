@@ -12,10 +12,10 @@ import (
 )
 
 func TestQuerier_CreateAppserverRole(t *testing.T) {
-	t.Run("Successcreate_appserver_role", func(t *testing.T) {
+	t.Run("Success:create_appserver_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		server := testutil.TestAppserver(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		server := factory.NewFactory(ctx, db).Appserver(t, 0, nil)
 		params := qx.CreateAppserverRoleParams{
 			AppserverID:             server.ID,
 			Name:                    "Admin",
@@ -25,7 +25,7 @@ func TestQuerier_CreateAppserverRole(t *testing.T) {
 		}
 
 		// ACT
-		role, err := qx.New(testutil.TestDbConn).CreateAppserverRole(ctx, params)
+		role, err := db.CreateAppserverRole(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -35,13 +35,13 @@ func TestQuerier_CreateAppserverRole(t *testing.T) {
 }
 
 func TestQuerier_GetAppserverRoleById(t *testing.T) {
-	t.Run("Successget_appserver_role_by_id", func(t *testing.T) {
+	t.Run("Success:get_appserver_role_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		role := testutil.TestAppserverRole(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		role := factory.NewFactory(ctx, db).AppserverRole(t, 0, nil)
 
 		// ACT
-		result, err := qx.New(testutil.TestDbConn).GetAppserverRoleById(ctx, role.ID)
+		result, err := db.GetAppserverRoleById(ctx, role.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -50,9 +50,10 @@ func TestQuerier_GetAppserverRoleById(t *testing.T) {
 
 	t.Run("Error:role_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
+
 		// ACT
-		_, err := qx.New(testutil.TestDbConn).GetAppserverRoleById(ctx, uuid.New())
+		_, err := db.GetAppserverRoleById(ctx, uuid.New())
 
 		// ASSERT
 		assert.Error(t, err)
@@ -61,13 +62,13 @@ func TestQuerier_GetAppserverRoleById(t *testing.T) {
 }
 
 func TestQuerier_DeleteAppserverRole(t *testing.T) {
-	t.Run("Successdelete_appserver_role", func(t *testing.T) {
+	t.Run("Success:delete_appserver_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		role := testutil.TestAppserverRole(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		role := factory.NewFactory(ctx, db).AppserverRole(t, 0, nil)
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteAppserverRole(ctx, role.ID)
+		count, err := db.DeleteAppserverRole(ctx, role.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -76,60 +77,54 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 
 	t.Run("Error:role_does_not_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
+
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteAppserverRole(ctx, uuid.New())
+		count, err := db.DeleteAppserverRole(ctx, uuid.New())
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), count)
 	})
 
-	t.Run("Successdeleting_appserver_role_removes_associated_appserver_role_subs", func(t *testing.T) {
+	t.Run("Success:deleting_appserver_role_removes_associated_appserver_role_subs", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
-		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "test_role", AppserverID: su.Server.ID}, false)
-		rolesub := testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
-			AppuserID:       su.User.ID,
-			AppserverID:     role.AppserverID,
-			AppserverRoleID: role.ID,
-			AppserverSubID:  su.Sub.ID,
-		}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		f.AppserverSub(t, 0, nil)
+		role := f.AppserverRole(t, 0, nil)
+		roleSub := f.AppserverRoleSub(t, 0, nil)
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteAppserverRole(ctx, role.ID)
+		count, err := db.DeleteAppserverRole(ctx, role.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), count)
 		// Verify that the associated AppserverRoleSub is also deleted
-		_, err = qx.New(testutil.TestDbConn).GetAppserverRoleSubById(ctx, rolesub.ID)
+		_, err = db.GetAppserverRoleSubById(ctx, roleSub.ID)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "no rows in result set")
 	})
 
-	t.Run("Successdeleting_appserver_role_removes_associated_channel_roles", func(t *testing.T) {
+	t.Run("Success:deleting_appserver_role_removes_associated_channel_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
-		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "test_role", AppserverID: su.Server.ID}, false)
-		channel := testutil.TestChannel(t, &qx.Channel{AppserverID: role.AppserverID, Name: "c1", IsPrivate: true}, false)
-		channelRole := testutil.TestChannelRole(t, &qx.ChannelRole{
-			AppserverID:     role.AppserverID,
-			AppserverRoleID: role.ID,
-			ChannelID:       channel.ID,
-		}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		f := factory.NewFactory(ctx, db)
+		sub := f.AppserverSub(t, 0, nil)
+		role := f.AppserverRole(t, 0, nil)
+		f.Channel(t, 0, &qx.Channel{Name: "foo", AppserverID: sub.AppserverID, IsPrivate: true})
+		channelRole := f.ChannelRole(t, 0, nil)
 
 		// ACT
-		count, err := qx.New(testutil.TestDbConn).DeleteAppserverRole(ctx, role.ID)
+		count, err := db.DeleteAppserverRole(ctx, role.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), count)
 
 		// Verify that the associated AppserverRoleSub is also deleted
-		_, err = qx.New(testutil.TestDbConn).GetAppserverRoleSubById(ctx, channelRole.ID)
+		_, err = db.GetAppserverRoleSubById(ctx, channelRole.ID)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "no rows in result set")
 	})
@@ -137,13 +132,13 @@ func TestQuerier_DeleteAppserverRole(t *testing.T) {
 }
 
 func TestQuerier_ListAppserverRoles(t *testing.T) {
-	t.Run("Successlist_appserver_roles", func(t *testing.T) {
+	t.Run("Success:list_appserver_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		role := testutil.TestAppserverRole(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		role := factory.NewFactory(ctx, db).AppserverRole(t, 0, nil)
 
 		// ACT
-		roles, err := qx.New(testutil.TestDbConn).ListAppserverRoles(ctx, role.AppserverID)
+		roles, err := db.ListAppserverRoles(ctx, role.AppserverID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -152,11 +147,11 @@ func TestQuerier_ListAppserverRoles(t *testing.T) {
 
 	t.Run("Error:when_no_roles_exist", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		appserverID := uuid.New()
 
 		// ACT
-		roles, err := qx.New(testutil.TestDbConn).ListAppserverRoles(ctx, appserverID)
+		roles, err := db.ListAppserverRoles(ctx, appserverID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -165,18 +160,21 @@ func TestQuerier_ListAppserverRoles(t *testing.T) {
 }
 
 func TestQuerier_GetAppuserRoles(t *testing.T) {
-	t.Run("Successget_appuser_roles", func(t *testing.T) {
+	t.Run("Success:get_appuser_roles", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
-		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "mod", AppserverID: su.Server.ID}, false)
-		testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
-			AppuserID: su.User.ID, AppserverID: su.Server.ID,
-			AppserverSubID: su.Sub.ID, AppserverRoleID: role.ID,
-		}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
+		f := factory.NewFactory(ctx, db)
+		role := f.AppserverRole(t, 0, nil)
+		f.AppserverRoleSub(t, 0, &qx.AppserverRoleSub{
+			AppuserID:       su.User.ID,
+			AppserverID:     su.Server.ID,
+			AppserverRoleID: role.ID,
+			AppserverSubID:  su.Sub.ID,
+		})
 
 		// ACT
-		roles, err := qx.New(testutil.TestDbConn).GetAppuserRoles(ctx, qx.GetAppuserRolesParams{
+		roles, err := db.GetAppuserRoles(ctx, qx.GetAppuserRolesParams{
 			AppuserID:   su.User.ID,
 			AppserverID: su.Server.ID,
 		})
@@ -189,12 +187,12 @@ func TestQuerier_GetAppuserRoles(t *testing.T) {
 
 	t.Run("Error:get_appuser_roles_for_nonexistent_user", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		nonexistentUserID := uuid.New()
 		appserverID := uuid.New()
 
 		// ACT
-		roles, err := qx.New(testutil.TestDbConn).GetAppuserRoles(ctx, qx.GetAppuserRolesParams{
+		roles, err := db.GetAppuserRoles(ctx, qx.GetAppuserRolesParams{
 			AppuserID:   nonexistentUserID,
 			AppserverID: appserverID,
 		})
@@ -207,19 +205,21 @@ func TestQuerier_GetAppuserRoles(t *testing.T) {
 }
 
 func TestQuerier_GetAppusersWithOnlySpecifiedRole(t *testing.T) {
-	t.Run("Successget_users_with_only_specified_role", func(t *testing.T) {
+	t.Run("Success:get_users_with_only_specified_role", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		su := factory.UserAppserverSub(t)
-		role := testutil.TestAppserverRole(t, &qx.AppserverRole{Name: "solo", AppserverID: su.Server.ID}, false)
-
-		testutil.TestAppserverRoleSub(t, &qx.AppserverRoleSub{
-			AppuserID: su.User.ID, AppserverRoleID: role.ID,
-			AppserverID: su.Server.ID, AppserverSubID: su.Sub.ID,
-		}, false)
+		ctx, db := testutil.Setup(t, func() {})
+		su := factory.UserAppserverSub(t, ctx, db)
+		f := factory.NewFactory(ctx, db)
+		role := f.AppserverRole(t, 0, nil)
+		factory.NewFactory(ctx, db).AppserverRoleSub(t, 0, &qx.AppserverRoleSub{
+			AppuserID:       su.User.ID,
+			AppserverID:     su.Server.ID,
+			AppserverRoleID: role.ID,
+			AppserverSubID:  su.Sub.ID,
+		})
 
 		// ACT
-		users, err := qx.New(testutil.TestDbConn).GetAppusersWithOnlySpecifiedRole(ctx, role.ID)
+		users, err := db.GetAppusersWithOnlySpecifiedRole(ctx, role.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -229,11 +229,11 @@ func TestQuerier_GetAppusersWithOnlySpecifiedRole(t *testing.T) {
 
 	t.Run("Error:get_users_with_only_specified_role_no_users", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		role := testutil.TestAppserverRole(t, nil, false)
+		ctx, db := testutil.Setup(t, func() {})
+		role := factory.NewFactory(ctx, db).AppserverRole(t, 0, nil)
 
 		// ACT
-		users, err := qx.New(testutil.TestDbConn).GetAppusersWithOnlySpecifiedRole(ctx, role.ID)
+		users, err := db.GetAppusersWithOnlySpecifiedRole(ctx, role.ID)
 
 		// ASSERT
 		assert.NoError(t, err)

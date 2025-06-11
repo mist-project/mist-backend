@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 
 	"mist/src/faults"
 	"mist/src/middleware"
@@ -16,18 +16,16 @@ import (
 )
 
 type AppserverRoleSubAuthorizer struct {
-	DbConn *pgxpool.Pool
+	DbTx   pgx.Tx
 	Db     db.Querier
 	shared *SharedAuthorizer
 }
 
-func NewAppserverRoleSubAuthorizer(DbConn *pgxpool.Pool, Db db.Querier) *AppserverRoleSubAuthorizer {
+func NewAppserverRoleSubAuthorizer(Db db.Querier) *AppserverRoleSubAuthorizer {
 	return &AppserverRoleSubAuthorizer{
-		DbConn: DbConn,
-		Db:     Db,
+		Db: Db,
 		shared: &SharedAuthorizer{
-			DbConn: DbConn,
-			Db:     Db,
+			Db: Db,
 		},
 	}
 }
@@ -73,7 +71,7 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 	}
 
 	if objId != nil {
-		_, err = GetObject(ctx, auth.shared, objId, service.NewAppserverRoleSubService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById)
+		_, err = GetObject(ctx, auth.shared, objId, service.NewAppserverRoleSubService(ctx, &service.ServiceDeps{Db: auth.Db}).GetById)
 
 		if err != nil {
 			// if the object is not found or invalid uuid, we return err
@@ -81,7 +79,7 @@ func (auth *AppserverRoleSubAuthorizer) Authorize(
 		}
 	}
 
-	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db, DbConn: auth.DbConn}).GetById(serverIdCtx.AppserverId)
+	server, err = service.NewAppserverService(ctx, &service.ServiceDeps{Db: auth.Db}).GetById(serverIdCtx.AppserverId)
 
 	if err != nil {
 		// if the object is not found or invalid uuid, we return error

@@ -32,7 +32,6 @@ import (
 	"mist/src/protos/v1/channel"
 	"mist/src/protos/v1/channel_role"
 	"mist/src/psql_db/db"
-	"mist/src/psql_db/qx"
 	"mist/src/rpcs"
 )
 
@@ -47,10 +46,11 @@ var (
 	TestChannelRoleClient      channel_role.ChannelRoleServiceClient
 	testClientConn             *grpc.ClientConn
 
-	TestDbConn    *pgxpool.Pool
-	TestKProducer = new(MockProducer)
-	mockRedis     = new(MockRedis)
-	TestRedis     = producer.NewMProducer(mockRedis)
+	TestDbConn        *pgxpool.Pool
+	TestKProducer     = new(MockProducer)
+	mockRedis         = new(MockRedis)
+	MockRedisProducer = producer.NewMProducer(mockRedis)
+	TestMockAuth      = new(MockAuthorizer)
 
 	once sync.Once
 
@@ -113,6 +113,9 @@ func SetupTestGRPCServicesAndClient() {
 		lis net.Listener
 	)
 
+	// Base MockAuth to skip authorization in tests
+	TestMockAuth.On("Authorize", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
 	if lis, err = net.Listen("tcp", ":0"); err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -125,9 +128,8 @@ func SetupTestGRPCServicesAndClient() {
 	TestKProducer.On("SendMessage", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	mockRedis.On("Publish", mock.Anything, mock.Anything, mock.Anything).Return(redis.NewIntCmd(context.Background()))
 	rpcs.RegisterGrpcServices(testServer, &rpcs.GrpcDependencies{
-		DbConn:    TestDbConn,
-		Db:        db.NewQuerier(qx.New(TestDbConn)),
-		MProducer: TestRedis,
+		Db:        db.NewQuerier(TestDbConn),
+		MProducer: MockRedisProducer,
 	})
 
 	go func() {
@@ -170,13 +172,19 @@ func RpcTestCleanup() {
 	}
 }
 
-func Setup(t *testing.T, cleanup func()) context.Context {
+func Setup(t *testing.T, cleanup func()) (context.Context, db.Querier) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	DefaultUserId = uuid.NewString()
 	ctx = context.WithValue(ctx, CtxUserKey, DefaultUserId)
 
+	q, err := db.NewQuerier(TestDbConn).Begin(ctx)
+
+	if err != nil {
+		t.Fatalf("failed to begin transaction: %v", err)
+	}
+
 	t.Cleanup(func() {
-		teardown(ctx)
+		q.Rollback(ctx)
 		cleanup()
 		cancel()
 	})
@@ -198,28 +206,7 @@ func Setup(t *testing.T, cleanup func()) context.Context {
 	ctx = metadata.NewOutgoingContext(ctx, grpcMeta)
 	ctx = context.WithValue(ctx, middleware.JwtClaimsK, claims)
 
-	return ctx
-}
-
-func teardown(ctx context.Context) {
-	// Cleans all the table's data after each test (used in setup) function
-	tables := []string{
-		"appserver",
-		"appuser",
-		"appserver_sub",
-		"appserver_role",
-		"appserver_role_sub",
-		"channel",
-		"channel_role",
-	}
-
-	for _, table := range tables {
-		query := fmt.Sprintf(`TRUNCATE TABLE %s RESTART IDENTITY CASCADE;`, table)
-
-		if _, err := TestDbConn.Exec(ctx, query); err != nil {
-			log.Fatalf("Failed to truncate table: %v", err)
-		}
-	}
+	return ctx, q
 }
 
 // ----- HELPER FUNCTIONS -----
@@ -254,202 +241,4 @@ func CreateJwtToken(t *testing.T, params *CreateTokenParams) (string, *middlewar
 		t.Fatalf("error signing the token %v", err)
 	}
 	return token, c
-}
-
-// ----- DB HELPER FUNCTIONS -----
-func TestAppuser(t *testing.T, appuser *qx.Appuser, base bool) *qx.Appuser {
-	var (
-		id   uuid.UUID
-		user qx.Appuser
-		err  error
-	)
-	ctx := context.Background()
-	q := qx.New(TestDbConn)
-
-	if appuser == nil {
-		// Default values
-		if base {
-			id = uuid.MustParse(DefaultUserId)
-			user, err = q.GetAppuserById(ctx, id)
-
-			// if user already exists, return it
-			if err == nil {
-				return &user
-			}
-
-		} else {
-			id, _ = uuid.NewUUID()
-		}
-		appuser = &qx.Appuser{
-			ID:       id,
-			Username: uuid.NewString(),
-		}
-	}
-
-	user, err = q.CreateAppuser(ctx, qx.CreateAppuserParams{
-		ID:       appuser.ID,
-		Username: appuser.Username,
-	})
-
-	if err != nil {
-		t.Fatalf("Unable to create appserver. Error: %v", err)
-	}
-
-	return &user
-}
-
-func TestAppserver(t *testing.T, appserver *qx.Appserver, base bool) *qx.Appserver {
-
-	if appserver == nil {
-		// Custom values
-		appserver = &qx.Appserver{
-			AppuserID: TestAppuser(t, nil, base).ID,
-			Name:      uuid.NewString(),
-		}
-	}
-
-	as, err := qx.New(TestDbConn).CreateAppserver(context.Background(), qx.CreateAppserverParams{
-		AppuserID: appserver.AppuserID,
-		Name:      appserver.Name,
-	})
-
-	if err != nil {
-		t.Fatalf("Unable to create appserver. Error: %v", err)
-	}
-
-	return &as
-}
-
-func TestAppserverRole(t *testing.T, aRole *qx.AppserverRole, base bool) *qx.AppserverRole {
-	// Define attributes
-
-	if aRole == nil {
-		aRole = &qx.AppserverRole{
-			AppserverID:             TestAppserver(t, nil, base).ID,
-			Name:                    uuid.NewString(),
-			AppserverPermissionMask: 0,
-			ChannelPermissionMask:   0,
-			SubPermissionMask:       0,
-		}
-	}
-
-	asRole, err := qx.New(TestDbConn).CreateAppserverRole(
-		context.Background(),
-		qx.CreateAppserverRoleParams{
-			AppserverID:             aRole.AppserverID,
-			Name:                    aRole.Name,
-			AppserverPermissionMask: aRole.AppserverPermissionMask,
-			ChannelPermissionMask:   aRole.ChannelPermissionMask,
-			SubPermissionMask:       aRole.SubPermissionMask,
-		},
-	)
-
-	if err != nil {
-		t.Fatalf("Unable to create appserverRole. Error: %v", err)
-	}
-
-	return &asRole
-}
-
-func TestAppserverRoleSub(t *testing.T, roleSub *qx.AppserverRoleSub, base bool) *qx.AppserverRoleSub {
-	// Define attributes
-
-	if roleSub == nil {
-		// Custom values
-		user := TestAppuser(t, nil, base)
-		appserver := TestAppserver(t, nil, base)
-		sub := TestAppserverSub(t, &qx.AppserverSub{AppserverID: appserver.ID, AppuserID: user.ID}, base)
-		role := TestAppserverRole(t, &qx.AppserverRole{Name: uuid.NewString(), AppserverID: appserver.ID}, base)
-		roleSub = &qx.AppserverRoleSub{
-			AppserverRoleID: role.ID,
-			AppserverSubID:  sub.ID,
-			AppserverID:     appserver.ID,
-			AppuserID:       user.ID,
-		}
-	}
-
-	asrSub, err := qx.New(TestDbConn).CreateAppserverRoleSub(
-		context.Background(),
-		qx.CreateAppserverRoleSubParams{
-			AppserverRoleID: roleSub.AppserverRoleID,
-			AppserverSubID:  roleSub.AppserverSubID,
-			AppuserID:       roleSub.AppuserID,
-			AppserverID:     roleSub.AppserverID,
-		},
-	)
-
-	if err != nil {
-		t.Fatalf("Unable to create appserverRole. Error: %v", err)
-	}
-
-	return &asrSub
-}
-
-func TestAppserverSub(t *testing.T, aSub *qx.AppserverSub, base bool) *qx.AppserverSub {
-	// Define attributes
-
-	if aSub == nil {
-		appuser := TestAppuser(t, nil, base)
-		appserver := TestAppserver(t, nil, base)
-		aSub = &qx.AppserverSub{
-			AppserverID: appserver.ID,
-			AppuserID:   appuser.ID,
-		}
-	}
-
-	asSub, err := qx.New(TestDbConn).CreateAppserverSub(
-		context.Background(),
-		qx.CreateAppserverSubParams{AppserverID: aSub.AppserverID, AppuserID: aSub.AppuserID},
-	)
-
-	if err != nil {
-		t.Fatalf("Unable to create appserverSub. Error: %v", err)
-	}
-
-	return &asSub
-}
-
-func TestChannel(t *testing.T, c *qx.Channel, base bool) *qx.Channel {
-	// Define attributes
-
-	if c == nil {
-		// Default value
-		c = &qx.Channel{
-			Name:        uuid.NewString(),
-			AppserverID: TestAppserver(t, nil, base).ID,
-			IsPrivate:   false,
-		}
-	}
-
-	channel, err := qx.New(TestDbConn).CreateChannel(
-		context.Background(), qx.CreateChannelParams{Name: c.Name, AppserverID: c.AppserverID, IsPrivate: c.IsPrivate})
-
-	if err != nil {
-		t.Fatalf("Unable to create appserver. Error: %v", err)
-	}
-	return &channel
-}
-
-func TestChannelRole(t *testing.T, cr *qx.ChannelRole, base bool) *qx.ChannelRole {
-	// Define attributes
-
-	if cr == nil {
-		// Default value
-		role := TestAppserverRole(t, nil, base)
-		cr = &qx.ChannelRole{
-			AppserverID:     role.AppserverID,
-			AppserverRoleID: role.ID,
-			ChannelID:       TestChannel(t, &qx.Channel{Name: uuid.NewString(), AppserverID: role.AppserverID}, base).ID,
-		}
-	}
-
-	role, err := qx.New(TestDbConn).CreateChannelRole(
-		context.Background(),
-		qx.CreateChannelRoleParams{AppserverRoleID: cr.AppserverRoleID, ChannelID: cr.ChannelID, AppserverID: cr.AppserverID},
-	)
-
-	if err != nil {
-		t.Fatalf("Unable to create appserver. Error: %v", err)
-	}
-	return &role
 }

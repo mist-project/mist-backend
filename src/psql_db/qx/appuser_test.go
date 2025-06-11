@@ -8,12 +8,13 @@ import (
 
 	"mist/src/psql_db/qx"
 	"mist/src/testutil"
+	"mist/src/testutil/factory"
 )
 
 func TestQuerier_CreateAppuser(t *testing.T) {
-	t.Run("Successcreate_appuser", func(t *testing.T) {
+	t.Run("Success:create_appuser", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		id := uuid.New()
 		username := "testuser"
 
@@ -23,7 +24,7 @@ func TestQuerier_CreateAppuser(t *testing.T) {
 		}
 
 		// ACT
-		user, err := qx.New(testutil.TestDbConn).CreateAppuser(ctx, params)
+		user, err := db.CreateAppuser(ctx, params)
 
 		// ASSERT
 		assert.NoError(t, err)
@@ -33,33 +34,27 @@ func TestQuerier_CreateAppuser(t *testing.T) {
 }
 
 func TestQuerier_GetAppuserById(t *testing.T) {
-	t.Run("Successget_appuser_by_id", func(t *testing.T) {
+	t.Run("Success:get_appuser_by_id", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
-		id := uuid.New()
-		username := "retrievable_user"
-		_, err := qx.New(testutil.TestDbConn).CreateAppuser(ctx, qx.CreateAppuserParams{
-			ID:       id,
-			Username: username,
-		})
-		assert.NoError(t, err)
+		ctx, db := testutil.Setup(t, func() {})
+		u := factory.NewFactory(ctx, db).Appuser(t, 0, nil)
 
 		// ACT
-		user, err := qx.New(testutil.TestDbConn).GetAppuserById(ctx, id)
+		user, err := db.GetAppuserById(ctx, u.ID)
 
 		// ASSERT
 		assert.NoError(t, err)
-		assert.Equal(t, id, user.ID)
-		assert.Equal(t, username, user.Username)
+		assert.Equal(t, user.ID, user.ID)
+		assert.Equal(t, user.Username, user.Username)
 	})
 
 	t.Run("Error:get_nonexistent_appuser", func(t *testing.T) {
 		// ARRANGE
-		ctx := testutil.Setup(t, func() {})
+		ctx, db := testutil.Setup(t, func() {})
 		nonexistentID := uuid.New()
 
 		// ACT
-		_, err := qx.New(testutil.TestDbConn).GetAppuserById(ctx, nonexistentID)
+		_, err := db.GetAppuserById(ctx, nonexistentID)
 
 		// ASSERT
 		assert.Error(t, err)

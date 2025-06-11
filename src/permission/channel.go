@@ -52,7 +52,6 @@ func (auth *ChannelAuthorizer) Authorize(
 	if userId, err = uuid.Parse(claims.UserID); err != nil {
 		return faults.AuthorizationError(fmt.Sprintf("invalid user id: %s", claims.UserID), slog.LevelDebug)
 	}
-
 	serverIdCtx, authOk = ctx.Value(PermissionCtxKey).(*AppserverIdAuthCtx)
 
 	if !authOk {

@@ -42,13 +42,14 @@ func TestAppserverSubRPCService_ListUserServerSubs(t *testing.T) {
 	t.Run("Success:can_return_all_users_appserver_subs_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx, db := testutil.Setup(t, func() {})
-		su := factory.UserAppserverUnsub(t, ctx, db)
 		f := factory.NewFactory(ctx, db)
-		s1 := f.Appserver(t, 2, nil)
-		s2 := f.Appserver(t, 3, nil)
+		parsedUid, err := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		user := f.Appuser(t, 1, &qx.Appuser{ID: parsedUid, Username: "testuser"})
+		s1 := f.Appserver(t, 1, nil)
+		s2 := f.Appserver(t, 2, nil)
 
-		f.AppserverSub(t, 2, &qx.AppserverSub{AppserverID: s1.ID, AppuserID: su.User.ID})
-		f.AppserverSub(t, 3, &qx.AppserverSub{AppserverID: s2.ID, AppuserID: su.User.ID})
+		f.AppserverSub(t, 1, &qx.AppserverSub{AppserverID: s1.ID, AppuserID: user.ID})
+		f.AppserverSub(t, 2, &qx.AppserverSub{AppserverID: s2.ID, AppuserID: user.ID})
 
 		svc := &rpcs.AppserverSubGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 

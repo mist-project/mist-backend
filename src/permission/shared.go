@@ -10,13 +10,11 @@ import (
 	"mist/src/service"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SharedAuthorizer struct {
-	DbTx pgx.Tx
-	Db   db.Querier
+	Db db.Querier
 }
 
 type AppserverIdAuthCtx struct {

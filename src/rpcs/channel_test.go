@@ -26,14 +26,14 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 	t.Run("Success:returns_nothing_successfully", func(t *testing.T) {
 		// ARRANGE
 		ctx, db := testutil.Setup(t, func() {})
-		sub := testutil.TestAppserverSub(t, nil, true)
-		ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: sub.AppserverID})
+		su := factory.UserAppserverSub(t, ctx, db)
+		ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: su.Server.ID})
 
 		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
 
 		// ACT
 		response, err := svc.ListServerChannels(
-			ctx, &channel.ListServerChannelsRequest{AppserverId: sub.AppserverID.String()},
+			ctx, &channel.ListServerChannelsRequest{AppserverId: su.Server.ID.String()},
 		)
 		if err != nil {
 			t.Fatalf("Error performing request %v", err)

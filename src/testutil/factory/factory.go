@@ -207,6 +207,7 @@ func (f *Factory) AppserverRole(t *testing.T, index int, appserverRole *qx.Appse
 				AppserverID:             appserverRole.AppserverID,
 				AppserverPermissionMask: appserverRole.AppserverPermissionMask,
 				ChannelPermissionMask:   appserverRole.ChannelPermissionMask,
+				SubPermissionMask:       appserverRole.SubPermissionMask,
 			},
 		)
 	} else {
@@ -224,6 +225,7 @@ func (f *Factory) AppserverRole(t *testing.T, index int, appserverRole *qx.Appse
 				AppserverID:             s.ID,
 				AppserverPermissionMask: fakeAppserverRoles[index].AppserverPermissionMask,
 				ChannelPermissionMask:   fakeAppserverRoles[index].ChannelPermissionMask,
+				SubPermissionMask:       fakeAppserverRoles[index].SubPermissionMask,
 			},
 		)
 	}

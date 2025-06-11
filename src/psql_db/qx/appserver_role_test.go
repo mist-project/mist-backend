@@ -166,7 +166,12 @@ func TestQuerier_GetAppuserRoles(t *testing.T) {
 		su := factory.UserAppserverSub(t, ctx, db)
 		f := factory.NewFactory(ctx, db)
 		role := f.AppserverRole(t, 0, nil)
-		f.AppserverRoleSub(t, 0, nil)
+		f.AppserverRoleSub(t, 0, &qx.AppserverRoleSub{
+			AppuserID:       su.User.ID,
+			AppserverID:     su.Server.ID,
+			AppserverRoleID: role.ID,
+			AppserverSubID:  su.Sub.ID,
+		})
 
 		// ACT
 		roles, err := db.GetAppuserRoles(ctx, qx.GetAppuserRolesParams{
@@ -206,7 +211,12 @@ func TestQuerier_GetAppusersWithOnlySpecifiedRole(t *testing.T) {
 		su := factory.UserAppserverSub(t, ctx, db)
 		f := factory.NewFactory(ctx, db)
 		role := f.AppserverRole(t, 0, nil)
-		factory.NewFactory(ctx, db).AppserverRoleSub(t, 0, nil)
+		factory.NewFactory(ctx, db).AppserverRoleSub(t, 0, &qx.AppserverRoleSub{
+			AppuserID:       su.User.ID,
+			AppserverID:     su.Server.ID,
+			AppserverRoleID: role.ID,
+			AppserverSubID:  su.Sub.ID,
+		})
 
 		// ACT
 		users, err := db.GetAppusersWithOnlySpecifiedRole(ctx, role.ID)

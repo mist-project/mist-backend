@@ -21,11 +21,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
-		server := qx.Appserver{
-			ID:        uuid.New(),
-			Name:      "foo",
-			AppuserID: userID,
-		}
+		server := qx.Appserver{ID: uuid.New(), Name: "foo", AppuserID: userID}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
@@ -45,10 +41,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
-		server := qx.Appserver{
-			ID:   uuid.New(),
-			Name: "foo",
-		}
+		server := qx.Appserver{ID: uuid.New(), Name: "foo"}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(server, nil)
@@ -68,9 +61,7 @@ func TestSharedAuthorizer_UserIsServerOwner(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
-		server := qx.Appserver{
-			ID: uuid.New(),
-		}
+		server := qx.Appserver{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("GetAppserverById", mock.Anything, server.ID).Return(qx.Appserver{}, fmt.Errorf("db fail"))
@@ -94,11 +85,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
-		server := qx.Appserver{
-			ID:        uuid.New(),
-			AppuserID: userID,
-			Name:      "foo",
-		}
+		server := qx.Appserver{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("FilterAppserverSub", ctx, qx.FilterAppserverSubParams{
@@ -129,9 +116,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
-		server := qx.Appserver{
-			ID: uuid.New(),
-		}
+		server := qx.Appserver{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("FilterAppserverSub", mock.Anything, qx.FilterAppserverSubParams{
@@ -154,11 +139,7 @@ func TestSharedAuthorizer_UserHasServerSub(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
 		userID := uuid.New()
-		server := qx.Appserver{
-			ID:        uuid.New(),
-			Name:      "foo",
-			AppuserID: userID,
-		}
+		server := qx.Appserver{ID: uuid.New()}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockQuerier.On("FilterAppserverSub", ctx, qx.FilterAppserverSubParams{

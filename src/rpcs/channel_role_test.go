@@ -238,9 +238,12 @@ func TestChannelRoleRPCService_Delete(t *testing.T) {
 	t.Run("Success:roles_can_be_deleted", func(t *testing.T) {
 		// ARRANGE
 		ctx, db := testutil.Setup(t, func() {})
-		channelRole := testutil.TestChannelRole(t, nil, true)
+		factory.UserAppserverOwner(t, ctx, db)
+		channelRole := factory.NewFactory(ctx, db).ChannelRole(t, 0, nil)
 
-		svc := &rpcs.ChannelRoleGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
+		svc := &rpcs.ChannelRoleGRPCService{
+			Deps: &rpcs.GrpcDependencies{Db: db, MProducer: testutil.MockRedisProducer}, Auth: testutil.TestMockAuth,
+		}
 
 		// ACT
 		response, err := svc.Delete(

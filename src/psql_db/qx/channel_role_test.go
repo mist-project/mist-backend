@@ -117,7 +117,7 @@ func TestQuerier_FilterChannelRole(t *testing.T) {
 	t.Run("Success:filter_by_partial_fields", func(t *testing.T) {
 		// ARRANGE
 		ctx, db := testutil.Setup(t, func() {})
-		cr := testutil.TestChannelRole(t, nil, false)
+		cr := factory.NewFactory(ctx, db).ChannelRole(t, 0, nil)
 
 		params := qx.FilterChannelRoleParams{
 			ChannelID:       pgtype.UUID{Bytes: cr.ChannelID, Valid: true},
@@ -156,7 +156,7 @@ func TestQuerier_ListChannelRoles(t *testing.T) {
 	t.Run("Success:list_channel_roles", func(t *testing.T) {
 		// ARRANGE
 		ctx, db := testutil.Setup(t, func() {})
-		cr := testutil.TestChannelRole(t, nil, false)
+		cr := factory.NewFactory(ctx, db).ChannelRole(t, 0, nil)
 
 		// ACT
 		results, err := db.ListChannelRoles(ctx, cr.ChannelID)

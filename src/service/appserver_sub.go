@@ -67,7 +67,6 @@ func (s *AppserverSubService) PgUserSubRowToPb(res *qx.ListAppserverUserSubsRow)
 
 // Creates a user to server subscription
 func (s *AppserverSubService) Create(obj qx.CreateAppserverSubParams) (*qx.AppserverSub, error) {
-	fmt.Println(s.ctx, obj, s.deps.Db)
 	appserverSub, err := s.deps.Db.CreateAppserverSub(s.ctx, obj)
 
 	if err != nil {

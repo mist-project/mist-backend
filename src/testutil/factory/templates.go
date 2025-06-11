@@ -32,9 +32,10 @@ func UserAppserverOwner(t *testing.T, ctx context.Context, db db.Querier) *testU
 		t.Fatalf("failed to parse user ID from context: %v", err)
 	}
 
+	// User 0 will be the owner of the server
 	u = f.Appuser(t, 0, &qx.Appuser{ID: parsedUid, Username: "testuser"})
-	s = f.Appserver(t, 0, &qx.Appserver{Name: "testserver", AppuserID: u.ID})
-	sub = f.AppserverSub(t, 0, &qx.AppserverSub{AppserverID: s.ID, AppuserID: u.ID})
+	s = f.Appserver(t, 0, nil)
+	sub = f.AppserverSub(t, 0, nil)
 
 	return &testUser{User: u, Server: s, Sub: sub}
 }
@@ -54,9 +55,11 @@ func UserAppserverSub(t *testing.T, ctx context.Context, db db.Querier) *testUse
 		t.Fatalf("failed to parse user ID from context: %v", err)
 	}
 
-	u = f.Appuser(t, 0, &qx.Appuser{ID: parsedUid, Username: "testuser"})
+	// User 0 will be the owner of the server, user 1 will be the test user
+	f.Appuser(t, 0, &qx.Appuser{ID: uuid.New(), Username: "owner"})
+	u = f.Appuser(t, 1, &qx.Appuser{ID: parsedUid, Username: "testuser"})
 	s = f.Appserver(t, 0, nil)
-	sub = f.AppserverSub(t, 0, nil)
+	sub = f.AppserverSub(t, 1, &qx.AppserverSub{AppserverID: s.ID, AppuserID: u.ID})
 
 	return &testUser{User: u, Server: s, Sub: sub}
 }
@@ -78,13 +81,14 @@ func UserAppserverUnsub(t *testing.T, ctx context.Context, db db.Querier) *testU
 		t.Fatalf("failed to parse user ID from context: %v", err)
 	}
 
-	u = f.Appuser(t, 0, &qx.Appuser{ID: parsedUid, Username: "testuser"})
-	owner := f.Appuser(t, 1, &qx.Appuser{ID: uuid.New(), Username: "owner"})
+	// User 0 will be the owner of the server, user 1 will be the test user
+	owner := f.Appuser(t, 0, &qx.Appuser{ID: parsedUid, Username: "owner"})
+	u = f.Appuser(t, 1, &qx.Appuser{ID: uuid.New(), Username: "testuser"})
 	s = f.Appserver(t, 0, nil)
 	s1 = f.Appserver(t, 1, nil)
-	sub = f.AppserverSub(t, 0, &qx.AppserverSub{AppserverID: s1.ID, AppuserID: owner.ID})
+	sub = f.AppserverSub(t, 0, &qx.AppserverSub{AppserverID: s.ID, AppuserID: owner.ID})
 
-	return &testUser{User: u, Server: s, Sub: sub}
+	return &testUser{User: u, Server: s1, Sub: sub}
 }
 
 // Returns a testUser with all permissions.
@@ -104,9 +108,12 @@ func UserAppserverWithAllPermissions(t *testing.T, ctx context.Context, db db.Qu
 		t.Fatalf("failed to parse user ID from context: %v", err)
 	}
 
-	u = f.Appuser(t, 0, &qx.Appuser{ID: parsedUid, Username: "testuser"})
+	// User 0 will be the owner of the server
 	s = f.Appserver(t, 0, nil)
-	sub = f.AppserverSub(t, 0, &qx.AppserverSub{AppserverID: s.ID, AppuserID: u.ID})
+
+	// User 1 will be the test user with all permissions
+	u = f.Appuser(t, 1, &qx.Appuser{ID: parsedUid, Username: "testuser"})
+	sub = f.AppserverSub(t, 1, &qx.AppserverSub{AppserverID: s.ID, AppuserID: u.ID})
 
 	role := f.AppserverRole(
 		t,
@@ -120,7 +127,7 @@ func UserAppserverWithAllPermissions(t *testing.T, ctx context.Context, db db.Qu
 		},
 	)
 
-	f.AppserverRoleSub(t, 0, &qx.AppserverRoleSub{
+	f.AppserverRoleSub(t, 1, &qx.AppserverRoleSub{
 		AppserverID:     s.ID,
 		AppuserID:       u.ID,
 		AppserverSubID:  sub.ID,

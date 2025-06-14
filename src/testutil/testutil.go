@@ -125,6 +125,7 @@ func SetupTestGRPCServicesAndClient() {
 
 	// for now we will mock all the producer calls to be successful. unit tests should
 	// ensure that the producer is called where it should happen
+
 	TestKProducer.On("SendMessage", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	mockRedis.On("Publish", mock.Anything, mock.Anything, mock.Anything).Return(redis.NewIntCmd(context.Background()))
 	rpcs.RegisterGrpcServices(testServer, &rpcs.GrpcDependencies{

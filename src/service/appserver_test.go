@@ -91,37 +91,6 @@ func TestAppserverService_Create(t *testing.T) {
 		mockQuerier.AssertExpectations(t)
 	})
 
-	// t.Run("Error:is_returned_when_starting_tx_fails", func(t *testing.T) {
-	// 	// ARRANGE
-	// 	badConnection, err := pgxpool.New(context.Background(), os.Getenv("TEST_DATABASE_URL"))
-	// 	badConnection.Close()
-
-	// 	if err != nil {
-	// 		t.Fatalf("failed to start db connection")
-	// 	}
-
-	// 	ctx, _ := testutil.Setup(t, func() {})
-	// 	parsedUid, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
-	// 	expectedRequest := qx.CreateAppserverParams{Name: "foo", AppuserID: parsedUid}
-
-	// 	mockQuerier := new(testutil.MockQuerier)
-	// 	mockRedis := new(testutil.MockRedis)
-	// 	producer := producer.NewMProducer(mockRedis)
-
-	// 	svc := service.NewAppserverService(
-	// 		ctx, &service.ServiceDeps{DbConn: badConnection, Db: mockQuerier, MProducer: producer},
-	// 	)
-
-	// 	// ACT
-	// 	_, err = svc.Create(expectedRequest)
-
-	// 	// ASSERT
-	// 	assert.NotNil(t, err)
-	// 	assert.Equal(t, err.Error(), faults.DatabaseErrorMessage)
-	// 	testutil.AssertCustomErrorContains(t, err, "tx initialization error: closed pool")
-	// 	mockQuerier.AssertExpectations(t)
-	// })
-
 	t.Run("Error:is_returned_when_creating_server_fails", func(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
@@ -372,7 +341,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
-
+		producer.Wp.StartWorkers()
 		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(1), nil)
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return(subs, nil)
 		mockRedis.On("Publish", ctx, os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything).Return(redis.NewIntCmd(ctx))
@@ -385,6 +354,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		err := svc.Delete(appserverId)
 
 		// ASSERT
+		producer.Wp.Stop() // Stop the worker pool to ensure all jobs are processed
 		assert.NoError(t, err)
 		mockQuerier.AssertExpectations(t)
 		mockRedis.AssertExpectations(t)

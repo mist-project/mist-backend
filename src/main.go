@@ -45,12 +45,21 @@ func InitializeServer(redisClient *redis.Client) {
 	}
 
 	// Create a new gRPC server with the interceptors
-
 	s := grpc.NewServer(interceptors)
+
+	// Setup worker pool for message production
+	p := producer.NewMProducerOptions(redisClient, &producer.MProducerOptions{
+		Workers:     4,
+		ChannelSize: 100,
+	})
+
+	p.Wp.StartWorkers() // Start the worker pool
+	defer p.Wp.Stop()
+
 	// Register the gRPC services
 	rpcs.RegisterGrpcServices(s, &rpcs.GrpcDependencies{
 		Db:        db.NewQuerier(dbConn),
-		MProducer: producer.NewMProducer(redisClient),
+		MProducer: p,
 	})
 
 	// Start the gRPC server

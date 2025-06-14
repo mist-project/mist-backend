@@ -79,8 +79,8 @@ setup-test:
 	go run test-setup/main.go
 
 
-all-tests: setup-test
-	@go test -cover ./... | grep -v 'testutil' | grep -v 'src/protos' | grep -v 'mist/src/psql_db/db'
+run-tests: setup-test
+	@go test -cover -race ./... | grep -v 'testutil' | grep -v 'src/protos' | grep -v 'mist/src/psql_db/db'
 
 tbreak:
 	go test ./... -run "$(t)"

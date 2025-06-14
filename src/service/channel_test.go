@@ -455,7 +455,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
-
+		producer.Wp.StartWorkers()
 		mockQuerier.On(
 			"ListAppserverUserSubs", ctx, appserverID,
 		).Return([]qx.ListAppserverUserSubsRow{user1, user2}, nil)
@@ -497,6 +497,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		svc.SendChannelListingUpdateNotificationToUsers(nil, appserverID)
 
 		// ASSERT
+		producer.Wp.Stop() // Stop the worker pool to ensure all jobs are processed
 		mockQuerier.AssertExpectations(t)
 		mockRedis.AssertExpectations(t)
 	})
@@ -592,6 +593,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
+		producer.Wp.StartWorkers()
 
 		mockQuerier.On(
 			"GetChannelsForUsers", ctx,
@@ -610,6 +612,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		svc.SendChannelListingUpdateNotificationToUsers(user, appserverID)
 
 		// ASSERT
+		producer.Wp.Stop() // Stop the worker pool to ensure all jobs are processed
 		mockQuerier.AssertExpectations(t)
 		mockRedis.AssertExpectations(t)
 	})

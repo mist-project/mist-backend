@@ -246,7 +246,7 @@ func TestAppserverRPCService_Create(t *testing.T) {
 
 		mockQuerier.On("Begin", mock.Anything).Return(mockTxQuerier, nil)
 		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
-		mockTxQuerier.On("Rollback", ctx).Return(nil, fmt.Errorf("a db error"))
+		mockTxQuerier.On("Rollback", ctx).Return(nil)
 
 		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
 
@@ -282,6 +282,63 @@ func TestAppserverRPCService_Create(t *testing.T) {
 		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
 		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
 		mockQuerier.AssertExpectations(t)
+	})
+
+	t.Run("Error:error_on_commit_rollback_exists_gracefully", func(t *testing.T) {
+		// ARRANGE
+		ctx, _ := testutil.Setup(t, func() {})
+		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		expectedRequest := qx.CreateAppserverParams{AppuserID: userId, Name: "boo"}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockTxQuerier := new(testutil.MockQuerier)
+
+		mockQuerier.On("Begin", mock.Anything).Return(mockTxQuerier, nil)
+		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(qx.Appserver{ID: uuid.New()}, nil)
+		mockTxQuerier.On("CreateAppserverSub", ctx, mock.Anything).Return(qx.AppserverSub{ID: uuid.New()}, nil)
+		mockTxQuerier.On("Commit", ctx, mock.Anything).Return(fmt.Errorf("a db error"))
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
+
+		// ACT
+		_, err := svc.Create(ctx, &appserver.CreateRequest{Name: "boo"})
+
+		// ASSERT
+		s, ok := status.FromError(err)
+		assert.NotNil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+	})
+
+	t.Run("Error:error_on_db_and_rollback_exists_gracefully", func(t *testing.T) {
+		// ARRANGE
+		ctx, _ := testutil.Setup(t, func() {})
+
+		userId, _ := uuid.Parse(ctx.Value(testutil.CtxUserKey).(string))
+		expectedRequest := qx.CreateAppserverParams{AppuserID: userId, Name: "boo"}
+
+		mockQuerier := new(testutil.MockQuerier)
+		mockTxQuerier := new(testutil.MockQuerier)
+
+		mockQuerier.On("Begin", mock.Anything).Return(mockTxQuerier, nil)
+		mockTxQuerier.On("CreateAppserver", ctx, expectedRequest).Return(nil, fmt.Errorf("a db error"))
+		mockTxQuerier.On("Rollback", ctx).Return(fmt.Errorf("boom"))
+
+		svc := &rpcs.AppserverGRPCService{Deps: &rpcs.GrpcDependencies{Db: mockQuerier}, Auth: testutil.TestMockAuth}
+
+		// ACT
+		_, err := svc.Create(ctx, &appserver.CreateRequest{Name: "boo"})
+
+		// ASSERT
+		s, ok := status.FromError(err)
+		assert.NotNil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, codes.Internal, s.Code()) // Check that the error code is Internal
+		assert.Contains(t, err.Error(), faults.DatabaseErrorMessage)
+		mockQuerier.AssertExpectations(t)
+		mockTxQuerier.AssertExpectations(t)
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {

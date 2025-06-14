@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -448,10 +447,13 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
+		producer.Wp.StartWorkers()
 
 		mockQuerier.On("DeleteAppserverSub", ctx, mockSub.ID).Return(int64(1), nil)
 		mockQuerier.On("GetAppserverSubById", ctx, mockSub.ID).Return(mockSub, nil)
-		mockRedis.On("Publish", ctx, os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything).Return(redis.NewIntCmd(ctx))
+		mockRedis.On(
+			"Publish", mock.Anything, mock.Anything, mock.Anything,
+		).Return(redis.NewIntCmd(ctx))
 
 		svc := service.NewAppserverSubService(
 			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
@@ -461,6 +463,7 @@ func TestAppserverSubService_Delete(t *testing.T) {
 		err := svc.Delete(mockSub.ID)
 
 		// ASSERT
+		producer.Wp.Stop() // Stop the worker pool to ensure all jobs are processed
 		assert.NoError(t, err)
 		mockQuerier.AssertExpectations(t)
 		mockRedis.AssertExpectations(t)

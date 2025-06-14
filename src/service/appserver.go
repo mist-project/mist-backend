@@ -128,7 +128,7 @@ func (s *AppserverService) SendDeleteNotificationToUsers(subs []qx.ListAppserver
 		})
 	}
 
-	_ = s.deps.MProducer.SendMessage(
+	s.deps.MProducer.SendMessage(
 		s.ctx,
 		os.Getenv("REDIS_NOTIFICATION_CHANNEL"),
 		&appserver.Appserver{Id: appserverID.String()},

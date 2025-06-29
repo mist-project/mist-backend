@@ -56,6 +56,18 @@ func TestErrorHelpers(t *testing.T) {
 			wantMessage: faults.UnknownErrorMessage,
 			wantCode:    codes.Unknown,
 		},
+		{
+			name:        "TestMarshallError",
+			got:         faults.MarshallError("error root cause", slog.LevelDebug),
+			wantMessage: faults.MarshallErrorMessage,
+			wantCode:    codes.InvalidArgument,
+		},
+		{
+			name:        "TestMessageProducerError",
+			got:         faults.MessageProducerError("error root cause", slog.LevelDebug),
+			wantMessage: faults.MessageProducerErrorMessage,
+			wantCode:    codes.Unknown,
+		},
 	}
 
 	for _, tt := range tests {

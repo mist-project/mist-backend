@@ -2,4 +2,4 @@ version: v2
 modules:
   - path: src/protos
 deps:
-  - buf.build/bufbuild/protovalidate
+  - buf.build/bufbuild/protovalidate:v0.13.0

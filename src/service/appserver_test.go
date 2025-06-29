@@ -344,7 +344,7 @@ func TestAppserverService_Delete(t *testing.T) {
 		producer.Wp.StartWorkers()
 		mockQuerier.On("DeleteAppserver", ctx, appserverId).Return(int64(1), nil)
 		mockQuerier.On("ListAppserverUserSubs", ctx, appserverId).Return(subs, nil)
-		mockRedis.On("Publish", ctx, os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything).Return(redis.NewIntCmd(ctx))
+		mockRedis.On("Publish", context.Background(), os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything).Return(redis.NewIntCmd(ctx))
 
 		svc := service.NewAppserverService(ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer})
 

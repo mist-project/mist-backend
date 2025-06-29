@@ -47,6 +47,5 @@ func NewMProducerOptions(redis RedisInterface, opts *MProducerOptions) *MProduce
 func (mp *MProducer) SendMessage(
 	ctx context.Context, redisChannel string, data interface{}, action event.ActionType, appusers []*appuser.Appuser,
 ) {
-
 	mp.Wp.AddJob(NewNotificationJob(ctx, redisChannel, data, action, appusers, mp.Redis))
 }

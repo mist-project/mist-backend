@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"mist/src/faults"
+	"mist/src/middleware"
 	"mist/src/permission"
 	"mist/src/protos/v1/channel"
 	"mist/src/psql_db/qx"
@@ -68,8 +68,7 @@ func (s *ChannelGRPCService) ListServerChannels(
 ) (*channel.ListServerChannelsResponse, error) {
 
 	var (
-		err        error
-		nameFilter pgtype.Text
+		err error
 	)
 	serverId, _ := uuid.Parse(req.AppserverId)
 	ctx = context.WithValue(ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: serverId})
@@ -78,15 +77,14 @@ func (s *ChannelGRPCService) ListServerChannels(
 		return nil, faults.RpcCustomErrorHandler(ctx, faults.ExtendError(err))
 	}
 
+	claims, _ := middleware.GetJWTClaims(ctx)
+	userId, _ := uuid.Parse(claims.UserID)
+
 	cs := service.NewChannelService(
 		ctx, &service.ServiceDeps{Db: s.Deps.Db, MProducer: s.Deps.MProducer},
 	)
 
-	if req.Name != nil {
-		nameFilter = pgtype.Text{Valid: true, String: req.Name.Value}
-	}
-
-	channels, _ := cs.ListServerChannels(qx.ListServerChannelsParams{Name: nameFilter, AppserverID: serverId})
+	channels, _ := cs.ListServerChannels(qx.GetChannelsForUsersParams{Column1: []uuid.UUID{userId}, AppserverID: serverId})
 	response := &channel.ListServerChannelsResponse{}
 	response.Channels = make([]*channel.Channel, 0, len(channels))
 

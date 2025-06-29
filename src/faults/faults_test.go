@@ -133,3 +133,56 @@ func TestStackTraceContainsCaller(t *testing.T) {
 		assert.Contains(t, stack, "testing.tRunner")
 	})
 }
+
+func TestLogError(t *testing.T) {
+	var (
+		requestId = "req-123"
+		ctx       = context.WithValue(context.Background(), helpers.RequestIdKey, requestId)
+	)
+
+	t.Run("it_logs_custom_error", func(t *testing.T) {
+		// ARRANGE
+		var buf bytes.Buffer
+		logger.SetLogOutput(&buf)
+
+		err := faults.NewError("log test", "root cause", codes.PermissionDenied, slog.LevelDebug)
+
+		// ACT
+		faults.LogError(ctx, err)
+
+		// ASSERT
+		logOutput := buf.String()
+		assert.Contains(t, logOutput, "log test")
+		assert.Contains(t, logOutput, requestId)
+		assert.Contains(t, logOutput, `"code":7`) // 7 == codes.PermissionDenied
+	})
+
+	t.Run("standard_go_error_logs_as_a_typical_error", func(t *testing.T) {
+		// ARRANGE
+		var buf bytes.Buffer
+		logger.SetLogOutput(&buf)
+
+		stdErr := errors.New("standard go error")
+
+		// ACT
+		faults.LogError(ctx, stdErr)
+
+		// ASSERT
+		logOutput := buf.String()
+		assert.Contains(t, logOutput, "standard go error")
+		assert.NotContains(t, logOutput, requestId)
+	})
+
+	t.Run("nil_error_does_not_log_anything", func(t *testing.T) {
+		// ARRANGE
+		var buf bytes.Buffer
+		logger.SetLogOutput(&buf)
+
+		// ACT
+		faults.LogError(ctx, nil)
+
+		// ASSERT
+		logOutput := buf.String()
+		assert.Empty(t, logOutput) // No output expected for nil error
+	})
+}

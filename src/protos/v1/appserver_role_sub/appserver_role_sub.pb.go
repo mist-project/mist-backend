@@ -206,8 +206,9 @@ func (x *CreateResponse) GetAppserverRoleSub() *AppserverRoleSub {
 }
 
 type ListServerRoleSubsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AppserverId   string                 `protobuf:"bytes,1,opt,name=appserver_id,json=appserverId,proto3" json:"appserver_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// TODO: add ability to optionally filter by appserver_role_id
+	AppserverId   string `protobuf:"bytes,1,opt,name=appserver_id,json=appserverId,proto3" json:"appserver_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

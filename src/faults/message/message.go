@@ -8,6 +8,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// *******************
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// DEPRECATED CONTENT
+// *******************
+
 const (
 	InvalidUUID  string = "invalid uuid"
 	NotFound     string = "resource not found"

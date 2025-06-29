@@ -49,20 +49,15 @@ func (wp *WorkerPool) Stop() {
 }
 
 func (wp *WorkerPool) jobHandler(worker int) {
+	for job := range wp.jobQueue {
+		if _, ok := job.(*StopWorkerJob); ok {
+			// If the job is a stop worker job, we exit the loop
+			wp.wg.Done()
+			return
+		}
 
-	for {
-		select {
-		case job := <-wp.jobQueue:
-
-			if _, ok := job.(*StopWorkerJob); ok {
-				// If the job is a stop worker job, we exit the loop
-				wp.wg.Done()
-				return
-			}
-
-			if err := job.Execute(worker); err != nil {
-				faults.LogError(job.Ctx(), faults.ExtendError(err))
-			}
+		if err := job.Execute(worker); err != nil {
+			faults.LogError(job.Ctx(), faults.ExtendError(err))
 		}
 	}
 }
@@ -80,10 +75,8 @@ func (wp *WorkerPool) AddJob(job Job) {
 		return
 	}
 
-	select {
-	case wp.jobQueue <- job:
-		// if the channel is full, we wait until space is available
-	}
+	wp.jobQueue <- job
+	// if the channel is full, we wait until space is available
 }
 
 func (wp *WorkerPool) GetJobQueueSize() int {

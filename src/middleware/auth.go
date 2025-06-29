@@ -61,6 +61,7 @@ func GetJWTClaims(ctx context.Context) (*CustomJWTClaims, error) {
 
 func GetUserId(ctx context.Context) string {
 	claims, err := GetJWTClaims(ctx)
+
 	if err != nil {
 		return "N/A"
 	}

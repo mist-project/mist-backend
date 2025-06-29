@@ -148,7 +148,7 @@ func (s *AppserverSubService) Delete(id uuid.UUID) error {
 		}
 
 		s.deps.MProducer.SendMessage(
-			s.ctx,
+			context.Background(),
 			os.Getenv("REDIS_NOTIFICATION_CHANNEL"),
 			appserver.Appserver{Id: id.String()},
 			event.ActionType_ACTION_REMOVE_SERVER, user,

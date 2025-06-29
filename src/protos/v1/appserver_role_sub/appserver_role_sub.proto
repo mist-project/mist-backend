@@ -32,6 +32,7 @@ message CreateRequest {
 message CreateResponse { AppserverRoleSub appserver_role_sub = 1; }
 
 message ListServerRoleSubsRequest {
+  // TODO: add ability to optionally filter by appserver_role_id
   string appserver_id = 1 [ (buf.validate.field).string.uuid = true ];
 }
 message ListServerRoleSubsResponse {

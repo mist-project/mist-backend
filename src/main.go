@@ -23,12 +23,13 @@ func InitializeServer(redisClient *redis.Client) {
 	// ----- DB CONNECTION -----
 	// Set up the database connection pool
 	dbConn, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-	defer dbConn.Close()
 
 	// Check if db connection was successful
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
+
+	defer dbConn.Close()
 
 	// ----- GRPC SERVER -----
 	// Create a TCP listener on the specified port

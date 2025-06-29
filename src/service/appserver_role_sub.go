@@ -34,18 +34,18 @@ func (s *AppserverRoleSubService) PgTypeToPb(arSub *qx.AppserverRoleSub) *appser
 
 // Adds a server role to a user.
 func (s *AppserverRoleSubService) Create(obj qx.CreateAppserverRoleSubParams) (*qx.AppserverRoleSub, error) {
-	appserverRole, err := s.deps.Db.CreateAppserverRoleSub(s.ctx, obj)
+	// appserverRole, err := s.deps.Db.CreateAppserverRoleSub(s.ctx, obj)
 
-	if err != nil {
-		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
-	}
+	// if err != nil {
+	// 	return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
+	// }
 
 	NewChannelService(s.ctx, s.deps).SendChannelListingUpdateNotificationToUsers(
-		&qx.Appuser{ID: appserverRole.AppuserID},
-		appserverRole.AppserverID,
+		&qx.Appuser{ID: obj.AppuserID},
+		obj.AppserverID,
 	)
 
-	return &appserverRole, err
+	return nil, fmt.Errorf("boom")
 }
 
 // Get all the roles each user has in a server.

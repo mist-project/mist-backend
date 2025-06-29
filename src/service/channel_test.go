@@ -202,24 +202,46 @@ func TestChannelService_GetById(t *testing.T) {
 	})
 }
 
-func TestChannelService_List(t *testing.T) {
+func TestChannelService_ListServerChannels(t *testing.T) {
 
-	t.Run("Success:with_appserver_filter", func(t *testing.T) {
+	t.Run("Success:list_channels_for_provided_users", func(t *testing.T) {
 		// ARRANGE
 		ctx, _ := testutil.Setup(t, func() {})
-		appserverId := uuid.New()
-		var nameFilter = pgtype.Text{Valid: false, String: ""}
-		expected := []qx.Channel{
-			{ID: uuid.New(), Name: "foo", AppserverID: uuid.New()},
-			{ID: uuid.New(), Name: "bar", AppserverID: uuid.New()},
+		appserverId := pgtype.UUID{Bytes: uuid.New(), Valid: true}
+
+		mockResult := []qx.GetChannelsForUsersRow{
+			{
+				ChannelID:          pgtype.UUID{Bytes: uuid.New(), Valid: true},
+				ChannelName:        pgtype.Text{Valid: true, String: "foo"},
+				ChannelAppserverID: appserverId,
+			},
+			{
+				ChannelID:          pgtype.UUID{Bytes: uuid.New(), Valid: true},
+				ChannelName:        pgtype.Text{Valid: true, String: "bar"},
+				ChannelAppserverID: appserverId,
+			},
 		}
-		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: appserverId}
+		expected := []qx.Channel{
+			{
+				ID:          mockResult[0].ChannelID.Bytes,
+				Name:        mockResult[0].ChannelName.String,
+				AppserverID: mockResult[0].ChannelAppserverID.Bytes,
+				IsPrivate:   false, // Assuming default value for IsPrivate
+			},
+			{
+				ID:          mockResult[1].ChannelID.Bytes,
+				Name:        mockResult[1].ChannelName.String,
+				AppserverID: mockResult[1].ChannelAppserverID.Bytes,
+				IsPrivate:   false, // Assuming default value for IsPrivate
+			},
+		}
+		queryParams := qx.GetChannelsForUsersParams{AppserverID: appserverId.Bytes, Column1: []uuid.UUID{uuid.New(), uuid.New()}}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(expected, nil)
+		mockQuerier.On("GetChannelsForUsers", ctx, queryParams).Return(mockResult, nil)
 
 		svc := service.NewChannelService(
 			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
@@ -238,14 +260,13 @@ func TestChannelService_List(t *testing.T) {
 	t.Run("Error:failure_on_db_error", func(t *testing.T) {
 		ctx, _ := testutil.Setup(t, func() {})
 		appserverId := uuid.New()
-		var nameFilter = pgtype.Text{Valid: false, String: ""}
-		queryParams := qx.ListServerChannelsParams{Name: nameFilter, AppserverID: appserverId}
+		queryParams := qx.GetChannelsForUsersParams{AppserverID: appserverId}
 
 		mockQuerier := new(testutil.MockQuerier)
 		mockRedis := new(testutil.MockRedis)
 		producer := producer.NewMProducer(mockRedis)
 
-		mockQuerier.On("ListServerChannels", ctx, queryParams).Return(nil, fmt.Errorf("database error"))
+		mockQuerier.On("GetChannelsForUsers", ctx, queryParams).Return(nil, fmt.Errorf("database error"))
 
 		svc := service.NewChannelService(
 			ctx, &service.ServiceDeps{Db: mockQuerier, MProducer: producer},
@@ -482,11 +503,11 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		).Return([]qx.GetChannelsForUsersRow{channel1, channel2}, nil)
 
 		mockRedis.On(
-			"Publish", ctx, os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything,
+			"Publish", context.Background(), os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything,
 		).Return(redis.NewIntCmd(ctx)).Once()
 
 		mockRedis.On(
-			"Publish", ctx, os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything,
+			"Publish", context.Background(), os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything,
 		).Return(redis.NewIntCmd(ctx)).Once()
 
 		svc := service.NewChannelService(
@@ -601,7 +622,7 @@ func TestChannelService_SendChannelListingUpdateNotificationToUsers(t *testing.T
 		).Return([]qx.GetChannelsForUsersRow{channelRow}, nil)
 
 		mockRedis.On(
-			"Publish", ctx, os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything,
+			"Publish", context.Background(), os.Getenv("REDIS_NOTIFICATION_CHANNEL"), mock.Anything,
 		).Return(redis.NewIntCmd(ctx)).Once()
 
 		svc := service.NewChannelService(

@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"mist/src/faults"
 	"mist/src/permission"
@@ -70,35 +69,6 @@ func TestChannelRPCService_ListServerChannels(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, 2, len(response.GetChannels()))
-	})
-
-	t.Run("Success:can_filter_by_name", func(t *testing.T) {
-		// ARRANGE
-		ctx, db := testutil.Setup(t, func() {})
-
-		f := factory.NewFactory(ctx, db)
-		s := f.Appserver(t, 0, nil)
-		c0 := f.Channel(t, 0, &qx.Channel{Name: "foo", AppserverID: s.ID})
-		f.Channel(t, 1, &qx.Channel{Name: "bar", AppserverID: s.ID})
-		f.Channel(t, 2, nil)
-
-		ctx = context.WithValue(
-			ctx, permission.PermissionCtxKey, &permission.AppserverIdAuthCtx{AppserverId: c0.AppserverID},
-		)
-
-		svc := &rpcs.ChannelGRPCService{Deps: &rpcs.GrpcDependencies{Db: db}, Auth: testutil.TestMockAuth}
-
-		// ACT
-		response, err := svc.ListServerChannels(ctx, &channel.ListServerChannelsRequest{
-			AppserverId: c0.AppserverID.String(), Name: wrapperspb.String("foo"),
-		})
-
-		if err != nil {
-			t.Fatalf("Error performing request %v", err)
-		}
-
-		// ASSERT
-		assert.Equal(t, 1, len(response.GetChannels()))
 	})
 
 	t.Run("Error:on_authorization_error_it_errors", func(t *testing.T) {

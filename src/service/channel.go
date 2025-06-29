@@ -71,17 +71,28 @@ func (s *ChannelService) GetById(id uuid.UUID) (*qx.Channel, error) {
 }
 
 // Lists all channels for an appserver. Name filter is also added but it may get deprecated.
-func (s *ChannelService) ListServerChannels(obj qx.ListServerChannelsParams) ([]qx.Channel, error) {
+func (s *ChannelService) ListServerChannels(obj qx.GetChannelsForUsersParams) ([]qx.Channel, error) {
 
 	// TODO: This should only return channel that the user has access to. Pull the channels which user has roles to
 	// and pulls all the channels without roles in the server.
-	channels, err := s.deps.Db.ListServerChannels(s.ctx, obj)
+	cs, err := s.deps.Db.GetChannelsForUsers(s.ctx, obj)
 
 	if err != nil {
 		return nil, faults.DatabaseError(fmt.Sprintf("database error: %v", err), slog.LevelError)
 	}
 
-	return channels, nil
+	res := make([]qx.Channel, 0, len(cs))
+
+	for _, c := range cs {
+		res = append(res, qx.Channel{
+			ID:          c.ChannelID.Bytes,
+			Name:        c.ChannelName.String,
+			IsPrivate:   c.ChannelIsPrivate.Bool,
+			AppserverID: c.ChannelAppserverID.Bytes,
+		})
+	}
+
+	return res, nil
 }
 
 // Lists all channels for an appserver. Name filter is also added but it may get deprecated.
@@ -179,7 +190,7 @@ func (s *ChannelService) SendChannelListingUpdateNotificationToUsers(u *qx.Appus
 
 	for userId, channels := range userChannelMap {
 		s.deps.MProducer.SendMessage(
-			s.ctx,
+			context.Background(),
 			os.Getenv("REDIS_NOTIFICATION_CHANNEL"),
 			channels,
 			event.ActionType_ACTION_LIST_CHANNELS,

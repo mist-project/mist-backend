@@ -129,7 +129,7 @@ func (s *AppserverService) SendDeleteNotificationToUsers(subs []qx.ListAppserver
 	}
 
 	s.deps.MProducer.SendMessage(
-		s.ctx,
+		context.Background(),
 		os.Getenv("REDIS_NOTIFICATION_CHANNEL"),
 		&appserver.Appserver{Id: appserverID.String()},
 		event.ActionType_ACTION_REMOVE_SERVER, users,

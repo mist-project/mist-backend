@@ -3,7 +3,7 @@ when:
 
 steps:
   - name: Build the image
-    image: woodpeckerci/plugin-docker-buildx:2
+    image: woodpeckerci/plugin-docker-buildx:6.0.2
     privileged: true
     settings:
       dockerfile: Dockerfile

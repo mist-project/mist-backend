@@ -7,11 +7,15 @@ steps:
     privileged: true
 
     settings:
-      repo: mist-project/mist-backend
+      repo: mist-backend
       dockerfile: Dockerfile
 
+      tags:
+        - latest
       registry: registry.mist-project.app
       username:
         from_secret: REGISTRY_USERNAME
       password:
         from_secret: REGISTRY_PASSWORD
+
+      debug: true

@@ -3,7 +3,7 @@ when:
 
 steps:
   - name: Build the image
-    image: woodpeckerci/plugin-docker-buildx:6.0.2
+    image: woodpeckerci/plugin-kaniko
     privileged: true
 
     settings:
@@ -13,9 +13,5 @@ steps:
       tags:
         - latest
       registry: registry.mist-project.app
-      username:
-        from_secret: REGISTRY_USERNAME
-      password:
-        from_secret: REGISTRY_PASSWORD
 
-      debug: true
+      log-level: debug

@@ -1,0 +1,59 @@
+when:
+  - event: manual
+
+# steps:
+#   - name: Build the image
+#     image: woodpeckerci/plugin-kaniko
+#     privileged: true
+
+#     settings:
+#       repo: mist-backend
+#       dockerfile: Dockerfile
+
+#       tags:
+#         - latest
+#       registry: registry.mist-project.app
+
+#       log-level: debug
+
+# -steps:
+# - name: Testing out Ansible
+# image: woodpeckerci/plugin-ansible
+
+steps:
+  - name: Deploy DEV tenant
+    # when:
+    # - evaluate: 'DEPLOY_DEV == "true"'
+    image: alpine:3.22
+    environment:
+      OP_SERVICE_ACCOUNT_TOKEN:
+        from_secret: OP_TOKEN
+      OP_VAULT:
+        from_secret: OP_VAULT
+      TENANT_ACCOUNT_ID: "4wccsugzybkttewdtm2zujm5gu"
+
+    commands:
+      - chmod +x helpers/fetch_creds_op.sh
+      - ./helpers/fetch_creds_op.sh
+
+  - name: Pull latest image in tenant
+    # when:
+    # - evaluate: 'DEPLOY_DEV == "true"'
+    image: alpine:3.22
+    commands:
+      # Install ansible
+      - apk update
+      - apk add python3
+      - apk add ansible
+      - source .tmpenvs
+      - ansible-playbook -i "$TENANT_ADDRESS," \
+        ansible/playbooks/deploy.yml \
+        --extra-vars "ansible_ssh_private_key_file=$TENANT_PRIVATE_SSH_KEY_FILE" \
+        --extra-vars "ansible_user=$TENANT_USERNAME" \
+
+    # settings:
+    #   playbook: ansible/playbooks/deploy.yml
+    #   private_key: $TENANT_PRIVATE_SSH_KEY
+    #   user: $TENANT_USERNAME
+    #   extra_vars:
+    #     target_hosts: "${TENANT_USERNAME}"

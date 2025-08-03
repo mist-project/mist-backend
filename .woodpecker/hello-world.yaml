@@ -1,8 +1,9 @@
 when:
-  - event: pull_request
+  - event: push
+    branch: main
 
 steps:
-  - name: testing-it-runs-when-pull-request-created
+  - name: a-test-step
     image: golang:1.16
     commands:
       - echo "Testing ..."

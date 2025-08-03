@@ -1,17 +1,34 @@
 when:
   - event: manual
 
+# steps:
+#   - name: Build the image
+#     image: woodpeckerci/plugin-kaniko
+#     privileged: true
+
+#     settings:
+#       repo: mist-backend
+#       dockerfile: Dockerfile
+
+#       tags:
+#         - latest
+#       registry: registry.mist-project.app
+
+#       log-level: debug
+
+# -steps:
+# - name: Testing out Ansible
+# image: woodpeckerci/plugin-ansible
+
 steps:
-  - name: Build the image
-    image: woodpeckerci/plugin-kaniko
-    privileged: true
+  - name: init
+    image: bash
+    commands:
+      - echo "FOO=hello" >> envvars
+      - echo "BAR=world" >> envvars
 
-    settings:
-      repo: mist-backend
-      dockerfile: Dockerfile
-
-      tags:
-        - latest
-      registry: registry.mist-project.app
-
-      log-level: debug
+  - name: debug
+    image: bash
+    commands:
+      - source envvars
+      - echo $FOO

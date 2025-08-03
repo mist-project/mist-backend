@@ -7,9 +7,11 @@ steps:
     privileged: true
 
     settings:
-      dry_run: True
-
       repo: mist-project/mist-backend
       dockerfile: Dockerfile
 
       registry: registry.mist-project.app
+      username:
+        from_secret: REGISTRY_USERNAME
+      password:
+        from_secret: REGISTRY_PASSWORD

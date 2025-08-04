@@ -1,0 +1,87 @@
+when:
+  - event: manual
+
+# steps:
+#   - name: Build the image
+#     image: woodpeckerci/plugin-kaniko
+#     privileged: true
+
+#     settings:
+#       repo: mist-backend
+#       dockerfile: Dockerfile
+
+#       tags:
+#         - latest
+#       registry: registry.mist-project.app
+
+#       log-level: debug
+
+# -steps:
+# - name: Testing out Ansible
+# image: woodpeckerci/plugin-ansible
+
+steps:
+  - name: Deploy DEV tenant
+    # when:
+    # - evaluate: 'DEPLOY_DEV == "true"'
+    image: alpine:3.22
+    environment:
+      OP_SERVICE_ACCOUNT_TOKEN:
+        from_secret: OP_TOKEN
+      OP_VAULT:
+        from_secret: OP_VAULT
+      TENANT_ACCOUNT_ID: "4wccsugzybkttewdtm2zujm5gu"
+
+    commands:
+      - chmod +x helpers/fetch_creds_op.sh
+      - ./helpers/fetch_creds_op.sh
+      - ls
+  #     - apk update && apk add openssh-client
+  #     - ssh -i tenant_private_ssh_key.yml mist-docker@192.168.0.21 -o BatchMode=yes -o StrictHostKeyChecking=no -T exit
+
+  - name: Pull latest image in tenant
+    image: alpine:3.22
+    commands:
+      # - apk update && apk add docker-cli
+      # - docker pull registry.mist-project.app/mist-backend:latest
+      # - docker tag registry.mist-project.app/mist-backend:latest mist-backend:latest
+      # - docker images
+      - ls
+  # when:
+  # - evaluate: 'DEPLOY_DEV == "true"'
+  #   # Install ansible
+  #   - apk update
+  #   - apk add python3
+  #   - apk add ansible
+  #   - source .tmpenvs
+  #   - ansible-playbook -i "$TENANT_ADDRESS," \
+  #     ansible/playbooks/deploy.yml \
+  #     --extra-vars "ansible_ssh_private_key_file=$TENANT_PRIVATE_SSH_KEY_FILE" \
+  #     --extra-vars "ansible_user=$TENANT_USERNAME" \
+
+  # settings:
+  #   playbook: ansible/playbooks/deploy.yml
+  #   private_key: $TENANT_PRIVATE_SSH_KEY
+  #   user: $TENANT_USERNAME
+  #   extra_vars:
+  #     target_hosts: "${TENANT_USERNAME}"
+
+  # - name: "Install galaxy requirements"
+  #   image: alpine/ansible
+  #   commands:
+  #     - chmod 750 .
+  #     - ansible-galaxy install -r requirements.yml
+
+  # - name: "Ansible step"
+  #   image: woodpeckerci/plugin-ansible
+  #   environment:
+  #     ANSIBLE_HOST_KEY_CHECKING: False
+
+  #   settings:
+  #     playbook: ansible/playbooks/deploy.yml
+  #     inventory: ansible/inventory/hosts.ini
+  #     user:
+  #       from_secret: DEV_TENANT_USERNAME
+  #     galaxy: ansible/requirements.yml
+  #     extra_vars:
+  #       "@tenant_private_ssh_key.yml": ""

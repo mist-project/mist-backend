@@ -1,8 +1,9 @@
-- name: Run Hello World on localhost
-  hosts: "{{ target_hosts }}"
-  gather_facts: false
+- name: Run Hello World
+  hosts: mist-docker-dev
 
   tasks:
-    - name: Print Hello World
-      debug:
-        msg: "Hello, world!"
+    - name: Pull a specific Docker image
+      community.docker.docker_image:
+        name: "ubuntu"
+        tag: "latest"
+        source: "pull"

@@ -30,7 +30,6 @@ chmod 600 "$KEY_FILE"
 
 # echo "ansible_ssh_private_key_file: |" > "$KEY_FILE"
 echo -e "$TENANT_PRIVATE_SSH_KEY" >> "$KEY_FILE"
-# truncate -s -1 $KEY_FILE
 # echo "$TENANT_PRIVATE_SSH_KEY" > "$KEY_FILE"
 
 echo "export TENANT_USERNAME=$TENANT_USERNAME" >> ".tmpenvs"

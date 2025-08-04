@@ -1,5 +1,5 @@
 - name: Run Hello World
-  hosts: mist-docker-dev
+  hosts: mist-service
   gather_facts: false
   become: true
 

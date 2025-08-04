@@ -46,18 +46,24 @@ steps:
       # - docker pull registry.mist-project.app/mist-backend:latest
       # - docker tag registry.mist-project.app/mist-backend:latest mist-backend:latest
       # - docker images
+      - source .tmpenvs
+      - apk update
+      - apk add openssh
+      - apk add python3
+      - apk add ansible
       - ls
+      - echo --
+      - ls ansible
+      - echo --
+      - ls ansible/playbooks
+      - |
+        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ansible/inventory/hosts.ini \
+          ansible/playbooks/deploy.yml \
+          --extra-vars "ansible_ssh_private_key_file=$TENANT_PRIVATE_SSH_KEY_FILE" \
+          --extra-vars "ansible_user=$TENANT_USERNAME" \
   # when:
   # - evaluate: 'DEPLOY_DEV == "true"'
   #   # Install ansible
-  #   - apk update
-  #   - apk add python3
-  #   - apk add ansible
-  #   - source .tmpenvs
-  #   - ansible-playbook -i "$TENANT_ADDRESS," \
-  #     ansible/playbooks/deploy.yml \
-  #     --extra-vars "ansible_ssh_private_key_file=$TENANT_PRIVATE_SSH_KEY_FILE" \
-  #     --extra-vars "ansible_user=$TENANT_USERNAME" \
 
   # settings:
   #   playbook: ansible/playbooks/deploy.yml

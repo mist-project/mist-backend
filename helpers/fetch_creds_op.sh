@@ -14,23 +14,25 @@ TENANT_ADDRESS=$(op item get $TENANT_ACCOUNT_ID --vault "$OP_VAULT" --fields TEN
 
 
 # Define file paths
-TENANT_USERNAME_FILE="tenant_username.yml"
-KEY_FILE="tenant_private_ssh_key.yml"
+KEY_FILE="key.pem"
 
 # TENANT_ADDRESS_FILE="/tmp/tenant_address.json"
 
 # Create files if they do not exist
-touch $TENANT_USERNAME_FILE
+touch .tmpenvs
 touch $KEY_FILE
-# chmod 600 "$KEY_FILE"
+chmod 600 "$KEY_FILE"
 # touch $TENANT_ADDRESS_FILE
 
 # Add private keys to their corresponding files
 # echo "ansible_user: $TENANT_USERNAME" > "$TENANT_USERNAME_FILE"
-echo "ansible_user: $TENANT_USERNAME" > "$TENANT_USERNAME_FILE"
+# echo "ansible_user: $TENANT_USERNAME" > "$TENANT_USERNAME_FILE"
 
-echo "ansible_ssh_private_key_file: |" > "$KEY_FILE"
+# echo "ansible_ssh_private_key_file: |" > "$KEY_FILE"
 echo -e "$TENANT_PRIVATE_SSH_KEY" >> "$KEY_FILE"
-truncate -s -1 $KEY_FILE
+# truncate -s -1 $KEY_FILE
 # echo "$TENANT_PRIVATE_SSH_KEY" > "$KEY_FILE"
 
+echo "export TENANT_USERNAME=$TENANT_USERNAME" >> ".tmpenvs"
+echo "export TENANT_PRIVATE_SSH_KEY_FILE=$KEY_FILE" >> ".tmpenvs"
+echo "export TENANT_ADDRESS=\"$TENANT_ADDRESS,\"" >> ".tmpenvs"

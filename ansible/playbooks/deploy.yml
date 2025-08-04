@@ -1,9 +1,22 @@
 - name: Run Hello World
   hosts: mist-docker-dev
+  gather_facts: false
+  become: true
 
   tasks:
-    - name: Pull a specific Docker image
-      community.docker.docker_image:
-        name: "ubuntu"
-        tag: "latest"
-        source: "pull"
+    - name: Run `docker ps`
+      command: docker ps
+      register: docker_ps_result
+      changed_when: false
+      failed_when: docker_ps_result.rc != 0
+
+    - name: Print `docker ps` output
+      debug:
+        var: docker_ps_result.stdout
+
+    - name: Assert Docker is running
+      assert:
+        that:
+          - docker_ps_result.rc == 0
+        success_msg: "Docker is running and responding to docker ps."
+        fail_msg: "Docker is not running or the user cannot run docker ps."

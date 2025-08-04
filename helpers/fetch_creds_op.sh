@@ -15,23 +15,20 @@ TENANT_ADDRESS=$(op item get $TENANT_ACCOUNT_ID --vault "$OP_VAULT" --fields TEN
 
 # Define file paths
 KEY_FILE="key.pem"
+INVENTORY_FILE="ansible/inventory/hosts.ini"
 
-# TENANT_ADDRESS_FILE="/tmp/tenant_address.json"
+# Create ansible inventory directory and temporary file
+mkdir -p ansible/inventory
+touch $INVENTORY_FILE
+echo "[mist-service]" >> "$INVENTORY_FILE"
+echo $TENANT_ADDRESS >> "$INVENTORY_FILE"
 
-# Create files if they do not exist
-touch .tmpenvs
+# Create PRIVATE_SSH_KEY temporary file
 touch $KEY_FILE
 chmod 600 "$KEY_FILE"
-# touch $TENANT_ADDRESS_FILE
-
-# Add private keys to their corresponding files
-# echo "ansible_user: $TENANT_USERNAME" > "$TENANT_USERNAME_FILE"
-# echo "ansible_user: $TENANT_USERNAME" > "$TENANT_USERNAME_FILE"
-
-# echo "ansible_ssh_private_key_file: |" > "$KEY_FILE"
 echo -e "$TENANT_PRIVATE_SSH_KEY" >> "$KEY_FILE"
-# echo "$TENANT_PRIVATE_SSH_KEY" > "$KEY_FILE"
 
+
+# Create tmporary environment variables file
+touch .tmpenvs
 echo "export TENANT_USERNAME=$TENANT_USERNAME" >> ".tmpenvs"
-echo "export TENANT_PRIVATE_SSH_KEY_FILE=$KEY_FILE" >> ".tmpenvs"
-echo "export TENANT_ADDRESS=\"$TENANT_ADDRESS,\"" >> ".tmpenvs"

@@ -4,19 +4,29 @@
   become: true
 
   tasks:
-    - name: Run `docker ps`
-      command: docker ps
-      register: docker_ps_result
-      changed_when: false
-      failed_when: docker_ps_result.rc != 0
+    - name: Pull latest mist-backend image
+      community.docker.docker_image:
+        name: registry.mist-project.app/mist-backend:latest
+        source: pull
 
-    - name: Print `docker ps` output
-      debug:
-        var: docker_ps_result.stdout
-
-    - name: Assert Docker is running
-      assert:
-        that:
-          - docker_ps_result.rc == 0
-        success_msg: "Docker is running and responding to docker ps."
-        fail_msg: "Docker is not running or the user cannot run docker ps."
+    - name: Run Docker container
+      community.docker.docker_container:
+        name: mist_backend
+        image: registry.mist-project.app/mist-backend:latest
+        state: started
+        ports:
+          - "4000:4000"
+        restart_policy: always # container restarts on failure
+        env:
+          LOG_LEVEL: "{{ LOG_LEVEL }}"
+          REDIS_HOSTNAME: "{{ REDIS_HOSTNAME }}"
+          REDIS_PORT: "{{ REDIS_PORT }}"
+          REDIS_USERNAME: "{{ REDIS_USERNAME }}"
+          REDIS_PASSWORD: "{{ REDIS_PASSWORD }}"
+          REDIS_DB: "{{ REDIS_DB }}"
+          REDIS_NOTIFICATION_CHANNEL: "{{ REDIS_NOTIFICATION_CHANNEL }}"
+          DATABASE_URL: "{{ DATABASE_URL }}"
+          MIST_API_JWT_SECRET_KEY: "{{ MIST_API_JWT_SECRET_KEY }}"
+          MIST_API_JWT_AUDIENCE: "{{ MIST_API_JWT_AUDIENCE }}"
+          MIST_API_JWT_ISSUER: "{{ MIST_API_JWT_ISSUER }}"
+          APP_PORT: "{{ APP_PORT }}"

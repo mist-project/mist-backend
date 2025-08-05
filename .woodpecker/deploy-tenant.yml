@@ -1,93 +1,59 @@
 when:
   - event: manual
 
-# steps:
-#   - name: Build the image
-#     image: woodpeckerci/plugin-kaniko
-#     privileged: true
-
-#     settings:
-#       repo: mist-backend
-#       dockerfile: Dockerfile
-
-#       tags:
-#         - latest
-#       registry: registry.mist-project.app
-
-#       log-level: debug
-
-# -steps:
-# - name: Testing out Ansible
-# image: woodpeckerci/plugin-ansible
-
 steps:
-  - name: Deploy DEV tenant
-    # when:
-    # - evaluate: 'DEPLOY_DEV == "true"'
-    image: alpine:3.22
+  - name: Fetch and Initialize Credentials
+    when:
+      - evaluate: 'DEPLOY_DEV == "true"'
+    image: registry.mist-project.app/mist-shared/alpine-ci:latest
     environment:
       OP_SERVICE_ACCOUNT_TOKEN:
         from_secret: OP_TOKEN
       OP_VAULT:
         from_secret: OP_VAULT
       TENANT_ACCOUNT_ID: "4wccsugzybkttewdtm2zujm5gu"
+      BACKEND_ACCOUNT_ID: "a4gqxmodtuquf5w5r4iuxbmxg4"
 
     commands:
       - chmod +x helpers/fetch_creds_op.sh
       - ./helpers/fetch_creds_op.sh
-      - ls
-  #     - apk update && apk add openssh-client
-  #     - ssh -i tenant_private_ssh_key.yml mist-docker@192.168.0.21 -o BatchMode=yes -o StrictHostKeyChecking=no -T exit
+
+  - name: Build Image and Push to Registry
+    when:
+      - evaluate: 'MANUAL_DEPLOY == "true"'
+    image: woodpeckerci/plugin-kaniko
+    privileged: true
+
+    settings:
+      repo: mist-backend
+      dockerfile: Dockerfile
+      tags:
+        - latest # TODO: Add version tag or commit sha for incremental versions
+      registry: registry.mist-project.app
+      log-level: debug
 
   - name: Pull latest image in tenant
-    image: alpine:3.22
+    when:
+      - evaluate: 'MANUAL_DEPLOY == "true"'
+    image: registry.mist-project.app/mist-shared/alpine-ci:latest
+    environment:
+      ANSIBLE_HOST_KEY_CHECKING: False
     commands:
-      # - apk update && apk add docker-cli
-      # - docker pull registry.mist-project.app/mist-backend:latest
-      # - docker tag registry.mist-project.app/mist-backend:latest mist-backend:latest
-      # - docker images
       - source .tmpenvs
-      - apk update
-      - apk add openssh
-      - apk add python3
-      - apk add ansible
-      - ls
-      - echo --
-      - ls ansible
-      - echo --
-      - ls ansible/playbooks
       - |
-        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ansible/inventory/hosts.ini \
+        ansible-playbook -i ansible/inventory/hosts.ini \
           ansible/playbooks/deploy.yml \
           --extra-vars "ansible_ssh_private_key_file=key.pem" \
           --extra-vars "ansible_user=$TENANT_USERNAME" \
-  # when:
-  # - evaluate: 'DEPLOY_DEV == "true"'
-  #   # Install ansible
-
-  # settings:
-  #   playbook: ansible/playbooks/deploy.yml
-  #   private_key: $TENANT_PRIVATE_SSH_KEY
-  #   user: $TENANT_USERNAME
-  #   extra_vars:
-  #     target_hosts: "${TENANT_USERNAME}"
-
-  # - name: "Install galaxy requirements"
-  #   image: alpine/ansible
-  #   commands:
-  #     - chmod 750 .
-  #     - ansible-galaxy install -r requirements.yml
-
-  # - name: "Ansible step"
-  #   image: woodpeckerci/plugin-ansible
-  #   environment:
-  #     ANSIBLE_HOST_KEY_CHECKING: False
-
-  #   settings:
-  #     playbook: ansible/playbooks/deploy.yml
-  #     inventory: ansible/inventory/hosts.ini
-  #     user:
-  #       from_secret: DEV_TENANT_USERNAME
-  #     galaxy: ansible/requirements.yml
-  #     extra_vars:
-  #       "@tenant_private_ssh_key.yml": ""
+          --extra-vars "LOG_LEVEL=$LOG_LEVEL" \
+          --extra-vars "REDIS_HOSTNAME=$REDIS_HOSTNAME" \
+          --extra-vars "REDIS_PORT=$REDIS_PORT" \
+          --extra-vars "REDIS_USERNAME=$REDIS_USERNAME" \
+          --extra-vars "REDIS_PASSWORD=$REDIS_PASSWORD" \
+          --extra-vars "REDIS_DB=$REDIS_DB" \
+          --extra-vars "REDIS_NOTIFICATION_CHANNEL=$REDIS_NOTIFICATION_CHANNEL" \
+          --extra-vars "DATABASE_URL=$DATABASE_URL" \
+          --extra-vars "MIST_API_JWT_SECRET_KEY=$MIST_API_JWT_SECRET_KEY" \
+          --extra-vars "MIST_API_JWT_AUDIENCE=$MIST_API_JWT_AUDIENCE" \
+          --extra-vars "MIST_API_JWT_ISSUER=$MIST_API_JWT_ISSUER" \
+          --extra-vars "APP_PORT=$APP_PORT" \

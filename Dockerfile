@@ -1,7 +1,7 @@
 # -------- Build stage --------
 FROM golang:1.23-alpine AS builder
 
-ARG APP_PORT
+ARG APP_PORT=4000
 
 ENV CGO_ENABLED=0 \
     GO111MODULE=on \

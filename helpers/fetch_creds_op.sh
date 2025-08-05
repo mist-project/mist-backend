@@ -56,3 +56,7 @@ echo "export MIST_API_JWT_SECRET_KEY=\"$MIST_API_JWT_SECRET_KEY\"" >> ".tmpenvs"
 echo "export MIST_API_JWT_AUDIENCE=\"$MIST_API_JWT_AUDIENCE\"" >> ".tmpenvs"
 echo "export MIST_API_JWT_ISSUER=\"$MIST_API_JWT_ISSUER\"" >> ".tmpenvs"
 echo "export APP_PORT=$APP_PORT" >> ".tmpenvs"
+
+echo "export GOOSE_DRIVER=postgres" >> ".tmpenvs"
+echo "export GOOSE_DBSTRING=${DATABASE_URL}" >> ".tmpenvs"
+echo "export GOOSE_MIGRATION_DIR=src/psql_db/migrations" >> ".tmpenvs"

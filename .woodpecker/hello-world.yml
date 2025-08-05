@@ -1,9 +1,0 @@
-when:
-  - event: push
-    branch: main
-
-steps:
-  - name: a-test-step
-    image: golang:1.16
-    commands:
-      - echo "Testing ..."

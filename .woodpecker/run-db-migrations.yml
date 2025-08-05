@@ -1,0 +1,22 @@
+when:
+  - event: manual
+
+steps:
+  - name: Install goose CLI
+    when:
+      - evaluate: 'DB_MIGRATION == "true"'
+    image: registry.mist-project.app/mist-shared/alpine-ci:latest
+    environment:
+      OP_SERVICE_ACCOUNT_TOKEN:
+        from_secret: OP_TOKEN
+      OP_VAULT:
+        from_secret: OP_VAULT
+      TENANT_ACCOUNT_ID: "4wccsugzybkttewdtm2zujm5gu"
+      BACKEND_ACCOUNT_ID: "a4gqxmodtuquf5w5r4iuxbmxg4"
+
+    commands:
+      - curl -fsSL https://raw.githubusercontent.com/pressly/goose/master/install.sh | sh
+      - chmod +x helpers/fetch_creds_op.sh
+      - ./helpers/fetch_creds_op.sh
+      - source .tmpenvs
+      - goose up
